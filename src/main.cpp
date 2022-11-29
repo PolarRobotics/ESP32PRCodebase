@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ESP32Servo.h>
 #include <ps5Controller.h> // new esp ps5 library
 
 // Custom Polar Robotics Libraries:
@@ -8,8 +9,8 @@
 // #include <Robot/Lights.h>
 
 // Robot and Drivebase 
-#define lPin 0 //GPIO0
-#define rPin 2 //GPIO2
+#define lPin 2 //GPIO0
+#define rPin 4 //GPIO2
 Servo leftMotor;
 Servo rightMotor;
 uint8_t motorType;
@@ -26,14 +27,20 @@ Drive DriveMotors;
 
 */
 
+ESP32PWM pwm;
+
 void setup() {
     // put your setup code here, to run once:
+    ESP32PWM::allocateTimer(0);
+    ESP32PWM::allocateTimer(1);
     Serial.begin(115200);
     Serial.print(F("\r\nStarting..."));
 
     DriveMotors.setMotorType(MOTORS::small);
-    leftMotor.attach(lPin);
-    rightMotor.attach(rPin);
+    leftMotor.attach(2, 1000, 2000);
+    rightMotor.attach(4, 1000, 2000);
+    leftMotor.setPeriodHertz(490);
+    rightMotor.setPeriodHertz(490);
     DriveMotors.setServos(leftMotor, rightMotor);
     
     // Set initial LED color state
@@ -88,17 +95,15 @@ void loop() {
     //   robotLED.togglePosition();
     // }
     
-    // if (millis() - CURRENTTIME >= 200) {
-    //     CURRENTTIME = millis();
-    //     robotLED.togglePosition();
-    // }
-
     // Update the motors based on the inputs from the controller
     if(ps5.L2()) {
       DriveMotors.drift();
     } else {
       DriveMotors.update();
+      DriveMotors.printDebugInfo();
     }
+    // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
+    //     ps5.LStickX(), ps5.LStickY(), ps5.RStickX(), ps5.RStickY());
     
   } else { // no response from PS5 controller within last 300 ms, so stop
     // Emergency stop if the controller disconnects

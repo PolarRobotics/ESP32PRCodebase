@@ -88,7 +88,7 @@ public:
   void setServos(Servo&, Servo&);
   void setMotorType(MOTORS motorType);
   void attach();
-  void setStickPwr(uint8_t leftY, uint8_t rightX);
+  void setStickPwr(int8_t leftY, int8_t rightX);
   void setBSN(SPEED bsn); //(float powerMultiplier);
   float getMotorPwr(uint8_t mtr);
   void emergencyStop();

@@ -53,10 +53,13 @@ void Drive::setMotorType(MOTORS motorType) {
  * @param leftY the forward backward value from the left stick an unsigned 8-bit float (0 to 255)
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
 */
-void Drive::setStickPwr(uint8_t leftY, uint8_t rightX) {
+void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // left stick all the way foreward is 0, backward is 255
-    stickForwardRev = (0 - (leftY / 127.5 - 1)); // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
-    stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
+    // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
+    // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
+    // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
+    stickForwardRev = (leftY / 127);
+    stickTurn = (rightX / 127);  
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -67,8 +70,8 @@ void Drive::setStickPwr(uint8_t leftY, uint8_t rightX) {
       stickTurn = 0;
     }
     // Ensure the stick values do not go above 1 or below -1
-    stickForwardRev = constrain(stickForwardRev, -1, 1);
-    stickTurn = constrain(stickTurn, -1, 1);
+    // stickForwardRev = constrain(stickForwardRev, -1, 1);
+    // stickTurn = constrain(stickTurn, -1, 1);
 }
 
 
@@ -320,13 +323,13 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(stickTurn);
 
-    Serial.print(F("  |  Turn: "));
-    Serial.print(lastTurnPwr);
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
 
-    Serial.print(F("  |  Left ReqPwr: "));
-    Serial.print(motorPower[0]);
-    Serial.print(F("  Right ReqPwr: "));
-    Serial.print(motorPower[1]);
+    // Serial.print(F("  |  Left ReqPwr: "));
+    // Serial.print(motorPower[0]);
+    // Serial.print(F("  Right ReqPwr: "));
+    // Serial.print(motorPower[1]);
 
 
     // Serial.print(F("  lastRampTime "));
