@@ -1,6 +1,8 @@
 #include "Drive/Drive.h"
 #include <Arduino.h>
-#include <ESP32Servo.h> //Built in
+#include <Servo.h> //Built in
+
+// #include <ESP32Servo.h> //Built in
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -58,8 +60,8 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
     // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
     // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / 127);
-    stickTurn = (rightX / 127);  
+    stickForwardRev = (leftY / (float)127.5);
+    stickTurn = (rightX / (float)127.5);  
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -254,7 +256,7 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
  * @param rampPwr the value to be normalized. Hopefully a value between [-1, 1]
  * @return normalized PWM value (between 1000 to 2000)
 */
-float Drive::Convert2PWMVal(float rampPwr) {
+uint32_t Drive::Convert2PWM(float rampPwr) {
     return (rampPwr + 1) * 500 + 1000;
 }
 
@@ -281,9 +283,9 @@ void Drive::setMotorPWM(float pwr, byte pin) {
     // M1.writeMicroseconds(Convert2PWMVal(-motorPower[0]));
     // M2.writeMicroseconds(Convert2PWMVal(motorPower[1]));
     digitalWrite(motorPins[pin], HIGH);
-    delayMicroseconds(Convert2PWMVal(pwr) - 40);
+    delayMicroseconds(Convert2PWM(pwr) - 40);
     digitalWrite(motorPins[pin], LOW);
-    delayMicroseconds(2000 - Convert2PWMVal(pwr) - 40); //-170
+    delayMicroseconds(2000 - Convert2PWM(pwr) - 40); //-170
     // digitalWrite(motorPins[0], HIGH);
     // delayMicroseconds(Convert2PWMVal(motorPower[0]) - 40);
     // digitalWrite(motorPins[0], LOW);
@@ -347,9 +349,9 @@ void Drive::printDebugInfo() {
     Serial.print(motorPower[1]);
 
     Serial.print(F("  |  Left Motor: "));
-    Serial.print(Convert2PWMVal(-motorPower[0]));
+    Serial.print(Convert2PWM(-motorPower[0]));
     Serial.print(F("  Right: "));
-    Serial.println(Convert2PWMVal(motorPower[1]));
+    Serial.println(Convert2PWM(motorPower[1]));
 
 }
 
@@ -375,8 +377,8 @@ void Drive::update() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
     
-    M1.writeMicroseconds(Convert2PWMVal(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWMVal(motorPower[1]));
+    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
+    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
 }
 
 /**
@@ -400,8 +402,8 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
-    M1.writeMicroseconds(Convert2PWMVal(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWMVal(motorPower[1]));
+    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
+    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
 }
 
 //Old functions

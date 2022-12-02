@@ -56,7 +56,9 @@ bool ps5Controller::begin(const char* mac) {
 
 void ps5Controller::end() {}
 
-bool ps5Controller::isConnected() { return ps5IsConnected(); }
+bool ps5Controller::isConnected() { 
+    return ps5IsConnected(); 
+}
 
 void ps5Controller::setLed(uint8_t r, uint8_t g, uint8_t b) {
   output.r = r;

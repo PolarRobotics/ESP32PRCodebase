@@ -4,7 +4,7 @@
 #define DRIVE_H_
 
 #include <Arduino.h>
-#include <ESP32Servo.h>
+#include <Servo.h>
 #include <PolarRobotics.h>
 // #include <Servo_Hardware_PWM.h>
 
@@ -37,8 +37,8 @@
 #define THRESHOLD 0.00001
 
 // this is 1.0, the maximum power possible to the motors.
-#define BIG_BOOST_PCT 0.5  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-#define BIG_NORMAL_PCT 0.3 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
+#define BIG_BOOST_PCT 0.9  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
+#define BIG_NORMAL_PCT 0.5 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
 #define BIG_SLOW_PCT 0.2   // the value for brake button to slow down the motors at the button press
 #define BRAKE_BUTTON_PCT 0
 
@@ -74,7 +74,7 @@ private:
   void generateMotionValues();
   float ramp(float requestedPower, uint8_t mtr);
   // use the inline keywork to ensure the function will get called again as soon as possible
-  float Convert2PWMVal(float rampPwr);
+  uint32_t Convert2PWM(float rampPwr);
   void setMotorPWM(float pwr, byte pin); //__attribute__((always_inline));
 
 public:
