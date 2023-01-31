@@ -1,4 +1,4 @@
-# PRCodeBase_ESP32
+# Polar Robotics ESP32 Codebase
 ONU Polar Robotics codebase based on the ESP32 framework 
 
 ## NodeMCU-32s Pinout
