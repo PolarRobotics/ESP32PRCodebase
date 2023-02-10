@@ -150,18 +150,21 @@ void Drive::generateMotionValues() {
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
             if(stickTurn > STICK_DEADZONE) { // turn Right
-                //shorthand if else: variable = (condition) ? expressionTrue : expressionFalse;
-                motorPower[0] = stickForwardRev * BSNscalar;// set the left motor
-                motorPower[1] = calcTurningMotorValue(stickTurn, lastRampPower[0]); // set the right motor
-                if (abs(lastRampPower[0]) < 0.3) { // temporary solution to decrease radius at low speed
-                    motorPower[0] += copysign(NORMAL_TURN_CONSTANT,motorPower[0]);
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[0]), 1); break;
+                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 1); break;
                 }
+                //calcTurningMotorValues(stickTurn, lastRampPower[0], 1);
+                motorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
+                motorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
             } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-                motorPower[0] = calcTurningMotorValue(stickTurn, lastRampPower[1]); // set the left motor
-                motorPower[1] = stickForwardRev * BSNscalar; // set the right motor
-                if (abs(lastRampPower[1]) < 0.3) { // temporary solution to decrease radius at low speed
-                    motorPower[1] += copysign(NORMAL_TURN_CONSTANT,motorPower[1]);
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[1]), 0); break;
+                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 0); break;
                 }
+                //calcTurningMotorValues(stickTurn, lastRampPower[1], 0);
+                motorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
+                motorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
             }
         }
     }
@@ -169,11 +172,12 @@ void Drive::generateMotionValues() {
 
 
 /**
- * @brief calcTurningMotorValue generates a value to be set to the turning motor, the motor that corresponds to the direction of travel
+ * @brief Work in progress! as of 11/27 stuffs changin' calcTurningMotorValue generates a value to be set to the turning motor, the motor that corresponds to the direction of travel
  * @authors Grant Brautigam, Rhys Davies
  * Created: 9-12-2022
- *
+ * updated: 11-27-22
  * Mathematical model:
+ *  NOT REALLY TRUE ANYMORE
  *  TurningMotor = TurnStickNumber(1-offset)(CurrentPwrFwd)^2+(1-TurnStickNumber)*CurrentPwrFwd
  *   *Note: CurrentPwrFwd is the current power, not the power from the stick
  *
@@ -181,16 +185,20 @@ void Drive::generateMotionValues() {
  * @param prevPwr the non-turning motor value from the previous loop, which was actually sent to the motor
  * @return float - the value to get set to the turning motor (the result of the function mention above)
  */
-float Drive::calcTurningMotorValue(float stickTrn, float prevPwr) {
+void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
     
-    // float TurnMax = (OFFSET - 1)*(prevPwr) + 1;
-    // float TurnFactor = abs(stickTrn)*TurnMax;
-    // turnPower = prevPwr - prevPwr*TurnFactor;
+    float MaxTurnDiff = (turnMin - turnMax) * (abs(prevPwr)) + turnMax;
+    float TurnDifference = abs(stickTrn)*MaxTurnDiff;
 
-    turnPower = abs(stickTrn) * (1 - OFFSET) * pow(prevPwr, 2) + (1-abs(stickTrn)) * abs(prevPwr);
-    turnPower = copysign(turnPower, prevPwr);
-    lastTurnPwr = turnPower;
-    return turnPower;
+    if ((prevPwr-TurnDifference) <= 0){
+        turnMotorValues[0] = prevPwr + abs(prevPwr-TurnDifference);
+        turnMotorValues[1] = 0;
+    } else {
+        turnMotorValues[0] = prevPwr;
+        turnMotorValues[1] = prevPwr-TurnDifference;
+    }
+
+    lastTurnPwr = TurnDifference;
 }
 
 
@@ -337,13 +345,16 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(stickTurn);
 
-    // Serial.print(F("  |  Turn: "));
-    // Serial.print(lastTurnPwr);
+    Serial.print(F("  |  Turn: "));
+    Serial.print(lastTurnPwr);
 
-    // Serial.print(F("  |  Left ReqPwr: "));
-    // Serial.print(motorPower[0]);
-    // Serial.print(F("  Right ReqPwr: "));
-    // Serial.print(motorPower[1]);
+    Serial.print(F("  |  Left ReqPwr: "));
+    Serial.print(motorPower[0]);
+    Serial.print(F("  Right ReqPwr: "));
+    Serial.print(motorPower[1]);
+    
+
+    
 
 
     // Serial.print(F("  lastRampTime "));
@@ -365,10 +376,10 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(Convert2PWM(motorPower[1]));
 
-    Serial.print(F("  |  Left Motor: "));
-    Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
-    Serial.print(F("  Right: "));
-    Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
+    // Serial.print(F("  |  Left Motor: "));
+    // Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
+    // Serial.print(F("  Right: "));
+    // Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
 
 }
 

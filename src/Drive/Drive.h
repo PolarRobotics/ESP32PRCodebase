@@ -40,21 +40,21 @@
 #define NORMAL_TURN_CONSTANT 0.05
 
 // Controller Defines
-#define OFFSET -0.15 // the max allowable turning when the bot is traveling at full speed
+#define turnMax 0.3 // the max allowable turning when the bot is traveling at lowest speed
+#define turnMin 0.1 // the min allowable turning when the bot is traveling at full speed
 #define STICK_DEADZONE 0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
 // this is 1.0, the maximum power possible to the motors.
-#define BIG_BOOST_PCT 0.9  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-#define BIG_NORMAL_PCT 0.5 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
+#define BIG_BOOST_PCT 0.5  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
+#define BIG_NORMAL_PCT 0.3 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
 #define BIG_SLOW_PCT 0.2   // the value for brake button to slow down the motors at the button press
 #define BRAKE_BUTTON_PCT 0
 
 // BSN for Short/Small Motors
-#define SMALL_BOOST_PCT 0.55
-#define SMALL_NORMAL_PCT 0.55
-#define SMALL_SLOW_PCT 0.3
-
+#define SMALL_BOOST_PCT 0.5
+#define SMALL_NORMAL_PCT 0.3
+#define SMALL_SLOW_PCT 0.1
 // Value for the tank mode speed reduction percentage
 #define TANK_MODE_PCT 0.75
 // Value for the Drift Mode Reduction Factor Percentage
@@ -75,7 +75,8 @@ private:
   float lastRampPower[NUM_MOTORS];
   // float inputPower[NUM_MOTORS];
   // float rampedPower[NUM_MOTORS];
-  float calcTurningMotorValue(float stickTrn,  float prevPwr);
+  void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
+  float turnMotorValues[2] = {0,0};
   void generateMotionValues();
   float ramp(float requestedPower, uint8_t mtr);
   // use the inline keywork to ensure the function will get called again as soon as possible
