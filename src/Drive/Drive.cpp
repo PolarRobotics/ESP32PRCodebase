@@ -1,6 +1,7 @@
 #include "Drive/Drive.h"
 #include <Arduino.h>
 #include <Servo.h> //Built in
+#include "Drive.h"
 
 // #include <ESP32Servo.h> //Built in
 
@@ -34,12 +35,19 @@
 */
 Drive::Drive() {
     this->motorType = MOTORS::big; // default to long motors
+}
+void Drive::setServos(uint8_t lpin, uint8_t rpin){
+    motorPins[0] = lpin, motorPins[1] = rpin;
+    ledcAttachPin(lpin, M1_PWMCH);
+    ledcAttachPin(rpin, M2_PWMCH);
+    ledcSetup(M1_PWMCH, PWM_FREQ, PWM_RES);
+    ledcSetup(M2_PWMCH, PWM_FREQ, PWM_RES);
 };
 
-void Drive::setServos(Servo& left, Servo& right) {
-    M1 = left;
-    M2 = right;
-}
+// void Drive::setServos(Servo& left, Servo& right) {
+//     M1 = left;
+//     M2 = right;
+// }
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
@@ -260,6 +268,10 @@ uint32_t Drive::Convert2PWM(float rampPwr) {
     return (rampPwr + 1) * 500 + 1000;
 }
 
+uint16_t Drive::convert2Duty(uint32_t timeon_us) {
+    // convert the time on to a duty cycle, then scale it to a 16-bit number
+    return (timeon_us / (PWM_PERIOD * 1000)) * (pow(2, PWM_RES) / 1000);
+}
 
 /**
  * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
@@ -306,8 +318,8 @@ float Drive::getMotorPwr(uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    M1.writeMicroseconds(1500); // change to new function
-    M2.writeMicroseconds(1500); // change to new function
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(0)));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(0)));
     // setMotorPWM(0, motorPins[0]);
     // setMotorPWM(0, motorPins[1]);
     // // while(1);
@@ -351,7 +363,12 @@ void Drive::printDebugInfo() {
     Serial.print(F("  |  Left Motor: "));
     Serial.print(Convert2PWM(-motorPower[0]));
     Serial.print(F("  Right: "));
-    Serial.println(Convert2PWM(motorPower[1]));
+    Serial.print(Convert2PWM(motorPower[1]));
+
+    Serial.print(F("  |  Left Motor: "));
+    Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
+    Serial.print(F("  Right: "));
+    Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
 
 }
 
@@ -377,8 +394,8 @@ void Drive::update() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
     
-    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
 }
 
 /**
@@ -402,8 +419,8 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
-    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
 }
 
 //Old functions

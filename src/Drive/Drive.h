@@ -13,6 +13,14 @@
 #define NUM_MOTORS 2 // 4 for mechanum wheels
 #endif
 
+//PWM defines:
+#define M1_PWMCH 0
+#define M2_PWMCH 1
+#define PWM_RES 16 //channel resolution in bits
+// frequency in HZ, a Period of 2500us
+#define PWM_PERIOD 0.0025
+#define PWM_FREQ 1 / PWM_PERIOD 
+
 // #TODO move this to the robot parent class
 // #ifndef MECHANUM
 // // determine if the motors are in a mechanum configuration or the standard config. default: false
@@ -59,10 +67,7 @@ private:
   float lastTurnPwr;
   float turnPower;
 
-  Servo M1, M2; //temporary solution, use vector for future
   MOTORS motorType;
-  // vector<Servo> Motors;
-  // motor variables
   uint8_t motorPins[NUM_MOTORS];
   unsigned long lastRampTime[NUM_MOTORS];
   float motorPower[NUM_MOTORS];
@@ -75,6 +80,7 @@ private:
   float ramp(float requestedPower, uint8_t mtr);
   // use the inline keywork to ensure the function will get called again as soon as possible
   uint32_t Convert2PWM(float rampPwr);
+  uint16_t convert2Duty(uint32_t timeon_us);
   void setMotorPWM(float pwr, byte pin); //__attribute__((always_inline));
 
 public:
@@ -85,7 +91,7 @@ public:
     brake
   };
   Drive();
-  void setServos(Servo&, Servo&);
+  void setServos(uint8_t lpin, uint8_t rpin);
   void setMotorType(MOTORS motorType);
   void attach();
   void setStickPwr(int8_t leftY, int8_t rightX);

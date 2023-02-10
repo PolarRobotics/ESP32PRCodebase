@@ -1,6 +1,6 @@
 #include <Arduino.h>
 // #include <ESP32Servo.h>
-#include <Servo.h>
+// #include <Servo.h>
 #include <ps5Controller.h> // new esp ps5 library
 
 // Custom Polar Robotics Libraries:
@@ -10,14 +10,26 @@
 // #include <Robot/Lights.h>
 
 // Robot and Drivebase 
-#define lPin 15 //GPIO0
+#define lPin 14 //GPIO0
 #define rPin 16 //GPIO2
-Servo leftMotor;
-Servo rightMotor;
 uint8_t motorType;
 Drive DriveMotors;
+ps5Controller PS5;
 
 // Lights robotLED;
+
+void onConnection() {
+    if(PS5.isConnected()) {
+        Serial.println(F("Controller Connected."));
+        PS5.setLed(0, 255, 0);   // set LED green
+    }
+}
+
+void onDisconnect() {
+    Serial.println(F("Controller Disconnected."));
+    DriveMotors.emergencyStop();
+    // DriveMotors.emergencyStop();
+}
 
 /*
    ____    _____   _____   _   _   ____
@@ -39,10 +51,8 @@ void setup() {
 
     DriveMotors.setMotorType(MOTORS::big);
 
-    leftMotor.attach(lPin, 1, 0, 180, 1000, 2000);
-    rightMotor.attach(rPin, 2, 0, 180, 1000, 2000);
     // pwm.attachPin(27, 10000);
-    DriveMotors.setServos(leftMotor, rightMotor);
+    DriveMotors.setServos(lPin, rPin);
 
     // leftMotor.setPeriodHertz(50);
     // rightMotor.setPeriodHertz(50);
@@ -60,10 +70,12 @@ void setup() {
     since there is not pairing protocol yet, you need to use the mac address 
     of a device it is already paired with
     */ 
-    ps5.begin("14:2d:4d:2f:11:b4"); 
+    PS5.begin("14:2d:4d:2f:11:b4"); 
 
     Serial.print(F("\r\nConnected"));
 
+    PS5.attachOnConnect(onConnection);
+    PS5.attachOnDisconnect(onDisconnect);
     // Reset PWM on startup
     // analogWrite(lPin, 0);
     // analogWrite(rPin, 0);
@@ -80,21 +92,20 @@ void setup() {
 */
 void loop() {
     // The main looping code, controls driving and any actions during a game
-    if (ps5.isConnected()) {
-        ps5.setLed(255, 0, 0);   // set LED red
-
-        DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
+    if (PS5.isConnected()) {
+        DriveMotors.setStickPwr(PS5.LStickY(), PS5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
-        if (ps5.Touchpad()){
-        DriveMotors.emergencyStop();
-        DriveMotors.setBSN(Drive::brake);
-        } else if (ps5.R1()) {
-        DriveMotors.setBSN(Drive::boost);
-        } else if (ps5.L1()) {
-        DriveMotors.setBSN(Drive::slow);
+        if (PS5.Touchpad()){
+            DriveMotors.emergencyStop();
+            DriveMotors.setBSN(Drive::brake);
+        } else if (PS5.R1()) {
+            DriveMotors.setBSN(Drive::boost);
+            PS5.setLed(0, 255, 0);   // set LED red
+        } else if (PS5.L1()) {
+            DriveMotors.setBSN(Drive::slow);
         } else {
-        DriveMotors.setBSN(Drive::normal);
+            DriveMotors.setBSN(Drive::normal);
 
         }
 
@@ -103,18 +114,18 @@ void loop() {
         // }
         
         // Update the motors based on the inputs from the controller
-        if(ps5.L2()) {
-        DriveMotors.drift();
+        if(PS5.L2()) {
+            PS5.setLed(255, 255, 0);   // set LED yellow
+            DriveMotors.drift();
         } else {
-        DriveMotors.update();
-        DriveMotors.printDebugInfo();
+            DriveMotors.update();
+            DriveMotors.printDebugInfo();
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
-        //     ps5.LStickX(), ps5.LStickY(), ps5.RStickX(), ps5.RStickY());
+        //     PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
         
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
-        ps5.setLed(255, 255, 0);   // set LED yellow
         DriveMotors.emergencyStop();
     }
 //   DriveMotors.printDebugInfo();
