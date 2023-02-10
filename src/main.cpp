@@ -18,6 +18,9 @@ ps5Controller PS5;
 
 // Lights robotLED;
 
+/**
+ * @brief onConnection: Function to be called on controller connect
+ */
 void onConnection() {
     if(PS5.isConnected()) {
         Serial.println(F("Controller Connected."));
@@ -25,6 +28,12 @@ void onConnection() {
     }
 }
 
+/**
+ * @brief onDisconnect: Function to be called on controller disconnect
+ * this may be extremely helpful in the future to fix bots driving off aimlessly in the future
+ * and we theoretically could reconnect to the bot if a bot were to loose power and it was restored 
+ * without having to touch the bot
+ */
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
     DriveMotors.emergencyStop();
@@ -44,27 +53,20 @@ void onDisconnect() {
 
 void setup() {
     // put your setup code here, to run once:
-    // ESP32PWM::allocateTimer(0);
-    // ESP32PWM::allocateTimer(1);
     Serial.begin(115200);
     Serial.print(F("\r\nStarting..."));
 
     DriveMotors.setMotorType(MOTORS::big);
-
-    // pwm.attachPin(27, 10000);
     DriveMotors.setServos(lPin, rPin);
 
-    // leftMotor.setPeriodHertz(50);
-    // rightMotor.setPeriodHertz(50);
-    
     
     // Set initial LED color state
     // robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
 
-    //replace with your MAC address "bc:c7:46:04:09:62"
-
+    
     /*
+    //replace with your MAC address "bc:c7:46:04:09:62"
     need better good method of generating a mac address
     the ps5 controller stores the mac address of the device it is paired with
     since there is not pairing protocol yet, you need to use the mac address 
@@ -119,7 +121,8 @@ void loop() {
             DriveMotors.drift();
         } else {
             DriveMotors.update();
-            DriveMotors.printDebugInfo();
+            
+            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
         //     PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
