@@ -10,11 +10,11 @@
 // #include <Robot/Lights.h>
 
 // Robot and Drivebase 
-#define lPin 14 //GPIO0
-#define rPin 16 //GPIO2
+#define lPin 32 //GPIO0
+#define rPin 33 //GPIO2
 uint8_t motorType;
 Drive DriveMotors;
-ps5Controller PS5;
+// ps5Controller PS5;
 
 // Lights robotLED;
 
@@ -22,9 +22,9 @@ ps5Controller PS5;
  * @brief onConnection: Function to be called on controller connect
  */
 void onConnection() {
-    if(PS5.isConnected()) {
+    if(ps5.isConnected()) {
         Serial.println(F("Controller Connected."));
-        PS5.setLed(0, 255, 0);   // set LED green
+        ps5.setLed(0, 255, 0);   // set LED green
     }
 }
 
@@ -54,7 +54,7 @@ void onDisconnect() {
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
-    Serial.print(F("\r\nStarting..."));
+    // Serial.print(F("\r\nStarting..."));
 
     DriveMotors.setMotorType(MOTORS::big);
     DriveMotors.setServos(lPin, rPin);
@@ -72,12 +72,13 @@ void setup() {
     since there is not pairing protocol yet, you need to use the mac address 
     of a device it is already paired with
     */ 
-    PS5.begin("14:2d:4d:2f:11:b4"); 
+    // ps5.begin("14:2d:4d:2f:11:b4");  // Rhys's Phone
+    ps5.begin("d4:3a:2c:a2:48:69");  // Max's Phone
 
     Serial.print(F("\r\nConnected"));
 
-    PS5.attachOnConnect(onConnection);
-    PS5.attachOnDisconnect(onDisconnect);
+    //ps5.attachOnConnect(onConnection);
+    ps5.attachOnDisconnect(onDisconnect);
     // Reset PWM on startup
     // analogWrite(lPin, 0);
     // analogWrite(rPin, 0);
@@ -94,38 +95,38 @@ void setup() {
 */
 void loop() {
     // The main looping code, controls driving and any actions during a game
-    if (PS5.isConnected()) {
-        DriveMotors.setStickPwr(PS5.LStickY(), PS5.RStickX());
+    if (ps5.isConnected()) {
+        DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
-        if (PS5.Touchpad()){
+        if (ps5.Touchpad()){
             DriveMotors.emergencyStop();
             DriveMotors.setBSN(Drive::brake);
-        } else if (PS5.R1()) {
+        } else if (ps5.R1()) {
             DriveMotors.setBSN(Drive::boost);
-            PS5.setLed(0, 255, 0);   // set LED red
-        } else if (PS5.L1()) {
+            ps5.setLed(0, 255, 0);   // set LED red
+        } else if (ps5.L1()) {
             DriveMotors.setBSN(Drive::slow);
         } else {
             DriveMotors.setBSN(Drive::normal);
 
         }
 
-        // if(PS5.getButtonPress(UP)){
+        // if(ps5.getButtonPress(UP)){
         //   robotLED.togglePosition();
         // }
         
         // Update the motors based on the inputs from the controller
-        if(PS5.L2()) {
-            PS5.setLed(255, 255, 0);   // set LED yellow
+        if(ps5.L2()) {
+            ps5.setLed(255, 255, 0);   // set LED yellow
             DriveMotors.drift();
         } else {
             DriveMotors.update();
             
-            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
+            // DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
-        //     PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
+        //     ps5.LStickX(), ps5.LStickY(), ps5.RStickX(), ps5.RStickY());
         
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
