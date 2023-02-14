@@ -1,95 +1,61 @@
 #include <Arduino.h>
-#include <SPI.h>
-#include <PS5BT.h>
+#ifdef ESP32
+  #include <WiFi.h>
+#else
+  #include <ESP8266WiFi.h>
+#endif
 
-#define buttonPin 8
+/*
+   Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleScan.cpp
+   Ported to Arduino ESP32 by Evandro Copercini
+*/
 
-// The variables for PS5 and pair button
-bool debounce = false;
-bool usbConnected = false;
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
 
-// the USB Host shield uses pins 9 through 13, so dont use these pins
-USB Usb;            // There is a USB port
-BTD Btd(&Usb);      // The Location of the Bluetooth port
-PS5BT PS5(&Btd, 1);
+int scanTime = 5; //In seconds
+BLEScan* pBLEScan;
+
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+    void onResult(BLEAdvertisedDevice advertisedDevice) {
+      Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
+    }
+};
 
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
-    Serial.print(F("\r\nStarting..."));
-    
-    // clear previously paired devices 
-    // 0x41 is the address for all devices in the pool
-    // Usb.GetAddressPool().FreeAddress(0x41);
+    Serial.println();
+    Serial.print(F("ESP Board MAC Address:  "));
+    Serial.println(WiFi.macAddress());
+    // 30:C6:F7:29:ED:24 for the ESP32 I was testing
 
-    if (Usb.Init() == -1) {
-        Serial.print(F("\r\nConnect USB... Again..."));
-        while (Usb.Init() == -1) { // wait until the controller connects
-            delay(5);
+    Serial.println("Scanning...");
+
+    BLEDevice::init("");
+    pBLEScan = BLEDevice::getScan(); //create new scan
+    pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+    pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
+    pBLEScan->setInterval(100);
+    pBLEScan->setWindow(99);  // less or equal setInterval value
+    BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
+    Serial.print("Devices found: ");
+    Serial.println(foundDevices.getCount());
+    for (int i = 0; i < foundDevices.getCount(); i++) {
+        if (foundDevices.getDevice(i).isAdvertisingService(foundDevices.getDevice(i).getServiceUUID())) {
+            Serial.print("Device advertising service: ");
+            Serial.print(i);
+            Serial.print(", UUID: ");
+            Serial.println(foundDevices.getDevice(i).getServiceUUID().toString().c_str());
         }
     }
-    else
-        Serial.print(F("\r\nUSB Connected"));
-
-    // Btd.hci_reset();
-    // PS5BT PS5(&Btd, 1);
-    // stop looking for other bluetooth devices
-    // Btd.hci_inquiry_cancel(); 
-
-    pinMode(buttonPin, INPUT);
-
-    delay(1000);
-
-    while(true) {
-        // put your main code here, to run repeatedly:
-
-        Usb.Task();
-
-        if(PS5.connected()) {
-            // Put code here to test the controller when connected
-            Serial.print(F("\r\nLeftHatY: "));
-            Serial.print(PS5.getAnalogHat(LeftHatY));
-            Serial.print(F("RightHatX: "));
-            Serial.print(PS5.getAnalogHat(RightHatX));
-
-            if (PS5.getButtonClick(TRIANGLE)) {
-                PS5.setRumbleOn(RumbleLow);
-            }
-            if (PS5.getButtonClick(CIRCLE)) {
-                PS5.setRumbleOn(RumbleHigh);
-            }
-            if (PS5.getButtonClick(SQUARE)) {
-                PS5.setRumbleOff();
-            }
-
-            if(PS5.getAnalogHat(LeftHatX) > 137 || PS5.getAnalogHat(LeftHatX) < 117 || 
-            PS5.getAnalogHat(LeftHatY) > 137 || PS5.getAnalogHat(LeftHatY) < 117 || 
-            PS5.getAnalogHat(RightHatX) > 137 || PS5.getAnalogHat(RightHatX) < 117 || 
-            PS5.getAnalogHat(RightHatY) > 137 || PS5.getAnalogHat(RightHatY) < 117) {
-            PS5.setLed(PS5.getAnalogHat(LeftHatY), PS5.getAnalogHat(LeftHatX), PS5.getAnalogHat(RightHatX));
-            }
-        }
-    }
+    Serial.println("Scan done!");
+    pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
+    delay(2000);
 }
 
 void loop() {
-    
-}
 
-// if the controller is not connected and needs to be connected
-// If the button is pressed and it is not debounced then go into statement
-// if (digitalRead(buttonPin) == 0 && !debounce) {
-//   // digitalWrite(LED_BUILTIN, HIGH);
-//   Serial.println(F("Pairing..."));
-//   debounce = true;             
-//   PS5.disconnect();            // Disconnect the current PS5 controller
-//   delete [] &PS5;              // Deletes the memory allocation for the PS5 controller so a new one can be created with same name
-//   PS5 = PS5BT(&Btd, 1);        // Re-initalizes the PS5 object
-//   do {                         // Delay any other code from running until the PS5 controller is connected
-//     delay(10);
-//   } while (!PS5.connected());
-//   if(PS5.connected()) {        // Reset the debounce when it finally connects so button can be pressed and it can run again
-//     // digitalWrite(LED_BUILTIN, LOW);
-//     debounce = false;
-//   }
-// }
+}
