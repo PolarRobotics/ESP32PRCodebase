@@ -10,8 +10,8 @@
 // #include <Robot/Lights.h>
 
 // Robot and Drivebase 
-#define lPin 15 //GPIO0
-#define rPin 16 //GPIO2
+#define lPin 32 //GPIO0
+#define rPin 33 //GPIO2
 Servo leftMotor;
 Servo rightMotor;
 uint8_t motorType;
