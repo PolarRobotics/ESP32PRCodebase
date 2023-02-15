@@ -1,6 +1,5 @@
 #include "Drive/Drive.h"
 #include <Arduino.h>
-#include <Servo.h> //Built in
 #include "Drive.h"
 
 // #include <ESP32Servo.h> //Built in
@@ -348,15 +347,11 @@ void Drive::printDebugInfo() {
     Serial.print(F("  |  Turn: "));
     Serial.print(lastTurnPwr);
 
-    Serial.print(F("  |  Left ReqPwr: "));
-    Serial.print(motorPower[0]);
-    Serial.print(F("  Right ReqPwr: "));
-    Serial.print(motorPower[1]);
+    // Serial.print(F("  |  Left ReqPwr: "));
+    // Serial.print(motorPower[0]);
+    // Serial.print(F("  Right ReqPwr: "));
+    // Serial.print(motorPower[1]);
     
-
-    
-
-
     // Serial.print(F("  lastRampTime "));
     // Serial.print(lastRampTime[0]);
     // Serial.print(F("  requestedPower "));
@@ -374,7 +369,7 @@ void Drive::printDebugInfo() {
     Serial.print(F("  |  Left Motor: "));
     Serial.print(Convert2PWM(-motorPower[0]));
     Serial.print(F("  Right: "));
-    Serial.print(Convert2PWM(motorPower[1]));
+    Serial.println(Convert2PWM(motorPower[1]));
 
     // Serial.print(F("  |  Left Motor: "));
     // Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
