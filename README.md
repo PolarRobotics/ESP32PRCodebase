@@ -35,7 +35,7 @@ src/
 │   ├ Center.cpp        Center-specific controls: claw and arm lift
 │   └ CenterNew.cpp     New Center-specific functions, inherits from Robot
 │ 
-├ ~~Lights.cpp            Controls robot LEDs~~  (Removed... future location in PolarRobotics.h)
+├ Lights.cpp            Controls robot LED  (Removed... future location in PolarRobotics.h)
 ├ main.cpp              Contains code that initializes the Robot and Drivebase.
 └ PolarRobotics.h       Contains globally relevant declarations and enums.
 ```
