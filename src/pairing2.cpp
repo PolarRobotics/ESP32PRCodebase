@@ -1,163 +1,115 @@
 /**
- * A BLE client example that is rich in capabilities.
- * There is a lot new capabilities implemented.
- * author unknown
- * updated by chegewara
+ * Bluetooth Classic Example
+ * Scan for devices - asyncronously, print device as soon as found
+ * query devices for SPP - SDP profile
+ * connect to first device offering a SPP connection
+ * 
+ * Example python server:
+ * source: https://gist.github.com/ukBaz/217875c83c2535d22a16ba38fc8f2a91
+ *
+ * Tested with Raspberry Pi onboard Wifi/BT, USB BT 4.0 dongles, USB BT 1.1 dongles, 
+ * 202202: does NOT work with USB BT 2.0 dongles when esp32 aduino lib is compiled with SSP support!
+ *         see https://github.com/espressif/esp-idf/issues/8394
+ *         
+ * use ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side requests 'RequireAuthentication': dbus.Boolean(True),
+ * use ESP_SPP_SEC_NONE or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side has Authentication: False
  */
+
 #include <Arduino.h>
-#include "BLEDevice.h"
-//#include "BLEScan.h"
+#include <map>
+#include <BluetoothSerial.h>
 
-// The remote service we wish to connect to.
-static BLEUUID serviceUUID("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
-// The characteristic of the remote service we are interested in.
-static BLEUUID    charUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8");
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
 
-static boolean doConnect = false;
-static boolean connected = false;
-static boolean doScan = false;
-static BLERemoteCharacteristic* pRemoteCharacteristic;
-static BLEAdvertisedDevice* myDevice;
+#if !defined(CONFIG_BT_SPP_ENABLED)
+#error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
+#endif
 
-static void notifyCallback(
-  BLERemoteCharacteristic* pBLERemoteCharacteristic,
-  uint8_t* pData,
-  size_t length,
-  bool isNotify) {
-    Serial.print("Notify callback for characteristic ");
-    Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
-    Serial.print(" of data length ");
-    Serial.println(length);
-    Serial.print("data: ");
-    Serial.write(pData, length);
-    Serial.println();
-}
-
-class MyClientCallback : public BLEClientCallbacks {
-  void onConnect(BLEClient* pclient) {
-  }
-
-  void onDisconnect(BLEClient* pclient) {
-    connected = false;
-    Serial.println("onDisconnect");
-  }
-};
-
-bool connectToServer() {
-    Serial.print("Forming a connection to ");
-    Serial.println(myDevice->getAddress().toString().c_str());
-    
-    BLEClient*  pClient  = BLEDevice::createClient();
-    Serial.println(" - Created client");
-
-    pClient->setClientCallbacks(new MyClientCallback());
-
-    // Connect to the remove BLE Server.
-    pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
-    Serial.println(" - Connected to server");
-    pClient->setMTU(517); //set client to request maximum MTU from server (default is 23 otherwise)
-  
-    // Obtain a reference to the service we are after in the remote BLE server.
-    BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
-    if (pRemoteService == nullptr) {
-      Serial.print("Failed to find our service UUID: ");
-      Serial.println(serviceUUID.toString().c_str());
-      pClient->disconnect();
-      return false;
-    }
-    Serial.println(" - Found our service");
+BluetoothSerial SerialBT;
 
 
-    // Obtain a reference to the characteristic in the service of the remote BLE server.
-    pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
-    if (pRemoteCharacteristic == nullptr) {
-      Serial.print("Failed to find our characteristic UUID: ");
-      Serial.println(charUUID.toString().c_str());
-      pClient->disconnect();
-      return false;
-    }
-    Serial.println(" - Found our characteristic");
+#define BT_DISCOVER_TIME  10000
+esp_spp_sec_t sec_mask=ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
+esp_spp_role_t role=ESP_SPP_ROLE_SLAVE; // or ESP_SPP_ROLE_MASTER
 
-    // Read the value of the characteristic.
-    if(pRemoteCharacteristic->canRead()) {
-      std::string value = pRemoteCharacteristic->readValue();
-      Serial.print("The characteristic value was: ");
-      Serial.println(value.c_str());
-    }
-
-    if(pRemoteCharacteristic->canNotify())
-      pRemoteCharacteristic->registerForNotify(notifyCallback);
-
-    connected = true;
-    return true;
-}
-/**
- * Scan for BLE servers and find the first one that advertises the service we are looking for.
- */
-class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
- /**
-   * Called for each advertising BLE server.
-   */
-  void onResult(BLEAdvertisedDevice advertisedDevice) {
-    Serial.print("BLE Advertised Device found: ");
-    Serial.println(advertisedDevice.toString().c_str());
-
-    // We have found a device, let us now see if it contains the service we are looking for.
-    if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
-
-      BLEDevice::getScan()->stop();
-      myDevice = new BLEAdvertisedDevice(advertisedDevice);
-      doConnect = true;
-      doScan = true;
-
-    } // Found our server
-  } // onResult
-}; // MyAdvertisedDeviceCallbacks
-
+// std::map<BTAddress, BTAdvertisedDeviceSet> btDeviceList;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting Arduino BLE Client application...");
-  BLEDevice::init("");
-
-  // Retrieve a Scanner and set the callback we want to use to be informed when we
-  // have detected a new device.  Specify that we want active scanning and start the
-  // scan to run for 5 seconds.
-  BLEScan* pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setInterval(1349);
-  pBLEScan->setWindow(449);
-  pBLEScan->setActiveScan(true);
-  pBLEScan->start(5, false);
-} // End of setup.
+  if(! SerialBT.begin("ESP32test", true) ) {
+    Serial.println("========== serialBT failed!");
+    abort();
+  }
+  // SerialBT.setPin("1234"); // doesn't seem to change anything
+  // SerialBT.enableSSP(); // doesn't seem to change anything
 
 
-// This is the Arduino main loop function.
-void loop() {
-
-  // If the flag "doConnect" is true then we have scanned for and found the desired
-  // BLE Server with which we wish to connect.  Now we connect to it.  Once we are 
-  // connected we set the connected flag to be true.
-  if (doConnect == true) {
-    if (connectToServer()) {
-      Serial.println("We are now connected to the BLE Server.");
+  Serial.println("Starting discoverAsync...");
+  BTScanResults* btDeviceList = SerialBT.getScanResults();  // maybe accessing from different threads!
+  if (SerialBT.discoverAsync([](BTAdvertisedDevice* pDevice) {
+      // BTAdvertisedDeviceSet*set = reinterpret_cast<BTAdvertisedDeviceSet*>(pDevice);
+      // btDeviceList[pDevice->getAddress()] = * set;
+      Serial.printf(">>>>>>>>>>>Found a new device asynchronously: %s\n", pDevice->toString().c_str());
+    } )
+    ) {
+    delay(BT_DISCOVER_TIME);
+    Serial.print("Stopping discoverAsync... ");
+    SerialBT.discoverAsyncStop();
+    Serial.println("discoverAsync stopped");
+    delay(5000);
+    if(btDeviceList->getCount() > 0) {
+      BTAddress addr;
+      int channel=0;
+      Serial.println("Found devices:");
+      for (int i=0; i < btDeviceList->getCount(); i++) {
+        BTAdvertisedDevice *device=btDeviceList->getDevice(i);
+        Serial.printf(" ----- %s  %s %d\n", device->getAddress().toString().c_str(), device->getName().c_str(), device->getRSSI());
+        std::map<int,std::string> channels=SerialBT.getChannels(device->getAddress());
+        Serial.printf("scanned for services, found %d\n", channels.size());
+        for(auto const &entry : channels) {
+          Serial.printf("     channel %d (%s)\n", entry.first, entry.second.c_str());
+        }
+        if(channels.size() > 0) {
+          addr = device->getAddress();
+          channel=channels.begin()->first;
+        }
+      }
+      if(addr) {
+        Serial.printf("connecting to %s - %d\n", addr.toString().c_str(), channel);
+        SerialBT.connect(addr, channel, sec_mask, role);
+      }
     } else {
-      Serial.println("We have failed to connect to the server; there is nothin more we will do.");
+      Serial.println("Didn't find any devices");
     }
-    doConnect = false;
+  } else {
+    Serial.println("Error on discoverAsync f.e. not workin after a \"connect\"");
   }
+}
 
-  // If we are connected to a peer BLE Server, update the characteristic each time we are reached
-  // with the current time since boot.
-  if (connected) {
-    String newValue = "Time since boot: " + String(millis()/1000);
-    Serial.println("Setting new characteristic value to \"" + newValue + "\"");
-    
-    // Set the characteristic's value to be the array of bytes that is actually a string.
-    pRemoteCharacteristic->writeValue(newValue.c_str(), newValue.length());
-  }else if(doScan){
-    BLEDevice::getScan()->start(0);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+
+String sendData="Hi from esp32!\n";
+
+void loop() {
+  if(! SerialBT.isClosed() && SerialBT.connected()) {
+    if( SerialBT.write((const uint8_t*) sendData.c_str(),sendData.length()) != sendData.length()) {
+      Serial.println("tx: error");
+    } else {
+      Serial.printf("tx: %s",sendData.c_str());
+    }
+    if(SerialBT.available()) {
+      Serial.print("rx: ");
+      while(SerialBT.available()) {
+        int c=SerialBT.read();
+        if(c >= 0) {
+          Serial.print((char) c);
+        }
+      }
+      Serial.println();
+    }
+  } else {
+    Serial.println("not connected");
   }
-  
-  delay(1000); // Delay a second between loops.
-} // End of loop
+  delay(1000);
+}
