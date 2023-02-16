@@ -16,6 +16,7 @@
  */
 
 #include <Arduino.h>
+#include <SPI.h>
 #include <map>
 #include <BluetoothSerial.h>
 
@@ -31,23 +32,23 @@ BluetoothSerial SerialBT;
 
 
 #define BT_DISCOVER_TIME  10000
-esp_spp_sec_t sec_mask=ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
-esp_spp_role_t role=ESP_SPP_ROLE_SLAVE; // or ESP_SPP_ROLE_MASTER
+esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
+esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
 // std::map<BTAddress, BTAdvertisedDeviceSet> btDeviceList;
 
 void setup() {
   Serial.begin(115200);
-  if(! SerialBT.begin("ESP32test", true) ) {
+  if (!SerialBT.begin("ESP32test", true)) { // begin broadcasting as "ESP32test" as master role
+    // function returns false if failed
     Serial.println("========== serialBT failed!");
     abort();
   }
   // SerialBT.setPin("1234"); // doesn't seem to change anything
-  // SerialBT.enableSSP(); // doesn't seem to change anything
-
+  SerialBT.enableSSP(); // doesn't seem to change anything
 
   Serial.println("Starting discoverAsync...");
-  BTScanResults* btDeviceList = SerialBT.getScanResults();  // maybe accessing from different threads!
+  BTScanResults* btDeviceList = SerialBT.getScanResults();  // may be accessing from different threads!
   if (SerialBT.discoverAsync([](BTAdvertisedDevice* pDevice) {
       // BTAdvertisedDeviceSet*set = reinterpret_cast<BTAdvertisedDeviceSet*>(pDevice);
       // btDeviceList[pDevice->getAddress()] = * set;
@@ -64,9 +65,10 @@ void setup() {
       int channel=0;
       Serial.println("Found devices:");
       for (int i=0; i < btDeviceList->getCount(); i++) {
-        BTAdvertisedDevice *device=btDeviceList->getDevice(i);
+        BTAdvertisedDevice* device = btDeviceList->getDevice(i);
         Serial.printf(" ----- %s  %s %d\n", device->getAddress().toString().c_str(), device->getName().c_str(), device->getRSSI());
-        std::map<int,std::string> channels=SerialBT.getChannels(device->getAddress());
+        // addr = device->getAddress();
+        std::map<int,std::string> channels = SerialBT.getChannels(device->getAddress());
         Serial.printf("scanned for services, found %d\n", channels.size());
         for(auto const &entry : channels) {
           Serial.printf("     channel %d (%s)\n", entry.first, entry.second.c_str());
@@ -76,7 +78,7 @@ void setup() {
           channel=channels.begin()->first;
         }
       }
-      if(addr) {
+      if (addr) {
         Serial.printf("connecting to %s - %d\n", addr.toString().c_str(), channel);
         SerialBT.connect(addr, channel, sec_mask, role);
       }
@@ -84,7 +86,7 @@ void setup() {
       Serial.println("Didn't find any devices");
     }
   } else {
-    Serial.println("Error on discoverAsync f.e. not workin after a \"connect\"");
+    Serial.println("Error on discoverAsync f.e. not working after a \"connect\"");
   }
 }
 
@@ -92,8 +94,12 @@ void setup() {
 String sendData="Hi from esp32!\n";
 
 void loop() {
-  if(! SerialBT.isClosed() && SerialBT.connected()) {
-    if( SerialBT.write((const uint8_t*) sendData.c_str(),sendData.length()) != sendData.length()) {
+  if (!SerialBT.isClosed() && SerialBT.connected()) {
+    // transforms sendData to serially transmittable string
+    // passes cstring and length to SerialBT.write function
+    // write() returns a length that should equal sendData.length()
+    // if not, it errors, otherwise it prints the data
+    if (SerialBT.write((const uint8_t*) sendData.c_str(), sendData.length()) != sendData.length()) {
       Serial.println("tx: error");
     } else {
       Serial.printf("tx: %s",sendData.c_str());

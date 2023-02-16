@@ -9,8 +9,7 @@
 #include <Drive/Drive.h>
 // #include <Robot/Lights.h>
 
-#include "esp_bt_main.h"
-#include "esp_bt_device.h"
+
 
 // Robot and Drivebase 
 #define lPin 32 //GPIO0
@@ -54,43 +53,6 @@ void onDisconnect() {
 
 // ESP32PWM pwm;
 
-bool initBluetooth()
-{
-  if (!btStart()) {
-    Serial.println("Failed to initialize controller");
-    return false;
-  }
- 
-  if (esp_bluedroid_init() != ESP_OK) {
-    Serial.println("Failed to initialize bluedroid");
-    return false;
-  }
- 
-  if (esp_bluedroid_enable() != ESP_OK) {
-    Serial.println("Failed to enable bluedroid");
-    return false;
-  }
- 
-}
- 
-void printDeviceAddress() {
- 
-  const uint8_t* point = esp_bt_dev_get_address();
- 
-  for (int i = 0; i < 6; i++) {
- 
-    char str[3];
- 
-    sprintf(str, "%02X", (int)point[i]);
-    Serial.print(str);
- 
-    if (i < 5){
-      Serial.print(":");
-    }
- 
-  }
-}
-
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
@@ -104,8 +66,7 @@ void setup() {
     // robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
 
-    initBluetooth();
-    printDeviceAddress(); // FOUND E0:5A:1B:77:20:26
+
     /*
     //replace with your MAC address "bc:c7:46:04:09:62"
     need better good method of generating a mac address
