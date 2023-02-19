@@ -60,7 +60,8 @@ void setup() {
     since there is not pairing protocol yet, you need to use the mac address 
     of a device it is already paired with
     */ 
-    ps5.begin("14:2d:4d:2f:11:b4"); 
+    //ps5.begin("14:2d:4d:2f:11:b4"); 
+    ps5.begin("BC:C7:46:03:7A:ED"); // MAC address of the controller Nathan is testing with.
 
     Serial.print(F("\r\nConnected"));
 
@@ -87,15 +88,14 @@ void loop() {
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
-        DriveMotors.emergencyStop();
-        DriveMotors.setBSN(Drive::brake);
+            DriveMotors.emergencyStop();
+            DriveMotors.setBSN(Drive::brake);
         } else if (ps5.R1()) {
-        DriveMotors.setBSN(Drive::boost);
+            DriveMotors.setBSN(Drive::boost);
         } else if (ps5.L1()) {
-        DriveMotors.setBSN(Drive::slow);
+            DriveMotors.setBSN(Drive::slow);
         } else {
-        DriveMotors.setBSN(Drive::normal);
-
+            DriveMotors.setBSN(Drive::normal);
         }
 
         // if(PS5.getButtonPress(UP)){
@@ -104,10 +104,10 @@ void loop() {
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {
-        DriveMotors.drift();
+            DriveMotors.drift();
         } else {
-        DriveMotors.update();
-        DriveMotors.printDebugInfo();
+            DriveMotors.update();
+            DriveMotors.printDebugInfo();
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
         //     ps5.LStickX(), ps5.LStickY(), ps5.RStickX(), ps5.RStickY());
