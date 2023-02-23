@@ -19,6 +19,7 @@
 // #include <SPI.h>
 #include <map>
 #include <BluetoothSerial.h>
+#include <ps5Controller.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -73,12 +74,16 @@ void setup() {
         for(auto const &entry : channels) {
           Serial.printf("     channel %d (%s)\n", entry.first, entry.second.c_str());
         }
-        if(channels.size() > 0) {
+        // if(channels.size() > 0) {
           addr = device->getAddress();
           // channel=channels.begin()->first;
           Serial.print(F("Connecting to: "));
-          Serial.println(addr.toString().c_str());
-        }
+          // std::string str = addr.toString().c_str();
+          const char* addrStr = &addr.toString().c_str()[0];
+
+          Serial.println(addrStr);
+          ps5.begin(addrStr);
+        // }
       }
       if (addr) {
         Serial.printf("connecting to %s - %d\n", addr.toString().c_str(), channel);

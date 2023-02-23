@@ -76,7 +76,8 @@ void setup() {
     */ 
     // ps5.begin("14:2d:4d:2f:11:b4"); 
     // ps5.begin("d4:3a:2c:a2:48:69");  // Max's Phone
-    ps5.begin("BC:C7:46:03:7A:ED");
+    //ps5.begin("BC:C7:46:03:7A:ED"); // I++ Controller
+    ps5.begin("BC:C7:46:03:38:70"); // Imaginary Controller
 
     // Serial.print(F("\r\nConnected"));
 
@@ -99,7 +100,7 @@ void setup() {
 void loop() {
     // The main looping code, controls driving and any actions during a game
     if (ps5.isConnected()) {
-        Serial.print(F("\r\nConnected"));
+        // Serial.print(F("\r\nConnected"));
         // ps5.setLed(255, 0, 0);   // set LED red
 
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
@@ -138,7 +139,7 @@ void loop() {
         // Emergency stop if the controller disconnects
         // ps5.setLed(255, 255, 0);   // set LED yellow
         DriveMotors.emergencyStop();
-        delay(300);
+        // delay(300);
     }
 //   DriveMotors.printDebugInfo();
     // robotLED.updateLEDS();
