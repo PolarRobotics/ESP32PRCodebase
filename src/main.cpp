@@ -80,7 +80,7 @@ void setup() {
 
     // Serial.print(F("\r\nConnected"));
 
-    ps5.attachOnConnect(onConnection);
+    // ps5.attachOnConnect(onConnection);
     ps5.attachOnDisconnect(onDisconnect);
     // Reset PWM on startup
     // analogWrite(lPin, 0);
@@ -138,6 +138,7 @@ void loop() {
         // Emergency stop if the controller disconnects
         // ps5.setLed(255, 255, 0);   // set LED yellow
         DriveMotors.emergencyStop();
+        delay(300);
     }
 //   DriveMotors.printDebugInfo();
     // robotLED.updateLEDS();
