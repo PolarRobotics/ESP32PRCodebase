@@ -74,9 +74,9 @@ void setup() {
     since there is not pairing protocol yet, you need to use the mac address 
     of a device it is already paired with
     */ 
-    // ps5.begin("14:2d:4d:2f:11:b4");  // Rhys's Phone
+    // ps5.begin("14:2d:4d:2f:11:b4"); 
     // ps5.begin("d4:3a:2c:a2:48:69");  // Max's Phone
-    ps5.begin("bc:c7:46:03:38:70"); // CONTROLLER MAC ADDRESS
+    ps5.begin("BC:C7:46:03:7A:ED");
 
     // Serial.print(F("\r\nConnected"));
 
@@ -99,6 +99,9 @@ void setup() {
 void loop() {
     // The main looping code, controls driving and any actions during a game
     if (ps5.isConnected()) {
+        Serial.print(F("\r\nConnected"));
+        // ps5.setLed(255, 0, 0);   // set LED red
+
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
@@ -133,6 +136,7 @@ void loop() {
         
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
+        // ps5.setLed(255, 255, 0);   // set LED yellow
         DriveMotors.emergencyStop();
     }
 //   DriveMotors.printDebugInfo();

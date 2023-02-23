@@ -75,7 +75,9 @@ void setup() {
         }
         if(channels.size() > 0) {
           addr = device->getAddress();
-          channel=channels.begin()->first;
+          // channel=channels.begin()->first;
+          Serial.print(F("Connecting to: "));
+          Serial.println(addr.toString().c_str());
         }
       }
       if (addr) {
