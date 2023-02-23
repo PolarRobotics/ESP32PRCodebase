@@ -2,8 +2,6 @@
 #include <Arduino.h>
 #include "Drive.h"
 
-// #include <ESP32Servo.h> //Built in
-
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
  * this class takes the the the stick input, scales the turning value for each motor and ramps that value over time,
@@ -42,11 +40,6 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin){
     ledcSetup(M1_PWMCH, PWM_FREQ, PWM_RES);
     ledcSetup(M2_PWMCH, PWM_FREQ, PWM_RES);
 };
-
-// void Drive::setServos(Servo& left, Servo& right) {
-//     M1 = left;
-//     M2 = right;
-// }
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
@@ -299,8 +292,6 @@ uint16_t Drive::convert2Duty(uint32_t timeon_us) {
  * @param pin the motor to be set (0 for left, 1 for right)
 */
 void Drive::setMotorPWM(float pwr, byte pin) {
-    // M1.writeMicroseconds(Convert2PWMVal(-motorPower[0]));
-    // M2.writeMicroseconds(Convert2PWMVal(motorPower[1]));
     digitalWrite(motorPins[pin], HIGH);
     delayMicroseconds(Convert2PWM(pwr) - 40);
     digitalWrite(motorPins[pin], LOW);
@@ -327,9 +318,6 @@ float Drive::getMotorPwr(uint8_t mtr) {
 void Drive::emergencyStop() {
     ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(0)));
     ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(0)));
-    // setMotorPWM(0, motorPins[0]);
-    // setMotorPWM(0, motorPins[1]);
-    // // while(1);
 }
 
 /**
@@ -339,9 +327,9 @@ void Drive::emergencyStop() {
  * Updated:
 */
 void Drive::printDebugInfo() {
-    Serial.print(F("Left Input: "));
+    Serial.print(F("L_Hat_Y: "));
     Serial.print(stickForwardRev);
-    Serial.print(F("  Right: "));
+    Serial.print(F("  R_HAT_X: "));
     Serial.print(stickTurn);
 
     Serial.print(F("  |  Turn: "));
@@ -428,27 +416,3 @@ void Drive::drift() {
     ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
     ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
 }
-
-//Old functions
-
-// if the magnitude of either target power exceeds 1, calculate the difference between it and 1.
-//   if ((fabs(targetPowerLeft) - 1) > THRESHOLD) {
-//     powerDelta = 1 - targetPowerLeft;
-//   } else if ((fabs(targetPowerRight) - 1) > THRESHOLD) {
-//     powerDelta = 1 - targetPowerRight;
-//   } else {
-//     powerDelta = 0;
-//   }
-
-
-// this section keeps the ratio between powers the same when scaling down
-//   if (stickTurnPower > (0 + THRESHOLD)) {
-//     scaledBoostedPowerLeft = targetPowerLeft + (fwdSign * powerDelta);
-//     scaledBoostedPowerRight = targetPowerRight + (fwdSign * powerDelta * (targetPowerRight / targetPowerLeft));
-//   } else if (stickTurnPower < (0 - THRESHOLD)) {
-//     scaledBoostedPowerLeft = targetPowerLeft + (fwdSign * powerDelta * (targetPowerLeft / targetPowerRight));
-//     scaledBoostedPowerRight = targetPowerRight + (fwdSign * powerDelta);
-//   } else {
-//     scaledBoostedPowerLeft = targetPowerLeft;
-//     scaledBoostedPowerRight = targetPowerRight;
-//   }
