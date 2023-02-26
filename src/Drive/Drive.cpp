@@ -1,8 +1,6 @@
 #include "Drive/Drive.h"
 #include <Arduino.h>
-#include <Servo.h> //Built in
-
-// #include <ESP32Servo.h> //Built in
+#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -34,12 +32,14 @@
 */
 Drive::Drive() {
     this->motorType = MOTORS::big; // default to long motors
-};
-
-void Drive::setServos(Servo& left, Servo& right) {
-    M1 = left;
-    M2 = right;
 }
+void Drive::setServos(uint8_t lpin, uint8_t rpin){
+    motorPins[0] = lpin, motorPins[1] = rpin;
+    ledcAttachPin(lpin, M1_PWMCH);
+    ledcAttachPin(rpin, M2_PWMCH);
+    ledcSetup(M1_PWMCH, PWM_FREQ, PWM_RES);
+    ledcSetup(M2_PWMCH, PWM_FREQ, PWM_RES);
+};
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
@@ -142,18 +142,21 @@ void Drive::generateMotionValues() {
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
             if(stickTurn > STICK_DEADZONE) { // turn Right
-                //shorthand if else: variable = (condition) ? expressionTrue : expressionFalse;
-                motorPower[0] = stickForwardRev * BSNscalar;// set the left motor
-                motorPower[1] = calcTurningMotorValue(stickTurn, lastRampPower[0]); // set the right motor
-                if (abs(lastRampPower[0]) < 0.3) { // temporary solution to decrease radius at low speed
-                    motorPower[0] += copysign(NORMAL_TURN_CONSTANT,motorPower[0]);
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[0]), 1); break;
+                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 1); break;
                 }
+                //calcTurningMotorValues(stickTurn, lastRampPower[0], 1);
+                motorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
+                motorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
             } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-                motorPower[0] = calcTurningMotorValue(stickTurn, lastRampPower[1]); // set the left motor
-                motorPower[1] = stickForwardRev * BSNscalar; // set the right motor
-                if (abs(lastRampPower[1]) < 0.3) { // temporary solution to decrease radius at low speed
-                    motorPower[1] += copysign(NORMAL_TURN_CONSTANT,motorPower[1]);
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[1]), 0); break;
+                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 0); break;
                 }
+                //calcTurningMotorValues(stickTurn, lastRampPower[1], 0);
+                motorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
+                motorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
             }
         }
     }
@@ -161,11 +164,12 @@ void Drive::generateMotionValues() {
 
 
 /**
- * @brief calcTurningMotorValue generates a value to be set to the turning motor, the motor that corresponds to the direction of travel
+ * @brief Work in progress! as of 11/27 stuffs changin' calcTurningMotorValue generates a value to be set to the turning motor, the motor that corresponds to the direction of travel
  * @authors Grant Brautigam, Rhys Davies
  * Created: 9-12-2022
- *
+ * updated: 11-27-22
  * Mathematical model:
+ *  NOT REALLY TRUE ANYMORE
  *  TurningMotor = TurnStickNumber(1-offset)(CurrentPwrFwd)^2+(1-TurnStickNumber)*CurrentPwrFwd
  *   *Note: CurrentPwrFwd is the current power, not the power from the stick
  *
@@ -173,16 +177,20 @@ void Drive::generateMotionValues() {
  * @param prevPwr the non-turning motor value from the previous loop, which was actually sent to the motor
  * @return float - the value to get set to the turning motor (the result of the function mention above)
  */
-float Drive::calcTurningMotorValue(float stickTrn, float prevPwr) {
+void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
     
-    // float TurnMax = (OFFSET - 1)*(prevPwr) + 1;
-    // float TurnFactor = abs(stickTrn)*TurnMax;
-    // turnPower = prevPwr - prevPwr*TurnFactor;
+    float MaxTurnDiff = (turnMin - turnMax) * (abs(prevPwr)) + turnMax;
+    float TurnDifference = abs(stickTrn)*MaxTurnDiff;
 
-    turnPower = abs(stickTrn) * (1 - OFFSET) * pow(prevPwr, 2) + (1-abs(stickTrn)) * abs(prevPwr);
-    turnPower = copysign(turnPower, prevPwr);
-    lastTurnPwr = turnPower;
-    return turnPower;
+    if ((prevPwr-TurnDifference) <= 0){
+        turnMotorValues[0] = prevPwr + abs(prevPwr-TurnDifference);
+        turnMotorValues[1] = 0;
+    } else {
+        turnMotorValues[0] = prevPwr;
+        turnMotorValues[1] = prevPwr-TurnDifference;
+    }
+
+    lastTurnPwr = TurnDifference;
 }
 
 
@@ -260,6 +268,10 @@ uint32_t Drive::Convert2PWM(float rampPwr) {
     return (rampPwr + 1) * 500 + 1000;
 }
 
+uint16_t Drive::convert2Duty(uint32_t timeon_us) {
+    // convert the time on to a duty cycle, then scale it to a 16-bit number
+    return (timeon_us / (PWM_PERIOD * 1000)) * (pow(2, PWM_RES) / 1000);
+}
 
 /**
  * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
@@ -280,8 +292,6 @@ uint32_t Drive::Convert2PWM(float rampPwr) {
  * @param pin the motor to be set (0 for left, 1 for right)
 */
 void Drive::setMotorPWM(float pwr, byte pin) {
-    // M1.writeMicroseconds(Convert2PWMVal(-motorPower[0]));
-    // M2.writeMicroseconds(Convert2PWMVal(motorPower[1]));
     digitalWrite(motorPins[pin], HIGH);
     delayMicroseconds(Convert2PWM(pwr) - 40);
     digitalWrite(motorPins[pin], LOW);
@@ -306,11 +316,8 @@ float Drive::getMotorPwr(uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    M1.writeMicroseconds(1500); // change to new function
-    M2.writeMicroseconds(1500); // change to new function
-    // setMotorPWM(0, motorPins[0]);
-    // setMotorPWM(0, motorPins[1]);
-    // // while(1);
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(0)));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(0)));
 }
 
 /**
@@ -320,20 +327,19 @@ void Drive::emergencyStop() {
  * Updated:
 */
 void Drive::printDebugInfo() {
-    Serial.print(F("Left Input: "));
+    Serial.print(F("L_Hat_Y: "));
     Serial.print(stickForwardRev);
-    Serial.print(F("  Right: "));
+    Serial.print(F("  R_HAT_X: "));
     Serial.print(stickTurn);
 
-    // Serial.print(F("  |  Turn: "));
-    // Serial.print(lastTurnPwr);
+    Serial.print(F("  |  Turn: "));
+    Serial.print(lastTurnPwr);
 
     // Serial.print(F("  |  Left ReqPwr: "));
     // Serial.print(motorPower[0]);
     // Serial.print(F("  Right ReqPwr: "));
     // Serial.print(motorPower[1]);
-
-
+    
     // Serial.print(F("  lastRampTime "));
     // Serial.print(lastRampTime[0]);
     // Serial.print(F("  requestedPower "));
@@ -352,6 +358,11 @@ void Drive::printDebugInfo() {
     Serial.print(Convert2PWM(-motorPower[0]));
     Serial.print(F("  Right: "));
     Serial.println(Convert2PWM(motorPower[1]));
+
+    // Serial.print(F("  |  Left Motor: "));
+    // Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
+    // Serial.print(F("  Right: "));
+    // Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
 
 }
 
@@ -377,8 +388,8 @@ void Drive::update() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
     
-    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
 }
 
 /**
@@ -402,30 +413,6 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
-    M1.writeMicroseconds(Convert2PWM(motorPower[0]));
-    M2.writeMicroseconds(Convert2PWM(motorPower[1]));
+    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
+    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
 }
-
-//Old functions
-
-// if the magnitude of either target power exceeds 1, calculate the difference between it and 1.
-//   if ((fabs(targetPowerLeft) - 1) > THRESHOLD) {
-//     powerDelta = 1 - targetPowerLeft;
-//   } else if ((fabs(targetPowerRight) - 1) > THRESHOLD) {
-//     powerDelta = 1 - targetPowerRight;
-//   } else {
-//     powerDelta = 0;
-//   }
-
-
-// this section keeps the ratio between powers the same when scaling down
-//   if (stickTurnPower > (0 + THRESHOLD)) {
-//     scaledBoostedPowerLeft = targetPowerLeft + (fwdSign * powerDelta);
-//     scaledBoostedPowerRight = targetPowerRight + (fwdSign * powerDelta * (targetPowerRight / targetPowerLeft));
-//   } else if (stickTurnPower < (0 - THRESHOLD)) {
-//     scaledBoostedPowerLeft = targetPowerLeft + (fwdSign * powerDelta * (targetPowerLeft / targetPowerRight));
-//     scaledBoostedPowerRight = targetPowerRight + (fwdSign * powerDelta);
-//   } else {
-//     scaledBoostedPowerLeft = targetPowerLeft;
-//     scaledBoostedPowerRight = targetPowerRight;
-//   }
