@@ -9,8 +9,8 @@
 
 // Robot and Drivebase
 // Since pins are GPIO, location doesnt matter, can be changed
-#define LEFT_MOT_PIN  14
-#define RIGHT_MOT_PIN 26
+#define LEFT_MOT_PIN  32
+#define RIGHT_MOT_PIN 33
 
 // uint8_t motorType;
 Drive DriveMotors;
@@ -43,8 +43,8 @@ void setup() {
     // robotLED.setLEDStatus(Lights::PAIRING);
 
     //replace with your controllers MAC address "bc:c7:46:04:09:62" 
-    PS5.begin("bc:c7:46:04:09:62");  //  "14:2d:4d:2f:11:b4"
-
+    PS5.begin("bc:c7:46:03:38:72");  //  "14:2d:4d:2f:11:b4"
+    // "bc:c7:46:03:7a:ed"
     // Callbacks defined in PolarRobotics.h
     PS5.attachOnConnect(onConnection);
     PS5.attachOnDisconnect(onDisconnect);
