@@ -4,7 +4,8 @@
 #define DRIVE_H_
 
 #include <Arduino.h>
-#include <PolarRobotics.h>
+#include "PolarRobotics.h"
+#include "MotorControl.h"
 
 #ifndef NUM_MOTORS
 // the number of motors associated with driving
@@ -54,46 +55,44 @@
 
 class Drive {
 private:
-  float stickForwardRev, stickTurn;
-  float BSNscalar;
-  float lastTurnPwr;
-  float turnPower;
+    MOTORS motorType;
+    uint8_t motorPins[NUM_MOTORS];
 
-  MOTORS motorType;
-  uint8_t motorPins[NUM_MOTORS];
-  unsigned long lastRampTime[NUM_MOTORS];
-  float motorPower[NUM_MOTORS];
-  float currentPower[NUM_MOTORS];
-  float lastRampPower[NUM_MOTORS];
-  // float inputPower[NUM_MOTORS];
-  // float rampedPower[NUM_MOTORS];
-  void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
-  float turnMotorValues[2] = {0,0};
-  void generateMotionValues();
-  float ramp(float requestedPower, uint8_t mtr);
-  // use the inline keywork to ensure the function will get called again as soon as possible
-  uint32_t Convert2PWM(float rampPwr);
-  uint16_t convert2Duty(uint32_t timeon_us);
-  void setMotorPWM(float pwr, byte pin); //__attribute__((always_inline));
 
+    float stickForwardRev, stickTurn;
+    float BSNscalar;
+    float lastTurnPwr;
+    float turnPower;
+    
+    unsigned long lastRampTime[NUM_MOTORS];
+    float motorPower[NUM_MOTORS];
+    float currentPower[NUM_MOTORS];
+    float lastRampPower[NUM_MOTORS];
+    float turnMotorValues[NUM_MOTORS];
+    // float inputPower[NUM_MOTORS];
+    // float rampedPower[NUM_MOTORS];
+    void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
+    void generateMotionValues();
+    float ramp(float requestedPower, uint8_t mtr);
+    void setMotorPWM(float pwr, byte pin);
 public:
-  enum SPEED {
-    normal,
-    boost,
-    slow,
-    brake
-  };
-  Drive();
-  void setServos(uint8_t lpin, uint8_t rpin);
-  void setMotorType(MOTORS motorType);
-  void attach();
-  void setStickPwr(int8_t leftY, int8_t rightX);
-  void setBSN(SPEED bsn); //(float powerMultiplier);
-  float getMotorPwr(uint8_t mtr);
-  void emergencyStop();
-  void update();
-  void drift();
-  void printDebugInfo();
+    enum SPEED {
+        normal,
+        boost,
+        slow,
+        brake
+    };
+    Drive();
+    void setServos(uint8_t lpin, uint8_t rpin);
+    void setMotorType(MOTORS motorType);
+    void attach();
+    void setStickPwr(int8_t leftY, int8_t rightX);
+    void setBSN(SPEED bsn); //(float powerMultiplier);
+    float getMotorPwr(uint8_t mtr);
+    void emergencyStop();
+    void update();
+    void drift();
+    void printDebugInfo();
 };
 
 #endif /* DRIVE_H */

@@ -256,22 +256,7 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
 }
 
 
-/**
- * normalizes the signed power value from the ramp function to an unsigned value that the servo function can take
- * @authors Rhys Davies, Grant Brautigam, Alex Brown
- * Updated: 9-13-2022
- *
- * @param rampPwr the value to be normalized. Hopefully a value between [-1, 1]
- * @return normalized PWM value (between 1000 to 2000)
-*/
-uint32_t Drive::Convert2PWM(float rampPwr) {
-    return (rampPwr + 1) * 500 + 1000;
-}
 
-uint16_t Drive::convert2Duty(uint32_t timeon_us) {
-    // convert the time on to a duty cycle, then scale it to a 16-bit number
-    return (timeon_us / (PWM_PERIOD * 1000)) * (pow(2, PWM_RES) / 1000);
-}
 
 /**
  * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
