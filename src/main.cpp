@@ -4,7 +4,7 @@
 #include <ps5Controller.h> // new esp ps5 library
 
 // Custom Polar Robotics Libraries:
-// #include "PolarRobotics.h"
+#include "PolarRobotics.h"
 // #include <Robot/Robot.h>
 #include <Drive/Drive.h>
 // #include <Robot/Lights.h>
@@ -77,7 +77,9 @@ void setup() {
     // ps5.begin("14:2d:4d:2f:11:b4"); 
     // ps5.begin("d4:3a:2c:a2:48:69");  // Max's Phone
     //ps5.begin("BC:C7:46:03:7A:ED"); // I++ Controller
-    ps5.begin("BC:C7:46:03:38:70"); // Imaginary Controller
+    // ps5.begin("BC:C7:46:03:38:70"); // Imaginary Controller
+
+    activatePairing();
 
     // Serial.print(F("\r\nConnected"));
 
