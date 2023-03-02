@@ -20,6 +20,7 @@
 #include <BluetoothSerial.h>
 #include <ps5Controller.h>
 #include "PolarRobotics.h"
+#include <Preferences.h> // to store on flash
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -29,9 +30,15 @@
 #error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
 #endif
 
+#define yeet return
+
+#define prefkey "bt-mac" // preferences namespace, limited to 15 characters
+Preferences prefs;
+
 BluetoothSerial SerialBT;
 
-#define BT_DISCOVER_TIME  20000
+#define BT_DISCOVER_TIME  15000
+#define LOOP_DELAY 100
 esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
@@ -44,33 +51,45 @@ bool startDiscovery() {
   );
 }
 
-// bool isController(const char* name) {
-//   const char* controller = "Wireless Controller";
-//   int nlen = static_cast<int>(strlen(name));
-//   int clen = static_cast<int>(strlen(controller));
-//   Serial.print("length name = ");
-//   Serial.print(nlen);
-//   Serial.print(", length controller name = ");
-//   Serial.println(clen);
-//   if (nlen != clen) return false;
-//   else {
-//     Serial.println("name lengths equal, continuing...");
-//     for (int i = 0; i < nlen; i++) {
-//       Serial.print("name[i] = " + name[i]);
-//       Serial.println("controller[i] = " + controller[i]);
-//       if (name[i] != controller[i]) {
-//         Serial.println("not equal, returning false");
-//         return false;
-//       }
-//     }
-//   }
-//   Serial.println("equal, returning true");
-//   return true;
-// }
+void storeAddress(const char* addr, bool clear = false) {
+  prefs.begin(prefkey, false); // false means read/write mode
+  if (clear) prefs.clear();
+  // this is not std::string, it's an ESP thing
+  String str(addr); // create string from char array to store in preferences
+  prefs.putString(prefkey, str);
+  prefs.end();
+}
+
+const char* getAddress() {
+  prefs.begin(prefkey, true);
+  String str = prefs.getString(prefkey, "");
+  prefs.end();
+  if (str == "") return '\0'; // error
+  else return &str.c_str()[0]; // get address of char ptr string
+}
+
 
 // Search for PS5 Controllers and pair to the first one found
 void activatePairing() {
   Serial.begin(115200);
+
+  const char* addrCharPtr = getAddress();
+
+  // see if we have a stored MAC address and try to pair to it
+  if (addrCharPtr != '\0') {
+    Serial.print(F("Connecting to PS5 Controller @ "));
+    Serial.print(addrCharPtr);
+    ps5.begin(addrCharPtr);
+    int timer = 0;
+    while (timer < BT_DISCOVER_TIME && !ps5.isConnected()) {
+      delay(LOOP_DELAY);
+      timer += LOOP_DELAY;
+    }
+    if (ps5.isConnected()) {
+      Serial.print(F("PS5 Controller Connected!"));
+      yeet;
+    } // otherwise look for devices to pair with
+  } 
 
   // begin broadcasting as "ESP32" as master role
   if (!SerialBT.begin("ESP32", true)) { 
@@ -98,7 +117,7 @@ void activatePairing() {
         auto name = device->getName().c_str(); // get name to print and check
         auto addrStr = addr.toString().c_str(); // std::string doesn't work with Serial.print for some reason
         // ps5.begin requires a const char*, so get memory address of string/char array
-        const char* addrCharPtr = &addr.toString().c_str()[0];
+        addrCharPtr = &addr.toString().c_str()[0]; // declared at top of function
 
         // reminder that we need to use flash strings whenever possible, so don't try to collapse this
         Serial.print(i);
@@ -114,10 +133,11 @@ void activatePairing() {
           Serial.println(addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected()) {
-            delay(100);
+            delay(LOOP_DELAY);
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
+          storeAddress(addrCharPtr);
         }
       }
     } else {

@@ -2,6 +2,8 @@
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 
+// this file gets the MAC address of the esp, which isn't really that useful
+
 bool initBluetooth()
 {
   if (!btStart()) {
