@@ -105,6 +105,11 @@ void loop() {
         // Serial.print(F("\r\nConnected"));
         // ps5.setLed(255, 0, 0);   // set LED red
 
+        // for debugging connection
+        if (ps5.Square()) {
+            Serial.println(F("Square pressed"));
+        }
+
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
