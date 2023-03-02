@@ -1,6 +1,7 @@
-#include "Drive/Drive.h"
 #include <Arduino.h>
-#include "Drive.h"
+#include "Drive/Drive.h"
+#include "MotorControl.h"
+// #include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -33,18 +34,15 @@
 Drive::Drive() {
     this->motorType = MOTORS::big; // default to long motors
 }
+
 void Drive::setServos(uint8_t lpin, uint8_t rpin){
-    motorPins[0] = lpin, motorPins[1] = rpin;
-    ledcAttachPin(lpin, M1_PWMCH);
-    ledcAttachPin(rpin, M2_PWMCH);
-    ledcSetup(M1_PWMCH, PWM_FREQ, PWM_RES);
-    ledcSetup(M2_PWMCH, PWM_FREQ, PWM_RES);
+    this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    M1.attach(lpin), M2.attach(rpin);
 };
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
 }
-
 
 /**
  * setStickPwr takes the stick values passed in and normalizes them to values between -1 and 1
@@ -71,9 +69,6 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     if (fabs(stickTurn) < STICK_DEADZONE) {
       stickTurn = 0;
     }
-    // Ensure the stick values do not go above 1 or below -1
-    // stickForwardRev = constrain(stickForwardRev, -1, 1);
-    // stickTurn = constrain(stickTurn, -1, 1);
 }
 
 
@@ -256,41 +251,6 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
 }
 
 
-
-
-/**
- * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
- * manually sets the motor high for the pwm time.
- * @author Rhys Davies
- * Created: 10-5-2022
- * Updated: 10-29-2022
- *
- * Set the motors by outputting a pulse with a period corresponding to the motor power,
- * determined by Convert2PWMVal. These calculations can not be put into a function,
- * because it confuses the compiler as these are time critical tasks.
- * 
- * FUTURE: write this so both pins are HIGH at the same time, and the one that goes low first is called,
- * because the beginning of the pulse is at the same time for both pins, but this isnt entirely necessary
- * considering both motors operate independently on the sabertooth
- *
- * @param pwr the motor power to be set
- * @param pin the motor to be set (0 for left, 1 for right)
-*/
-void Drive::setMotorPWM(float pwr, byte pin) {
-    digitalWrite(motorPins[pin], HIGH);
-    delayMicroseconds(Convert2PWM(pwr) - 40);
-    digitalWrite(motorPins[pin], LOW);
-    delayMicroseconds(2000 - Convert2PWM(pwr) - 40); //-170
-    // digitalWrite(motorPins[0], HIGH);
-    // delayMicroseconds(Convert2PWMVal(motorPower[0]) - 40);
-    // digitalWrite(motorPins[0], LOW);
-    // // delayMicroseconds(2000 - Convert2PWMVal(motorPower[0]) - 40); //-170
-    // digitalWrite(motorPins[1], HIGH);
-    // delayMicroseconds(Convert2PWMVal(motorPower[1]) - 40);
-    // digitalWrite(motorPins[1], LOW);
-    // delayMicroseconds(2000 - Convert2PWMVal(motorPower[1]) - 40); //-170
-}
-
 /**
  * returns the stored motor value in the class
  * @param mtr the motor number to get, an array index, so 0 -> mtr 1, etc...
@@ -301,8 +261,7 @@ float Drive::getMotorPwr(uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(0)));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(0)));
+    M1.write(0); M2.write(0);
 }
 
 /**
@@ -339,16 +298,7 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(motorPower[1]);
 
-    Serial.print(F("  |  Left Motor: "));
-    Serial.print(Convert2PWM(-motorPower[0]));
-    Serial.print(F("  Right: "));
-    Serial.println(Convert2PWM(motorPower[1]));
-
-    // Serial.print(F("  |  Left Motor: "));
-    // Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
-    // Serial.print(F("  Right: "));
-    // Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
-
+    Serial.println(F(" "));
 }
 
 /**
@@ -373,8 +323,8 @@ void Drive::update() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
     
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
+    M1.write(motorPower[0]);
+    M2.write(motorPower[1]);
 }
 
 /**
@@ -390,7 +340,7 @@ void Drive::drift() {
     if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
         motorPower[0] = BSNscalar * abs(stickTurn)  * DRIFT_MODE_PCT;
         motorPower[1] = 0;
-    } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward much so use tank mode
+    } else if (stickTurn < - STICK_DEADZONE) { // turning left, but not moving forward much so use tank mode
         motorPower[0] = 0;
         motorPower[1] = BSNscalar * abs(stickTurn)  * DRIFT_MODE_PCT;
     } else {
@@ -398,6 +348,6 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
+    M1.write(motorPower[0]);
+    M2.write(motorPower[1]);
 }

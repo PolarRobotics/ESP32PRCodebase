@@ -5,7 +5,6 @@
 
 #include <Arduino.h>
 
-
 #define MAX_NUM_MOTORS 16
 
 #define MAX_PWM_US 2000
@@ -13,23 +12,25 @@
 
 //PWM defines:
 #define PWM_RES 16 //channel resolution in bits, this is a really high resolution, can lower this if we have stability problems
+#define PWM_MAXDUTY 65535    // (2^16) - 1
 // a Period of 2500us for the sabertooth, gives the st enough time to react to inputs, 
 // can make this value closer to 2000us if we have issues with the ST not updating fast enough
-#define PWM_PERIOD_US 2500
-#define PWM_FREQ 1000000 / PWM_PERIOD_US
+#define PWM_PERIOD 0.0025
+#define PWM_FREQ 1/PWM_PERIOD
+// #define PWM_FREQ 1000000 / PWM_PERIOD_US
 
-typedef const struct servo {
+typedef struct servo {
     uint8_t pin;
     bool isactive;
     uint8_t channel;
 } servo_t;
 
 static servo_t servos[MAX_NUM_MOTORS];
-uint8_t ServoCount = 0;
+static uint8_t ServoCount = 0;
 
 class MotorControl {
 private:
-    uint8_t servoIndex;  // index into the channel data for this servo
+    uint8_t motorIndex;  // index into the channel data for this servo
     int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
     int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
     uint16_t power2Duty(float power);
@@ -38,6 +39,9 @@ public:
     uint8_t attach(int pin);           
     uint8_t attach(int pin, int min, int max); // as above but also sets min and max values for writes. 
     void write(float pwr);
+    void displayPinInfo();
 };
+
+
 
 #endif // !__MOTOR_CONTROL__

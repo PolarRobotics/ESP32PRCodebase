@@ -1,35 +1,48 @@
-
 #include <Arduino.h>
-
 #include "MotorControl.h"
 
 MotorControl::MotorControl() {
-    if( ServoCount < MAX_NUM_MOTORS)
-        this->servoIndex = ServoCount++;                    // assign a servo index to this instance
+    if(ServoCount < MAX_NUM_MOTORS) {
+        this->motorIndex = ServoCount++;  // assign a servo index to this instance
+        // Serial.print(F("Mot #"));
+        // Serial.println(this->motorIndex);
+    }
     else
-        this->servoIndex = 255;
+        this->motorIndex = 255;
 }
 
 uint8_t MotorControl::attach(int pin) {
     return attach(pin, MIN_PWM_US, MAX_PWM_US);
 }
+
 /**
  * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
  * Updated 2-26-2023
-*/
+ * 
+ * @param pin the pin the motor is connected to
+ * @param min min on time in us
+ * @param max max on time in us
+ * @return uint8_t the channel number the pin is attached to, 255 if failure
+ */
 uint8_t MotorControl::attach(int pin, int min, int max) {
-    if(this->servoIndex < MAX_NUM_MOTORS - 1) {
-        // pinMode( pin, OUTPUT);                            // set servo pin to output
-        servos[this->servoIndex].pin = pin;                  // assign this servo a pin
-        servos[this->servoIndex].isactive = true;            // set the servo to active
-        servos[this->servoIndex].channel = this->servoIndex; // set the servo channel
+    if(this->motorIndex < MAX_NUM_MOTORS - 1) {
+        // pinMode(pin, OUTPUT);                                // set servo pin to output
+        // digitalWrite(pin, LOW);                              // set the servo pin to low to avoid spinouts
+        servos[this->motorIndex].pin = pin;                  // assign this servo a pin
+        servos[this->motorIndex].isactive = true;            // set the servo to active
+        servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
         this->min = min; 
         this->max = max;
-        ledcAttachPin(pin, this->servoIndex);
-        ledcSetup(this->servoIndex, PWM_FREQ, PWM_RES);
+        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
+        ledcAttachPin(pin, this->motorIndex);
+        // Serial.print(F("MotorIdx #"));
+        // Serial.print(this->motorIndex);
+        // Serial.print(F(" on Pin #"));
+        // Serial.print(pin);
+        // Serial.print(F("\r\n"));
     }
-    return this->servoIndex;
+    return this->motorIndex;
 }
 
 /**
@@ -42,24 +55,72 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
  * @param pwr input power
 */
 void MotorControl::write(float pwr) {
+    ledcWrite(this->motorIndex, power2Duty(pwr));
+    // Serial.print(F("\r\nDuty Cycle: "));
+    // Serial.print(power2Duty(pwr));
+}
 
-    ledcWrite(this->servoIndex, power2Duty(pwr));
+void MotorControl::displayPinInfo() {
+    Serial.print(F("Motor: "));
+    Serial.print(this->motorIndex);
+    Serial.print(F(" Channel: "));
+    Serial.print(servos[this->motorIndex].channel);
+    Serial.print(F("\n"));
+    // Serial.print(F(" Motor: "));
+    // Serial.print(this->motorIndex);
 }
 
 /**
  * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
- * then converts to a duty cycle and then scales that to a 16-bit #, the resolution of the channel
+ * then converts to a duty cycle and then scales that to a 16-bit integer, the resolution of the channel
+ * link to lo-fi math model: https://www.desmos.com/calculator/kmrh5pjrdf
  * @author Rhys Davies
  * Updated 2-26-2023
  * 
  * input range:  [-1, 1]
- * output range: [0, 65,536]
+ * output range: [0, 65,536] (Really 26215 to 52429)
  * 
  * @param power the input power
 */
 uint16_t MotorControl::power2Duty(float power) {
     // this can be written in compiler code, but we are trying to save on flash memory
     uint32_t tempTimeon = (power + 1) * 500 + 1000;
-    tempTimeon = constrain(tempTimeon, this->min, this->max);
-    return (tempTimeon / PWM_PERIOD_US) * (pow(2, PWM_RES) / 1000);
+    
+    return (tempTimeon / (PWM_PERIOD*1000)) * (PWM_MAXDUTY/1000);
 }
+
+
+// Old code:
+
+// /**
+//  * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
+//  * manually sets the motor high for the pwm time.
+//  * @author Rhys Davies
+//  * Created: 10-5-2022
+//  * Updated: 10-29-2022
+//  *
+//  * Set the motors by outputting a pulse with a period corresponding to the motor power,
+//  * determined by Convert2PWMVal. These calculations can not be put into a function,
+//  * because it confuses the compiler as these are time critical tasks.
+//  * 
+//  * FUTURE: write this so both pins are HIGH at the same time, and the one that goes low first is called,
+//  * because the beginning of the pulse is at the same time for both pins, but this isnt entirely necessary
+//  * considering both motors operate independently on the sabertooth
+//  *
+//  * @param pwr the motor power to be set
+//  * @param pin the motor to be set (0 for left, 1 for right)
+// */
+// void Drive::setMotorPWM(float pwr, byte pin) {
+//     digitalWrite(motorPins[pin], HIGH);
+//     delayMicroseconds(Convert2PWM(pwr) - 40);
+//     digitalWrite(motorPins[pin], LOW);
+//     delayMicroseconds(2000 - Convert2PWM(pwr) - 40); //-170
+//     // digitalWrite(motorPins[0], HIGH);
+//     // delayMicroseconds(Convert2PWMVal(motorPower[0]) - 40);
+//     // digitalWrite(motorPins[0], LOW);
+//     // // delayMicroseconds(2000 - Convert2PWMVal(motorPower[0]) - 40); //-170
+//     // digitalWrite(motorPins[1], HIGH);
+//     // delayMicroseconds(Convert2PWMVal(motorPower[1]) - 40);
+//     // digitalWrite(motorPins[1], LOW);
+//     // delayMicroseconds(2000 - Convert2PWMVal(motorPower[1]) - 40); //-170
+// }

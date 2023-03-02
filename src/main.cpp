@@ -36,15 +36,17 @@ void setup() {
 
     DriveMotors.setMotorType(MOTORS::big);
     DriveMotors.setServos(LEFT_MOT_PIN, RIGHT_MOT_PIN);
-
-    
+ 
     // Set initial LED color state
     // robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
 
     //replace with your controllers MAC address "bc:c7:46:04:09:62" 
-    PS5.begin("bc:c7:46:03:38:72");  //  "14:2d:4d:2f:11:b4"
-    // "bc:c7:46:03:7a:ed"
+    PS5.begin("bc:c7:46:04:09:62");  //  "14:2d:4d:2f:11:b4"
+    // "BC:C7:46:03:7A:ED" i++
+    // "BC:C7:46:03:38:70" sqrt(-1)
+    // "bc:c7:46:03:38:72" Rhys's controller
+    // "bc:c7:46:04:09:62" Actually Rhys's controller
     // Callbacks defined in PolarRobotics.h
     PS5.attachOnConnect(onConnection);
     PS5.attachOnDisconnect(onDisconnect);
@@ -87,7 +89,7 @@ void loop() {
         } else {
             DriveMotors.update();
             
-            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
+            // DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
         // PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
@@ -107,7 +109,7 @@ void loop() {
 void onConnection() {
     if(PS5.isConnected()) {
         Serial.println(F("Controller Connected..."));
-        PS5.setLed(0, 255, 0);   // set LED green
+        // PS5.setLed(0, 255, 0);   // set LED green
     }
 }
 

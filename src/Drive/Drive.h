@@ -12,14 +12,6 @@
 #define NUM_MOTORS 2
 #endif
 
-//PWM defines:
-#define M1_PWMCH 0
-#define M2_PWMCH 1
-#define PWM_RES 16 //channel resolution in bits
-// frequency in HZ, a Period of 2500us for the sabertooth
-#define PWM_PERIOD 0.0025
-#define PWM_FREQ 1 / PWM_PERIOD 
-
 // rate of change of power with respect to time when accelerating %power/10th of sec
 #define ACCELERATION_RATE .0375
 // rate of deceleration/braking
@@ -57,7 +49,7 @@ class Drive {
 private:
     MOTORS motorType;
     uint8_t motorPins[NUM_MOTORS];
-
+    MotorControl M1, M2;
 
     float stickForwardRev, stickTurn;
     float BSNscalar;
@@ -74,7 +66,6 @@ private:
     void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
     void generateMotionValues();
     float ramp(float requestedPower, uint8_t mtr);
-    void setMotorPWM(float pwr, byte pin);
 public:
     enum SPEED {
         normal,
