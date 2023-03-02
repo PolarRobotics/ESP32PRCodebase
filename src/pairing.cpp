@@ -152,7 +152,7 @@ void activatePairing() {
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
-          storeAddress(&addr.toString().c_str()[0]);
+          storeAddress(&addr.toString().c_str()[0], true);
         }
       }
     } else {
