@@ -15,7 +15,7 @@
 #define PWM_MAXDUTY 65535    // (2^16) - 1
 // a Period of 2500us for the sabertooth, gives the st enough time to react to inputs, 
 // can make this value closer to 2000us if we have issues with the ST not updating fast enough
-#define PWM_PERIOD 0.0025
+#define PWM_PERIOD 0.0025   // 2500 us
 #define PWM_FREQ 1/PWM_PERIOD
 // #define PWM_FREQ 1000000 / PWM_PERIOD_US
 
@@ -33,6 +33,7 @@ private:
     uint8_t motorIndex;  // index into the channel data for this servo
     int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
     int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
+    uint32_t tempTimeon;
     uint16_t power2Duty(float power);
 public:
     MotorControl();

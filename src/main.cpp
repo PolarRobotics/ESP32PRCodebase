@@ -41,12 +41,12 @@ void setup() {
     // robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
 
-    //replace with your controllers MAC address "bc:c7:46:04:09:62" 
-    PS5.begin("bc:c7:46:04:09:62");  //  "14:2d:4d:2f:11:b4"
+    //replace with your controllers MAC address
+    PS5.begin("bc:c7:46:04:09:62");
     // "BC:C7:46:03:7A:ED" i++
     // "BC:C7:46:03:38:70" sqrt(-1)
-    // "bc:c7:46:03:38:72" Rhys's controller
-    // "bc:c7:46:04:09:62" Actually Rhys's controller
+    // "BC:C7:46:03:38:72"
+    // "BC:C7:46:04:09:62" Actually Rhys's controller
     // Callbacks defined in PolarRobotics.h
     PS5.attachOnConnect(onConnection);
     PS5.attachOnDisconnect(onDisconnect);

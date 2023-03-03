@@ -82,7 +82,6 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
 */
 void Drive::setBSN(SPEED bsn) {
     // set the scalar to zero if the requested value is greater than 1, this is not entirely necessary, but is a safety
-    // BSNscalar = (powerMultiplier > 1) ? 0 : powerMultiplier;
     switch (bsn) {
         case boost: {
             if (motorType == MOTORS::big) BSNscalar = BIG_BOOST_PCT;
@@ -139,7 +138,7 @@ void Drive::generateMotionValues() {
             if(stickTurn > STICK_DEADZONE) { // turn Right
                 switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
                     case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[0]), 1); break;
-                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 1); break;
+                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 1); break;
                 }
                 //calcTurningMotorValues(stickTurn, lastRampPower[0], 1);
                 motorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
@@ -147,7 +146,7 @@ void Drive::generateMotionValues() {
             } else if(stickTurn < -STICK_DEADZONE) { // turn Left
                 switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
                     case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[1]), 0); break;
-                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 0); break;
+                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 0); break;
                 }
                 //calcTurningMotorValues(stickTurn, lastRampPower[1], 0);
                 motorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
@@ -298,7 +297,7 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(motorPower[1]);
 
-    Serial.println(F(" "));
+    Serial.print(F("\n"));
 }
 
 /**

@@ -4,11 +4,10 @@
 MotorControl::MotorControl() {
     if(ServoCount < MAX_NUM_MOTORS) {
         this->motorIndex = ServoCount++;  // assign a servo index to this instance
-        // Serial.print(F("Mot #"));
-        // Serial.println(this->motorIndex);
     }
     else
         this->motorIndex = 255;
+    // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
 }
 
 uint8_t MotorControl::attach(int pin) {
@@ -27,8 +26,8 @@ uint8_t MotorControl::attach(int pin) {
  */
 uint8_t MotorControl::attach(int pin, int min, int max) {
     if(this->motorIndex < MAX_NUM_MOTORS - 1) {
-        // pinMode(pin, OUTPUT);                                // set servo pin to output
-        // digitalWrite(pin, LOW);                              // set the servo pin to low to avoid spinouts
+        // pinMode(pin, OUTPUT);                             // set servo pin to output
+        // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
         servos[this->motorIndex].pin = pin;                  // assign this servo a pin
         servos[this->motorIndex].isactive = true;            // set the servo to active
         servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
@@ -36,11 +35,6 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
         this->max = max;
         ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
         ledcAttachPin(pin, this->motorIndex);
-        // Serial.print(F("MotorIdx #"));
-        // Serial.print(this->motorIndex);
-        // Serial.print(F(" on Pin #"));
-        // Serial.print(pin);
-        // Serial.print(F("\r\n"));
     }
     return this->motorIndex;
 }
@@ -56,24 +50,25 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
 */
 void MotorControl::write(float pwr) {
     ledcWrite(this->motorIndex, power2Duty(pwr));
-    // Serial.print(F("\r\nDuty Cycle: "));
-    // Serial.print(power2Duty(pwr));
 }
 
 void MotorControl::displayPinInfo() {
     Serial.print(F("Motor: "));
     Serial.print(this->motorIndex);
+    Serial.print(F(" on Pin #"));
+    Serial.print(servos[this->motorIndex].pin);
     Serial.print(F(" Channel: "));
     Serial.print(servos[this->motorIndex].channel);
-    Serial.print(F("\n"));
-    // Serial.print(F(" Motor: "));
-    // Serial.print(this->motorIndex);
+    Serial.print(F("\r\n"));
+
+    // Serial.print(F("\r\nDuty Cycle: "));
+    // Serial.print(power2Duty(pwr));
 }
 
 /**
  * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
  * then converts to a duty cycle and then scales that to a 16-bit integer, the resolution of the channel
- * link to lo-fi math model: https://www.desmos.com/calculator/kmrh5pjrdf
+ * link to math model: https://www.desmos.com/calculator/kmrh5pjrdf
  * @author Rhys Davies
  * Updated 2-26-2023
  * 
@@ -84,9 +79,8 @@ void MotorControl::displayPinInfo() {
 */
 uint16_t MotorControl::power2Duty(float power) {
     // this can be written in compiler code, but we are trying to save on flash memory
-    uint32_t tempTimeon = (power + 1) * 500 + 1000;
-    
-    return (tempTimeon / (PWM_PERIOD*1000)) * (PWM_MAXDUTY/1000);
+    this->tempTimeon = (power + 1) * 500 + 1000;
+    return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
 }
 
 
