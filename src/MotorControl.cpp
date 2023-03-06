@@ -1,6 +1,18 @@
 #include <Arduino.h>
 #include "MotorControl.h"
 
+/**
+* A class similar to the servo class, implements a method of choosing timers and channels 
+* based on the number of motors attached, uses writeMicros, etc. Utilizes the LedC built-in functions
+* 
+* since the sabretooth is expecting a duty cycle difference (time the signal is high for) 
+* I wrote a function to convert the time on value to a duty cycle, this would need to be moved into the Control class,
+* 
+* Goal of this class: 
+*     - be able to declare multiple motor objects, with pin definitions.
+*     - write a value to the motor, maybe -100 100, we can play around with this, or we can just keep the existing system with the values between 1000 and 2000
+*     - needs to be usable in drive and special bot classes
+*/
 MotorControl::MotorControl() {
     if(ServoCount < MAX_NUM_MOTORS) {
         this->motorIndex = ServoCount++;  // assign a servo index to this instance
