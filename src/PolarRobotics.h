@@ -37,6 +37,4 @@ enum MOTORS {
   small // EEPROM value of 1 for short/small motors
 };
 
-void activatePairing();
-
 #endif

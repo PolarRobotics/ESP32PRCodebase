@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include <Servo.h>
-#include <PolarRobotics.h>
+#include "PolarRobotics.h"
 // #include <Servo_Hardware_PWM.h>
 
 #ifndef NUM_MOTORS

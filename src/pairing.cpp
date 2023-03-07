@@ -19,8 +19,9 @@
 #include <map>
 #include <BluetoothSerial.h>
 #include <ps5Controller.h>
-#include "PolarRobotics.h"
 #include <Preferences.h> // to store on flash
+#include "pairing.h"
+#include <builtinLED.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -83,6 +84,7 @@ void getAddress(const char* &addr) {
 // Search for PS5 Controllers and pair to the first one found
 void activatePairing() {
   Serial.begin(115200);
+  // pinMode(LED_BUILTIN, OUTPUT);
 
   const char* addrCharPtr = nullptr;
   getAddress(addrCharPtr); // if we just returned a char*, it would be deleted and point to nowhere useful
@@ -148,6 +150,7 @@ void activatePairing() {
           Serial.println(addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected()) {
+            blinkBuiltInLED();
             delay(LOOP_DELAY);
           }
           Serial.print(F("PS5 Controller Connected: "));

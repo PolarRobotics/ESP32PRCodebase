@@ -5,6 +5,7 @@
 
 // Custom Polar Robotics Libraries:
 #include "PolarRobotics.h"
+#include "pairing.h"
 // #include <Robot/Robot.h>
 #include <Drive/Drive.h>
 // #include <Robot/Lights.h>
@@ -57,6 +58,7 @@ void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
     // Serial.print(F("\r\nStarting..."));
+    pinMode(LED_BUILTIN, OUTPUT);
 
     DriveMotors.setMotorType(MOTORS::big);
     DriveMotors.setServos(lPin, rPin);
