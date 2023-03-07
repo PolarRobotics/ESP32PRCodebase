@@ -4,7 +4,7 @@
 #define KICKER_H_
 
 #include <Arduino.h>
-#include <ESP32Servo.h>
+#include <Servo.h>
 
 /**
  * @brief Kicker header file

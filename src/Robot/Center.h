@@ -5,7 +5,9 @@
 
 
 #include <Arduino.h>
-#include <ESP32Servo.h>
+#include <SPI.h>
+
+#include <Servo.h>
 
 enum armStatus {
   Higher, Lower, Stop, Hold
