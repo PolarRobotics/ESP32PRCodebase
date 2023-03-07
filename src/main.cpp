@@ -4,12 +4,13 @@
 // Custom Polar Robotics Libraries:
 #include "PolarRobotics.h"
 // #include <Robot/Robot.h>
+#include <Robot/Lights.h>
 #include <Drive/Drive.h>
-// #include <Robot/Lights.h>
 
 // Robot and Drivebase
 // Since pins are GPIO, location doesnt matter, can be changed
 #define LEFT_MOT_PIN  32
+#define tPin 4
 #define RIGHT_MOT_PIN 33
 
 // uint8_t motorType;
@@ -18,7 +19,13 @@ ps5Controller PS5;
 void onDisconnect();
 void onConnection();
 
-// Lights robotLED;
+Lights robotLED;
+
+// LED Variables
+unsigned long tackleTime = 0;
+const int switchTime = 2000;
+unsigned long CURRENTTIME;
+int ledStatus = 0;
 
 /*
    ____    _____   _____   _   _   ____
@@ -39,11 +46,11 @@ void setup() {
 
     
     // Set initial LED color state
-    // robotLED.setupLEDS();
-    // robotLED.setLEDStatus(Lights::PAIRING);
+    robotLED.setupLEDS();
+    robotLED.setLEDStatus(Lights::PAIRING);
 
     //replace with your controllers MAC address "bc:c7:46:04:09:62" 
-    PS5.begin("bc:c7:46:03:38:72");  //  "14:2d:4d:2f:11:b4"
+    PS5.begin("bc:c7:46:03:7A:ED");  //  "14:2d:4d:2f:11:b4"
     // "bc:c7:46:03:7a:ed"
     // Callbacks defined in PolarRobotics.h
     PS5.attachOnConnect(onConnection);
@@ -63,6 +70,10 @@ void loop() {
     if (PS5.isConnected()) {
         DriveMotors.setStickPwr(PS5.LStickY(), PS5.RStickX());
 
+        if(robotLED.returnStatus() == Lights::PAIRING){
+            robotLED.setLEDStatus(Lights::PAIRED);
+        }
+
         // determine BSN percentage (boost, slow, or normal)
         if (PS5.Touchpad()){
             DriveMotors.emergencyStop();
@@ -76,9 +87,22 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
-        // if(PS5.getButtonPress(UP)){
-        //   robotLED.togglePosition();
-        // }
+        // Manual LED State Toggle (Defense/Offense)
+        if(PS5.Up()){
+        robotLED.togglePosition();
+        }
+
+
+        // Update the LEDs based on tackle (tPin input) for offensive robot
+        if(digitalRead(tPin) == HIGH){
+        robotLED.setLEDStatus(Lights::TACKLED);
+        tackleTime = millis();
+        }
+
+        // Switch the LED state back to offense after being tackled a certain amount of time ago
+        if((millis() - tackleTime) >= switchTime){
+        robotLED.setLEDStatus(Lights::OFFENSE);
+        }
         
         // Update the motors based on the inputs from the controller
         if(PS5.L2()) {
@@ -95,10 +119,9 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
+        robotLED.setLEDStatus(Lights::PAIRING);
     }
     // DriveMotors.printDebugInfo();
-    // robotLED.updateLEDS();
-
 }
 
 /**

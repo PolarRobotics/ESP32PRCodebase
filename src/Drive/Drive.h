@@ -12,8 +12,8 @@
 #endif
 
 //PWM defines:
-#define M1_PWMCH 0
-#define M2_PWMCH 1
+#define M1_PWMCH 8
+#define M2_PWMCH 9
 #define PWM_RES 16 //channel resolution in bits
 // frequency in HZ, a Period of 2500us for the sabertooth
 #define PWM_PERIOD 0.0025

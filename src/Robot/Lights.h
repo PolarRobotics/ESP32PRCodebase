@@ -2,8 +2,8 @@
 // void setRobotState(BOT_STATE state);
 
 #include <FastLED.h>
-#define LED_PIN 7
-#define NUM_LEDS 30
+#define LED_PIN 22
+#define NUM_LEDS 39
 #define TIME_BETWEEN_TOGGLES 25
 
 class Lights {
@@ -19,9 +19,9 @@ public:
     enum LEDState {
         PAIRING,     // Yellow
         PAIRED,      // green then fade out
-        OFFENSE,     // blue (also need green)
+        OFFENSE,     // blue and green
         DEFENSE,     // green
-        BALL_CARRIER // turn red and then go back to offense state (testing digital pin signal)
+        TACKLED,     // turn red when tackled
     };
     Lights();
     void setupLEDS();
@@ -30,6 +30,8 @@ public:
     void updateLEDS();
     //   void runLoop(int count);
     void togglePosition();
+    int returnStatus();
+    void pairState(bool state);
 };
 
 // Function Definitions
@@ -41,7 +43,7 @@ Lights::Lights() {
 
 void Lights::setupLEDS() {
     FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 500); // Power Failsafe
+    // FastLED.setMaxPowerInVoltsAndMilliamps(5, 500); // Power Failsafe
     // Clears LEDs when code is updated
     FastLED.clear();
 
@@ -55,40 +57,35 @@ void Lights::setLEDStatus(LEDState status) {
     updateLEDS();
 }
 
+
 // To change LED color
 void Lights::updateLEDS() {
     switch (currState) {
     case PAIRING: {
-        leds = CRGB::Yellow;
+        leds = CRGB::DarkOrange;
         break;
     }
     case PAIRED: {
-        leds = CRGB::Green;
-        FastLED.setBrightness(iteration);
-        iteration++;
+        leds = CRGB::Blue;
         break;
     }
     case OFFENSE: {
-        leds = CRGB::Blue;
+        for(int i = 0; i < 39; i ++){
+        if(i % 2 == 0){leds[i] = CRGB::Blue;}
+        else{leds[i] = CRGB::Green;}
+        }
         break;
     }
     case DEFENSE: {
         leds = CRGB::Green;
         break;
     }
-    case BALL_CARRIER: {
-        if (iteration % 255 / 16 == 0) {
-            leds = CRGB::Red;
-            // FastLED.delay(30);
-        }
-        else {
-            leds = CRGB::Black;
-        }
-        iteration++;
+    case TACKLED: {
+        leds = CRGB::Red;
         break;
     }
     default: {
-        leds = CRGB::Red;
+        leds = CRGB::Black;
         break;
     }
     }
@@ -103,9 +100,16 @@ void Lights::togglePosition() {
             setLEDStatus(DEFENSE);
         }
         else {
+
             setLEDStatus(OFFENSE);
         }
         m_isOffense = !m_isOffense;
         lastToggleTime = millis();
     }
+}
+
+int Lights::returnStatus(){
+    int status = 0;
+    status = currState;
+    return status;
 }
