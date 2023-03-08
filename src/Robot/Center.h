@@ -3,11 +3,7 @@
 #ifndef __OLDCENTER_H__
 #define __OLDCENTER_H__
 
-
 #include <Arduino.h>
-#include <SPI.h>
-
-#include <Servo.h>
 
 enum armStatus {
   Higher, Lower, Stop, Hold

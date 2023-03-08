@@ -2,26 +2,49 @@
 #include "MotorControl.h"
 
 /**
-* A class similar to the servo class, implements a method of choosing timers and channels 
-* based on the number of motors attached, uses writeMicros, etc. Utilizes the LedC built-in functions
-* 
-* since the sabretooth is expecting a duty cycle difference (time the signal is high for) 
-* I wrote a function to convert the time on value to a duty cycle, this would need to be moved into the Control class,
-* 
-* Goal of this class: 
-*     - be able to declare multiple motor objects, with pin definitions.
-*     - write a value to the motor, maybe -100 100, we can play around with this, or we can just keep the existing system with the values between 1000 and 2000
-*     - needs to be usable in drive and special bot classes
-*/
+ * @brief 
+ * A class similar to the servo class, implements a method of choosing timers and channels 
+ * based on the number of motors attached, uses writeMicros, etc. Utilizes the LedC built-in functions
+ * 
+ * since the sabretooth is expecting a duty cycle difference (time the signal is high for) 
+ * I wrote a function to convert the time on value to a duty cycle, this would need to be moved into the Control class,
+ * 
+ * Goals/ Design specs: 
+ *  - be able to declare multiple motor objects, with pin definitions.
+ *  - avoid two motors on one pin and timers overlapping
+ *  - write a value to the motor, maybe -100 100, we can play around with this
+ *  - needs to be usable in drive and special bot classes
+ * 
+ * Example uses:
+ * Definition: the motor object type can simply be defined by naming the motor object using the Motor type:
+ *      Motor ExampleMotorObj;
+ *   
+ * and the pin can be attached by calling attach():
+ *      ExampleMotorObj.attach();
+ * 
+ * to write to the motor simply pass a float between -1 and 1 into write()
+ *      ExampleMotorObj.write(power);
+ * 
+ * where -1, 0 and 1 correspond to the throttles in the reverse, stop and forward directions
+ * 
+ * @author Rhys Davies 
+ */
 MotorControl::MotorControl() {
-    if(ServoCount < MAX_NUM_MOTORS) {
+    if(ServoCount < MAX_NUM_MOTORS)
         this->motorIndex = ServoCount++;  // assign a servo index to this instance
-    }
     else
         this->motorIndex = 255;
     // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
 }
 
+/**
+ * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
+ * @author Rhys Davies
+ * Updated 2-26-2023
+ * 
+ * @param pin the pin the motor is connected to
+ * @return uint8_t the channel number the pin is attached to, 255 if failure
+ */
 uint8_t MotorControl::attach(int pin) {
     return attach(pin, MIN_PWM_US, MAX_PWM_US);
 }
