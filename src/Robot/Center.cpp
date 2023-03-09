@@ -14,6 +14,7 @@
     armControl - Based on what is inputed in main, raises, lowers, or stops the arm. 
 */
 #include <Robot/Center.h>
+#include "Robot/MotorControl.h"
 
 /**
  * Description: Public function that starts the arm and claw motors and sets their starting status to stop. 
@@ -24,9 +25,9 @@ Center::Center() {
 
 }
 
-void Center::setServos(Servo& armPin, Servo& clawPin) {
-  armmotor=armPin;
-  clawmotor=clawPin;
+void Center::setServos(int armPin, int clawPin) {
+  this->motorPins[0] = armPin, this->motorPins[1] = clawPin;
+  armMotor.attach(armPin), clawMotor.attach(clawPin);
 }
 
 /**
@@ -36,11 +37,11 @@ void Center::setServos(Servo& armPin, Servo& clawPin) {
  **/
 void Center::clawControl(clawStatus reqstatus) {
   if(reqstatus == clawStatus::Open) {
-    clawmotor.write(96);
+    clawMotor.write(0.05);
   } else if(reqstatus == clawStatus::Close) {
-    clawmotor.write(84);
+    clawMotor.write(-0.05);
   } else if(reqstatus == clawStatus::clawStop) {
-    clawmotor.write(93);
+    clawMotor.write(0);
   }
 }
 
@@ -51,13 +52,13 @@ void Center::clawControl(clawStatus reqstatus) {
  **/
 void Center::armControl(armStatus reqstatus) {
   if (reqstatus == armStatus::Lower) {
-    armmotor.write(98);
+    armMotor.write(0.05);
   } else if (reqstatus == armStatus::Higher) {
-    armmotor.write(87);
+    armMotor.write(-0.05);
   } else if (reqstatus == armStatus::Stop) {
-    armmotor.write(93);
+    armMotor.write(0);
   } else if (reqstatus == armStatus::Hold) {
-    armmotor.write(90);
+    armMotor.write(-0.025);
   }
 
 }

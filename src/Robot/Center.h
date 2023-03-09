@@ -16,14 +16,14 @@ enum clawStatus {
 class Center {
   private:
     // uint8_t clawPin, m_elevationpin;
-    Servo clawmotor;
-    Servo armmotor;
+    uint8_t motorPins[2];
+    MotorControl clawMotor, armMotor;
 
   public:
     Center(); 
-    void setServos(Servo& armPin, Servo& clawPin);
-    void clawControl(clawStatus reqstatus);
-    void armControl(armStatus reqstatus);
+    void setServos(int armPin, int clawPin);
+    void clawControl(clawStatus reqStatus);
+    void armControl(armStatus reqStatus);
 };
 
 #endif

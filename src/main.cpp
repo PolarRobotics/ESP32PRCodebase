@@ -12,6 +12,9 @@
 #define LEFT_MOT_PIN  32
 #define RIGHT_MOT_PIN 33
 
+#define BOT_TYPE
+#define MOT_TYPE
+
 // uint8_t motorType;
 Drive DriveMotors;
 ps5Controller PS5;
@@ -36,6 +39,9 @@ void setup() {
 
     DriveMotors.setMotorType(MOTORS::big);
     DriveMotors.setServos(LEFT_MOT_PIN, RIGHT_MOT_PIN);
+
+    // Set the special bot type
+    
  
     // Set initial LED color state
     // robotLED.setupLEDS();
