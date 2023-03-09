@@ -41,17 +41,27 @@ BluetoothSerial SerialBT;
 #define BT_DISCOVER_TIME  15000
 #define LOOP_DELAY 100
 const char* macTest = "bc:c7:46:03"; // length 11
+const char* macTest2 = "bc:c7:46:04"; // length 11
+bool foundController = false;
 esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
+
+bool addressIsController(const char* addrCharPtr) {
+  if (strncmp(addrCharPtr, macTest, 11) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, macTest2, 11) == 0)
+    return true;
+  else return false;
+}
 
 // in the original code, this was all in the if condition... removed for legibility
 bool startDiscovery() {
   return SerialBT.discoverAsync([](BTAdvertisedDevice* pDevice) {   
       Serial.print(F("Found a new device asynchronously: "));
       Serial.println(pDevice->toString().c_str());
-      // if (strncmp(pDevice->getAddress().toString().c_str(), macTest, 11) == 0) {
-      //   SerialBT.discoverAsyncStop();
-      // }
+      if (addressIsController(&pDevice->getAddress().toString().c_str()[0])
+        || strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0)
+        foundController = true;
     } 
   );
 }
@@ -79,6 +89,8 @@ void getAddress(const char* &addr) {
   if (str == "") addr = nullptr; // 
   else addr = &str.c_str()[0]; // get value of char ptr string
 }
+
+
 
 
 // Search for PS5 Controllers and pair to the first one found
@@ -116,7 +128,12 @@ void activatePairing() {
   BTScanResults* btDeviceList = SerialBT.getScanResults();  // may be accessing from different threads!
 
   if (startDiscovery()) {
-    delay(BT_DISCOVER_TIME);
+    int timer = 0;
+    while (timer < BT_DISCOVER_TIME && !foundController) {
+      delay(LOOP_DELAY);
+      timer += LOOP_DELAY;
+    }
+    // delay(BT_DISCOVER_TIME);
     Serial.println(F("Stopping discoverAsync... "));
     SerialBT.discoverAsyncStop();
     Serial.println(F("discoverAsync stopped"));
@@ -145,12 +162,12 @@ void activatePairing() {
         
         
         // if (strcmp(device->getName().c_str(), "Wireless Controller") == 0) {
-        if (strncmp(addrCharPtr, macTest, 11) == 0) {
+        if (addressIsController(addrCharPtr) || strcmp(device->getName().c_str(), "Wireless Controller") == 0) {
           Serial.print(F("Connecting to PS5 Controller @ "));
           Serial.println(addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected()) {
-            blinkBuiltInLED();
+            toggleBuiltInLED();
             delay(LOOP_DELAY);
           }
           Serial.print(F("PS5 Controller Connected: "));

@@ -3,6 +3,6 @@
 // #define BIN_LED_H_
 
 bool builtInLedOn();
-void blinkBuiltInLED();
+void toggleBuiltInLED();
 
 // #endif

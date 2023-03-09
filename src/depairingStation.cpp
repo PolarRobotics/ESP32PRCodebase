@@ -73,7 +73,7 @@ void loop() {
         delay(20);
     } else {
       Serial.println(F("PS5 controller not connected!"));
-      blinkBuiltInLED();
+      toggleBuiltInLED();
       delay(1000);
     }
 
