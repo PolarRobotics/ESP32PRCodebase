@@ -1,21 +1,21 @@
 #include <Robot/Robot.h>
 #include <Drive/Drive.h>
-#include <Servo.h>
+#include <Robot/MotorControl.h>
 
 // Flywheel defines 
-#define FLYWHEEL_SPEED_FULL 120 // this should be between 90 and 140. 
-#define FLYWHEEL_STOP_SPEED 93
+#define FLYWHEEL_SPEED_FULL 0.75 // this should be between 90 and 140. 
+#define FLYWHEEL_STOP_SPEED 0
 
 // Elevation (linear actuators) defines
-#define SERVO_SPEED_UP 175
-#define SERVO_SPEED_STOP 90 // this should always be 90.
-#define SERVO_SPEED_DOWN 5
+#define SERVO_SPEED_UP 1
+#define SERVO_SPEED_STOP 0
+#define SERVO_SPEED_DOWN -1
 #define MAX_ELEVATION 100
 #define ELEVATION_PERIOD 3750
 
 // Conveyor defines
-#define CONVEYOR_ON 140
-#define CONVEYOR_OFF 93 
+#define CONVEYOR_ON 1
+#define CONVEYOR_OFF 0 
 
 // Enum for Increasing or Decreasing Flywheel Speed
 enum speedStatus {
@@ -32,32 +32,33 @@ enum qbAim {
  * @authors Rhys Davies
  */
 class Quarterback { //: public Robot
-    private: 
-        uint8_t m_FlywheelPin;
-        uint8_t m_conveyorPin;
-        uint8_t m_ElevationPin;
-        Servo FWMotor;
-        Servo conveyorMotor;
-        Servo elevationMotors;
-        bool flywheelsOn, conveyorOn;
-        bool aimingUp, aimingDown;
-        bool raise, lower;
-        uint8_t currentElevation, targetElevation;
-        unsigned long lastElevationTime;
-        unsigned long lastFlywheelToggleTime;
-        float flywheelSpeedFactor;
-    public:
-        Quarterback();
-        void attachMotors(uint8_t fwpin, 
-            uint8_t conveyorpin, uint8_t elevationpin);
-        void toggleFlywheels();
-        void aim(qbAim dir);
-        void toggleConveyor();
-        void changeFWSpeed(speedStatus speed);
-        void updateAim();
+  private: 
+    uint8_t m_FlywheelPin;
+    uint8_t m_conveyorPin;
+    uint8_t m_ElevationPin;
+    MotorControl FWMotor;
+    MotorControl conveyorMotor;
+    MotorControl elevationMotors;
+    bool flywheelsOn, conveyorOn;
+    bool aimingUp, aimingDown;
+    bool raise, lower;
+    uint8_t currentElevation, targetElevation;
+    unsigned long lastElevationTime;
+    unsigned long lastFlywheelToggleTime;
+    float flywheelSpeedFactor;
+  public:
+    Quarterback(uint8_t fwpin, 
+        uint8_t conveyorpin, uint8_t elevationpin);
+    void setup();
+    bool toggleFlywheels();
+    void aim(qbAim dir);
+    void toggleConveyor();
+    void changeFWSpeed(speedStatus speed);
+    void updateAim();
 };
 
-Quarterback::Quarterback() {
+Quarterback::Quarterback(uint8_t fwpin, 
+        uint8_t conveyorpin, uint8_t elevationpin) {
     // Declare that the flywheels are off
     flywheelsOn = false;
 
@@ -68,14 +69,14 @@ Quarterback::Quarterback() {
     aimingUp = false;
     aimingDown = false;
     currentElevation = 0;
+
+    // Label the pins inside the class
+    this->m_FlywheelPin = fwpin;
+    this->m_conveyorPin = conveyorpin;
+    this->m_ElevationPin = elevationpin;
 }
 
-void Quarterback::attachMotors(uint8_t fwpin, uint8_t conveyorpin, uint8_t elevationpin) {
-    // Label the pins inside the class
-    m_FlywheelPin = fwpin;
-    m_conveyorPin = conveyorpin;
-    m_ElevationPin = elevationpin;
-
+void Quarterback::setup() {
     // Attach the motors inside the class to their respective pins
     FWMotor.attach(m_FlywheelPin);
     conveyorMotor.attach(m_conveyorPin);
@@ -91,7 +92,7 @@ void Quarterback::attachMotors(uint8_t fwpin, uint8_t conveyorpin, uint8_t eleva
 }
 
 
-void Quarterback::toggleFlywheels() {
+bool Quarterback::toggleFlywheels() {
     // Toggle the flywheels and use the speed factor to know what speed
     if (!flywheelsOn){
       FWMotor.write(FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
@@ -100,10 +101,10 @@ void Quarterback::toggleFlywheels() {
     }
     // Toggle the bool so we know if its on or not
     flywheelsOn = !flywheelsOn;
+    return flywheelsOn;
 }
 
 // Aiming related functions
-
 void Quarterback::aim(qbAim dir) {
   // Check which direction the user wants and turn the other direction off
   switch(dir) {
