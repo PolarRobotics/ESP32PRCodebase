@@ -19,9 +19,11 @@
 #define PWM_FREQ 1/PWM_PERIOD
 // #define PWM_FREQ 1000000 / PWM_PERIOD_US
 
+class MotorControl;
+
 typedef struct servo {
     uint8_t pin;
-    bool isactive;
+    // bool isactive;
     uint8_t channel;
 } servo_t;
 
@@ -41,6 +43,7 @@ public:
     uint8_t attach(int pin, int min, int max); // as above but also sets min and max values for writes. 
     void write(float pwr);
     void displayPinInfo();
+    void writelow();
 };
 
 

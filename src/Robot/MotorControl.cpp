@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "MotorControl.h"
+#include "Robot/MotorControl.h"
 
 /**
 * A class similar to the servo class, implements a method of choosing timers and channels 
@@ -41,7 +41,7 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
         // pinMode(pin, OUTPUT);                             // set servo pin to output
         // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
         servos[this->motorIndex].pin = pin;                  // assign this servo a pin
-        servos[this->motorIndex].isactive = true;            // set the servo to active
+        // servos[this->motorIndex].isactive = true;            // set the servo to active
         servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
         this->min = min; 
         this->max = max;
@@ -77,6 +77,7 @@ void MotorControl::displayPinInfo() {
     // Serial.print(power2Duty(pwr));
 }
 
+
 /**
  * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
  * then converts to a duty cycle and then scales that to a 16-bit integer, the resolution of the channel
@@ -93,6 +94,15 @@ uint16_t MotorControl::power2Duty(float power) {
     // this can be written in compiler code, but we are trying to save on flash memory
     this->tempTimeon = (power + 1) * 500 + 1000;
     return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
+}
+
+/**
+ * @brief writelow hopefully helps to prevent the issue with motors spinning at 
+ * max speed on boot, sending bots into the stratosphere
+ * 
+ */
+void MotorControl::writelow() {
+    digitalWrite(servos[this->motorIndex].pin, LOW);
 }
 
 
