@@ -46,6 +46,4 @@ public:
     void writelow();
 };
 
-
-
 #endif // !__MOTOR_CONTROL__

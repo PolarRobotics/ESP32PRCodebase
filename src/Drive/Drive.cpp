@@ -14,7 +14,7 @@
  *
  *               ^
  *               | Fwd
- *       _________________
+ *       _________________ 
  *      |        _        |
  *      |       |O|       |       O: represents the Omniwheel, a wheel that can turn on 2 axis
  *      |       |_|       |       L: represents the left Wheel, powered by the left motor via a chain
@@ -43,6 +43,7 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin){
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
 }
+
 
 /**
  * setStickPwr takes the stick values passed in and normalizes them to values between -1 and 1
