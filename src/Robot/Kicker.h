@@ -4,6 +4,7 @@
 #define KICKER_H_
 
 #include <Arduino.h>
+#include <Robot/MotorControl.h>
 
 /**
  * @brief Kicker header file
@@ -14,7 +15,7 @@ class Kicker { //: public Robot
   private:
     bool m_enabled; // safety feature
     uint8_t m_kickerpin;
-    Servo m_windupMotor;
+    MotorControl m_windupMotor;
   public:
     Kicker() {
       m_enabled = false;
@@ -26,27 +27,27 @@ class Kicker { //: public Robot
     }
     void Test() {
       if (m_enabled) {
-        m_windupMotor.write(50); //clockwise
+        m_windupMotor.write(-1); //clockwise
         delay(3000);
-        m_windupMotor.write(90); //stop
+        m_windupMotor.write(0); //stop
         delay(1000);
-        m_windupMotor.write(130); //counter-clockwise
+        m_windupMotor.write(1); //counter-clockwise
         delay(3000);
-        m_windupMotor.write(90); //stop
+        m_windupMotor.write(0); //stop
       }
     }
     void turnfwd() {
       if (m_enabled)
-        m_windupMotor.write(70);
+        m_windupMotor.write(-0.5);
     }
     void turnrev() {
       if (m_enabled)
-        m_windupMotor.write(110);
+        m_windupMotor.write(0.5);
     }
 
     void stop() {
       if (m_enabled)
-        m_windupMotor.write(90);
+        m_windupMotor.write(0);
     }
 };
 
