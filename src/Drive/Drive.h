@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include "PolarRobotics.h"
-#include "Robot/MotorControl.h"
+#include <Robot/MotorControl.h>
 
 #ifndef NUM_MOTORS
 // the number of motors associated with driving

@@ -19,7 +19,7 @@
 #define PWM_FREQ 1/PWM_PERIOD
 // #define PWM_FREQ 1000000 / PWM_PERIOD_US
 
-class MotorControl;
+// class MotorControl;
 
 typedef struct servo {
     uint8_t pin;

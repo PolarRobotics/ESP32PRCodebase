@@ -47,6 +47,7 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
         this->max = max;
         ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
         ledcAttachPin(pin, this->motorIndex);
+        ledcWrite(this->motorIndex, 0);
     }
     return this->motorIndex;
 }

@@ -42,7 +42,7 @@ void setup() {
     // robotLED.setLEDStatus(Lights::PAIRING);
 
     //replace with your controllers MAC address
-    PS5.begin("bc:c7:46:04:09:62");
+    PS5.begin("BC:C7:46:03:38:70");
     // "BC:C7:46:03:7A:ED" i++
     // "BC:C7:46:03:38:70" sqrt(-1)
     // "BC:C7:46:03:38:72"
