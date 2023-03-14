@@ -4,6 +4,7 @@
 #define __OLDCENTER_H__
 
 #include <Arduino.h>
+#include "Robot/MotorControl.h"
 
 enum armStatus {
   Higher, Lower, Stop, Hold

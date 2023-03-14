@@ -14,7 +14,7 @@
     armControl - Based on what is inputed in main, raises, lowers, or stops the arm. 
 */
 #include <Robot/Center.h>
-#include "Robot/MotorControl.h"
+
 
 /**
  * Description: Public function that starts the arm and claw motors and sets their starting status to stop. 

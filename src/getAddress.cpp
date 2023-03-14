@@ -20,7 +20,7 @@ bool initBluetooth()
     Serial.println("Failed to enable bluedroid");
     return false;
   }
- 
+  return true;
 }
  
 void printDeviceAddress() {
