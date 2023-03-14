@@ -45,7 +45,7 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
 
-    activatePairing();
+    activatePairing(false, 1000000);
 
     // Serial.print(F("\r\nConnected"));
 

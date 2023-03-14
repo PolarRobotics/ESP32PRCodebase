@@ -38,7 +38,6 @@ Preferences prefs;
 
 BluetoothSerial SerialBT;
 
-#define BT_DISCOVER_TIME  15000
 #define LOOP_DELAY 100
 const char* macTest = "bc:c7:46:03"; // length 11
 const char* macTest2 = "bc:c7:46:04"; // length 11
@@ -93,29 +92,35 @@ void getAddress(const char* &addr) {
 
 
 
-// Search for PS5 Controllers and pair to the first one found
-void activatePairing() {
+// 
+
+/// @brief Search for PS5 Controllers and pair to the first one found
+/// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
+/// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
+void activatePairing(bool doRePair, int discoverTime) {
   Serial.begin(115200);
   // pinMode(LED_BUILTIN, OUTPUT);
 
   const char* addrCharPtr = nullptr;
   getAddress(addrCharPtr); // if we just returned a char*, it would be deleted and point to nowhere useful
 
-  // see if we have a stored MAC address and try to pair to it
-  if (addrCharPtr != nullptr) {
-    Serial.print(F("Connecting to PS5 Controller @ "));
-    Serial.println(addrCharPtr);
-    ps5.begin(addrCharPtr);
-    int timer = 0;
-    while (timer < BT_DISCOVER_TIME && !ps5.isConnected()) {
-      delay(LOOP_DELAY);
-      timer += LOOP_DELAY;
-    }
-    if (ps5.isConnected()) {
-      Serial.println(F("PS5 Controller Connected!"));
-      yeet;
-    } // otherwise look for devices to pair with
-  } 
+  if (doRePair) {
+    // see if we have a stored MAC address and try to pair to it
+    if (addrCharPtr != nullptr) {
+      Serial.print(F("Connecting to PS5 Controller @ "));
+      Serial.println(addrCharPtr);
+      ps5.begin(addrCharPtr);
+      int timer = 0;
+      while (timer < discoverTime && !ps5.isConnected()) {
+        delay(LOOP_DELAY);
+        timer += LOOP_DELAY;
+      }
+      if (ps5.isConnected()) {
+        Serial.println(F("PS5 Controller Connected!"));
+        yeet;
+      } // otherwise look for devices to pair with
+    } 
+  }
 
   // begin broadcasting as "ESP32" as master role
   if (!SerialBT.begin("ESP32", true)) { 
@@ -129,11 +134,10 @@ void activatePairing() {
 
   if (startDiscovery()) {
     int timer = 0;
-    while (timer < BT_DISCOVER_TIME && !foundController) {
+    while (timer < discoverTime && !foundController) {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
     }
-    // delay(BT_DISCOVER_TIME);
     Serial.println(F("Stopping discoverAsync... "));
     SerialBT.discoverAsyncStop();
     Serial.println(F("discoverAsync stopped"));
