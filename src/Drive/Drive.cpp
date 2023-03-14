@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
-// #include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -14,7 +13,7 @@
  *
  *               ^
  *               | Fwd
- *       _________________
+ *       _________________ 
  *      |        _        |
  *      |       |O|       |       O: represents the Omniwheel, a wheel that can turn on 2 axis
  *      |       |_|       |       L: represents the left Wheel, powered by the left motor via a chain
@@ -31,18 +30,20 @@
  * @param leftmotorpin the arduino pin needed for the left motor, needed for servo
  * @param rightmotorpin the arduino pin needed for the right motor, needed for servo
 */
+
 Drive::Drive() {
     this->motorType = MOTORS::big; // default to long motors
 }
 
-void Drive::setServos(uint8_t lpin, uint8_t rpin){
+void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     M1.attach(lpin), M2.attach(rpin);
-};
+}
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
 }
+
 
 /**
  * setStickPwr takes the stick values passed in and normalizes them to values between -1 and 1
