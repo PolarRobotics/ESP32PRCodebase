@@ -95,9 +95,9 @@ void loop() {
         // ps5.setLed(255, 0, 0);   // set LED red
 
         // for debugging connection
-        if (ps5.Square()) {
-            Serial.println(F("Square pressed"));
-        }
+        // if (ps5.Square()) {
+        //     Serial.println(F("Square pressed"));
+        // }
 
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
 
@@ -135,20 +135,20 @@ void loop() {
         #elif BOT_TYPE == 1  // Receiver
         #elif BOT_TYPE == 2  // Old Center
             // Control the arm of the center
-            if (PS5.R2()) {
+            if (ps5.Triangle()) {
                 centerBot.armControl(armStatus::Higher);
-            } else if (PS5.L2()) {
+            } else if (ps5.Cross()) {
                 centerBot.armControl(armStatus::Lower);
-            } else if (PS5.Triangle()) {
+            } else if (ps5.Circle()) {
                 centerBot.armControl(armStatus::Hold);
             } else {
                 centerBot.armControl(armStatus::Stop);
             }
 
             // Control the Claw of the center
-            if (PS5.Up()) {
+            if (ps5.Up()) {
                 centerBot.clawControl(clawStatus::Open);
-            } else if (PS5.Down()) {
+            } else if (ps5.Down()) {
                 centerBot.clawControl(clawStatus::Close);
             } else {
                 centerBot.clawControl(clawStatus::clawStop);
@@ -156,30 +156,30 @@ void loop() {
         #elif BOT_TYPE == 3  // Mecanum Center
         #elif BOT_TYPE == 4  // Quarterback
             // Update the bools within the class to see if the user wants to go up or down
-            if (PS5.Up())
+            if (ps5.Up())
                 qbBot.aim(qbAim::aimUp);
-            else if (PS5.Down())
+            else if (ps5.Down())
                 qbBot.aim(qbAim::aimDown);
             
             // Update the aim on quarterback to see if we need to stop or not
-            quarterbackbot.updateAim();
+            qbBot.updateAim();
 
             // Toogle the Conveyor and Flywheels
-            if (PS5.Square())
+            if (ps5.Square())
                 qbBot.toggleConveyor();
-            else if (PS5.Circle())
+            else if (ps5.Circle())
                 qbBot.toggleFlywheels();
             
             // Change the flywheel speed
-            if(PS5.Triangle())
+            if(ps5.Triangle())
                 qbBot.changeFWSpeed(speedStatus::increase);
-            else if (PS5.Cross())
+            else if (ps5.Cross())
                 qbBot.changeFWSpeed(speedStatus::decrease);
         #elif BOT_TYPE == 5  // Kicker
             // Control the motor on the kicker
-            if (PS5.Triangle())
+            if (ps5.Triangle())
                 kickerBot.turnfwd();
-            else if (PS5.Cross())
+            else if (ps5.Cross())
                 kickerBot.turnrev();
             else
                 kickerBot.stop();

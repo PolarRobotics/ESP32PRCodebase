@@ -1,5 +1,9 @@
+#pragma once
+
+#ifndef _QUARTERBACK_H_
+#define _QUARTERBACK_H_
+
 #include <Robot/Robot.h>
-#include <Drive/Drive.h>
 #include <Robot/MotorControl.h>
 
 // Flywheel defines 
@@ -166,122 +170,4 @@ void Quarterback::changeFWSpeed(speedStatus speed) {
 
 }
 
-// void Quarterback::passBall() {
-//     //turn flywheels on to low: approx 10 power for a light boost
-//     rightFlywheelMotor.write(FLYWHEEL_STOP_SPEED - 10);
-//     leftFlywheelMotor.write(FLYWHEEL_STOP_SPEED + 10);
-//     //once firing mechanism is finished add that in and make it a macro?
-// }
-
-
-// void Quarterback::update() {
-
-// }
-
-// void Quarterback::fireWeapon(String requestedStatus) {
-//   if (requestedStatus == "Fire") {
-//     FireMotor.write(50);
-//   } else if (requestedStatus == "Retract") {
-//     FireMotor.write(130);
-//   } else if (requestedStatus == "Stop") {
-//     FireMotor.write(90);
-//   }
-// }
-
-
-/*
-    Notes:
-
-    IDEA:
-    can have an action where if you hold down on a button
-    and move the left hat you can adjust the elevation of the QB
-    this can allow for better control of the height
-
-*/
-
-/*  OLD MAIN CODE:
-
-    if (PS3.getButtonClick(TRIANGLE) && targetElevation + 1 < 3) {
-      targetElevation = targetElevation + 1;
-    } else if (PS3.getButtonClick(CROSS) && targetElevation - 1 >= 0) {
-      targetElevation = targetElevation - 1;
-    } else if (PS3.getButtonClick(DOWN)) {
-      targetElevation = 0;
-    }
-
-    int maxCounter = 13000;
-
-    if ((counter > maxCounter || counter < 0) && (aimingup == true || aimingdown == true)) {
-      aimingup = false;
-      aimingdown = false;
-      ElevationMotor.write(getSpeedStop());
-      if (counter == -1) {
-        counter = 0;
-      } else {
-        counter = maxCounter;
-      }
-      Serial.println("im stuck");
-    } else if (targetElevation > currentElevation) {
-      ElevationMotor.write(getSpeedUp());
-      currentElevation = targetElevation;
-      aimingup = true;
-      aimingdown = false;
-    } else if (targetElevation < currentElevation) {
-      ElevationMotor.write(getSpeedDown());
-      currentElevation = targetElevation;
-      aimingdown = true;
-      aimingup = false;
-    } else if (aimingup == true) {
-      counter = counter + 1;
-    } else if (aimingdown == true) {
-      counter = counter - 1;
-    }
-
-    if (targetElevation == 1 && counter == maxCounter/2) {
-      aimingup = false;
-      aimingdown = false;
-      ElevationMotor.write(getSpeedStop());
-    }
-
-    if (PS3.getButtonClick(LEFT)) {
-      ElevationMotor.write(getSpeedDown());
-      delay(8000);
-      ElevationMotor.write(getSpeedStop());
-      counter = 0;
-      currentElevation = 0;
-      targetElevation = 0;
-    }
-
-    if (PS3.getButtonPress(CIRCLE)) {
-      conveyor.write(145);
-    } else {
-      conveyor.write(30);
-    }
-
-    // flywheels.write(60);
-    
-    if (PS3.getButtonClick(SQUARE)) {
-      flywheelstate = flywheelstate + 1;
-      if (flywheelstate == 1) {
-        flywheels.write(100);
-        //flywheelstatis = true;
-        //Serial.print("ran line 1");
-        //Serial.println("  ");
-      } else if (flywheelstate == 2) {
-        flywheels.write(145);
-        //flywheelstatis = true;
-        //Serial.print("ran line 1");
-        //Serial.println("  ");
-      } else if (flywheelstate==3){
-        flywheels.write(93);
-        //flywheelstatis = false;
-        flywheelstate = 0;
-        //Serial.print("ran line 2");
-        //Serial.println("  ");
-      }
-        //Serial.print("ran line 3");
-        //Serial.println("  ");
-    }
-
-
-*/
+#endif
