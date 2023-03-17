@@ -4,9 +4,13 @@
 #include <Arduino.h>
 // #include <Robot/Lights.h>
 
-// Pin Declarations
-#define LEFT_MOT_PIN  32  // Drive Base
-#define RIGHT_MOT_PIN 33
+// Pin Declarations  |     configurations     |
+//     | mot# |##|   | 2 wheels  |  4 wheels  |
+// ____|______|__|___|___________|____________|
+#define M1_PIN 32 // | leftDriv  | leftFront  |
+#define M2_PIN 33 // | rightDriv | rightFront |
+#define M3_PIN 26 // |    N/A    | leftRear   |
+#define M4_PIN 27 // |    N/A    | rightRear  |
 
 #define SPECBOT_PIN1  18   // Special Bot Pins
 #define SPECBOT_PIN2  19

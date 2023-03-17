@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
+#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -36,7 +37,7 @@ Drive::Drive() {
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
-    this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     M1.attach(lpin), M2.attach(rpin);
 }
 
@@ -257,11 +258,15 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
  * @return returns the stored motor power for a given motor
 */
 float Drive::getMotorPwr(uint8_t mtr) {
-    return motorPower[mtr];
+    return this->motorPower[mtr];
+}
+void Drive::setMotorPwr(float power, uint8_t mtr) {
+    this->motorPower[mtr] = power;
 }
 
 void Drive::emergencyStop() {
-    M1.write(0); M2.write(0);
+    M1.writelow(), M2.writelow();
+    // M1.write(0); M2.write(0);
 }
 
 /**

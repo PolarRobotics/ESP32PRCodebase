@@ -8,19 +8,18 @@
 #include "Robot/MotorControl.h"
 
 #ifndef NUM_MOTORS
-// the number of motors associated with driving
 #define NUM_MOTORS 2
-#endif
+#endif // !NUM_MOTORS
 
 // rate of change of power with respect to time when accelerating %power/10th of sec
+#ifndef ACCELERATION_RATE
 #define ACCELERATION_RATE .0375
+#endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
 // how often the ramp() function changes the motor power
 #define TIME_INCREMENT 25
-#define BREAK_TIME_INCREMENT 12.5
-// DO NOT CHANGE THIS EVER!!!!!
-#define PWM_CONVERSION_FACTOR 0.3543307087
+
 
 #define NORMAL_TURN_CONSTANT 0.05
 
@@ -47,12 +46,9 @@
 
 class Drive {
 private:
-    MOTORS motorType;
-    uint8_t motorPins[NUM_MOTORS];
     MotorControl M1, M2;
 
     float stickForwardRev, stickTurn;
-    float BSNscalar;
     float lastTurnPwr;
     float turnPower;
     
@@ -63,10 +59,12 @@ private:
     float turnMotorValues[NUM_MOTORS];
     // float inputPower[NUM_MOTORS];
     // float rampedPower[NUM_MOTORS];
-    void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
     void generateMotionValues();
-    float ramp(float requestedPower, uint8_t mtr);
+    void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
 public:
+    MOTORS motorType;
+    float BSNscalar;
+
     enum SPEED {
         normal,
         boost,
@@ -76,11 +74,12 @@ public:
     Drive();
     void setServos(uint8_t lpin, uint8_t rpin);
     void setMotorType(MOTORS motorType);
-    void attach();
     void setStickPwr(int8_t leftY, int8_t rightX);
     void setBSN(SPEED bsn); //(float powerMultiplier);
     float getMotorPwr(uint8_t mtr);
+    void setMotorPwr(float power, uint8_t mtr);
     void emergencyStop();
+    float ramp(float requestedPower, uint8_t mtr);
     void update();
     void drift();
     void printDebugInfo();
