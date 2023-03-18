@@ -25,10 +25,12 @@
     #include <Drive/Drive.h>
     #include <Robot/Quarterback.h>
     Quarterback qbBot(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+    Drive DriveMotors;
 #elif BOT_TYPE == 5  // Kicker
     #include <Drive/Drive.h>
     #include <Robot/Kicker.h>
     Kicker kickerBot;
+    Drive DriveMotors;
 #endif
 
 
@@ -104,7 +106,7 @@ void loop() {
 
         #if BOT_TYPE == 3 // temporary solution
             DriveMotors.setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-        #elif
+        #elif BOT_TYPE != 3
             DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
         #endif
 
@@ -126,7 +128,7 @@ void loop() {
         // }
         
         // Update the motors based on the inputs from the controller
-        if(ps5.L2() && BOT_TYPE != 3) {
+        if(ps5.L2()) {  // && BOT_TYPE != 3
             ps5.setLed(255, 255, 0);   // set LED yellow
             DriveMotors.drift();
         } else {

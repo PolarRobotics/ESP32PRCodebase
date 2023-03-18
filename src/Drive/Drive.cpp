@@ -86,18 +86,30 @@ void Drive::setBSN(SPEED bsn) {
     // set the scalar to zero if the requested value is greater than 1, this is not entirely necessary, but is a safety
     switch (bsn) {
         case boost: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_BOOST_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_BOOST_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_BOOST_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_BOOST_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_BOOST_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_BOOST_PCT; break; }
+            }
             break;
         }
         case normal: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_NORMAL_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_NORMAL_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_NORMAL_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_NORMAL_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_NORMAL_PCT; break; }
+            }
             break;
         }
         case slow: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_SLOW_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_SLOW_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_SLOW_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_SLOW_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_SLOW_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_SLOW_PCT; break; }
+            }
             break;
         }
         case brake: {

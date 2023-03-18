@@ -14,8 +14,8 @@
 
 #define SPECBOT_PIN1  18   // Special Bot Pins
 #define SPECBOT_PIN2  19
-#define SPECBOT_PIN3  4
-#define SPECBOT_PIN4  2
+#define SPECBOT_PIN3  21
+#define SPECBOT_PIN4  22
 
 // Robot Type Enum
 // 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
@@ -47,8 +47,10 @@ enum ELEVATION {
 };
 
 enum MOTORS {
-  big, // EEPROM value of 0 for long/big motors
-  small // EEPROM value of 1 for short/small motors
+  big, // MOTOR_TYPE value of 0 for long/big motors
+  small, // MOTOR_TYPE value of 1 for short/small motors
+  mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
+  falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 };
 
 #endif

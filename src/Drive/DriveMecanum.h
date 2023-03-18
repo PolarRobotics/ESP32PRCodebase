@@ -5,15 +5,17 @@
 
 #include <Arduino.h>
 
-// keep these defines before drive is included
+// keep these defines before drive is included to override default vaules
 #define NUM_MOTORS 4
 #define ACCELERATION_RATE .0375
 
+// #define MECANUM_MOT_BOOST_PCT  0.8
+// #define MECANUM_MOT_NORMAL_PCT 0.6
+// #define MECANUM_MOT_SLOW_PCT   0.4
+
 #include <Drive/Drive.h>
 
-#define MECANUM_BOOST_PCT 0.8
-#define MECANUM_NORMAL_PCT 0.6
-#define MECANUM_SLOW_PCT 0.4
+
 
 class DriveMecanum : public Drive {
 private:
@@ -24,6 +26,7 @@ private:
     float r; // r the magnitude of travel
     float theta; // the angle of travel
     float turnPwr; // used to turn the bot
+    float x_comp, y_comp, max;
     //unsigned long lastRampTime; //only needs to be one value
     // float motorPwr[NUM_MOTORS]; // declared in parent class, use accessors
     void generateMotorValues();
@@ -34,6 +37,7 @@ public:
     // float getMotorPwr(uint8_t mtr);
     void emergencyStop();
     void update();
+    void drift();
     void printDebugInfo();
 };
 
