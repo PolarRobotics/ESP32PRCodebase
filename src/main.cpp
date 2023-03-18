@@ -114,8 +114,9 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
-        // if(ps5.getButtonPress(UP)){
-        //   robotLED.togglePosition();
+        // Toggle the position of the LEDs
+        // if(ps5.Options()){
+        //    robotLED.togglePosition();
         // }
         
         // Update the motors based on the inputs from the controller
@@ -193,7 +194,6 @@ void loop() {
     }
     // DriveMotors.printDebugInfo();
     // robotLED.updateLEDS();
-
 }
 
 /**
