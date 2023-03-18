@@ -12,7 +12,8 @@
 
 //PWM defines:
 #define PWM_RES 16 //channel resolution in bits, this is a really high resolution, can lower this if we have stability problems
-#define PWM_MAXDUTY 65535    // (2^16) - 1
+// #define PWM_MAXDUTY 65535    // (2^16) - 1
+const int PWM_MAXDUTY = (1 << PWM_RES) - 1;
 // a Period of 2500us for the sabertooth, gives the st enough time to react to inputs, 
 // can make this value closer to 2000us if we have issues with the ST not updating fast enough
 #define PWM_PERIOD 0.0025   // 2500 us
