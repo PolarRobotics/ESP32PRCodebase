@@ -348,6 +348,10 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
+    // Set the ramp value to a function, needed for generateMotionValues
+    lastRampPower[0] = motorPower[0];
+    lastRampPower[1] = motorPower[1];
+
     M1.write(motorPower[0]);
     M2.write(motorPower[1]);
 }
