@@ -10,8 +10,8 @@
 
 #define SPECBOT_PIN1  18   // Special Bot Pins
 #define SPECBOT_PIN2  19
-#define SPECBOT_PIN3  4
-#define SPECBOT_PIN4  2
+#define SPECBOT_PIN3  21
+#define SPECBOT_PIN4  22
 
 // Robot Type Enum
 // 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
