@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
+#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -36,7 +37,7 @@ Drive::Drive() {
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
-    this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     M1.attach(lpin), M2.attach(rpin);
 }
 
@@ -85,18 +86,30 @@ void Drive::setBSN(SPEED bsn) {
     // set the scalar to zero if the requested value is greater than 1, this is not entirely necessary, but is a safety
     switch (bsn) {
         case boost: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_BOOST_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_BOOST_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_BOOST_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_BOOST_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_BOOST_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_BOOST_PCT; break; }
+            }
             break;
         }
         case normal: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_NORMAL_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_NORMAL_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_NORMAL_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_NORMAL_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_NORMAL_PCT; break; }
+            }
             break;
         }
         case slow: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_SLOW_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_SLOW_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_SLOW_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_SLOW_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_SLOW_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_SLOW_PCT; break; }
+            }
             break;
         }
         case brake: {
@@ -257,11 +270,15 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
  * @return returns the stored motor power for a given motor
 */
 float Drive::getMotorPwr(uint8_t mtr) {
-    return motorPower[mtr];
+    return this->motorPower[mtr];
+}
+void Drive::setMotorPwr(float power, uint8_t mtr) {
+    this->motorPower[mtr] = power;
 }
 
 void Drive::emergencyStop() {
-    M1.write(0); M2.write(0);
+    M1.writelow(), M2.writelow();
+    // M1.write(0); M2.write(0);
 }
 
 /**
