@@ -4,96 +4,103 @@
 #define DRIVE_H_
 
 #include <Arduino.h>
-#include <PolarRobotics.h>
+#include "PolarRobotics.h"
+#include "Robot/MotorControl.h"
+
 
 #ifndef NUM_MOTORS
-// the number of motors associated with driving
 #define NUM_MOTORS 2
-#endif
+#endif // !NUM_MOTORS
 
-//PWM defines:
-#define M1_PWMCH 8
-#define M2_PWMCH 9
-#define PWM_RES 16 //channel resolution in bits
-// frequency in HZ, a Period of 2500us for the sabertooth
-#define PWM_PERIOD 0.0025
-#define PWM_FREQ 1 / PWM_PERIOD 
-
+// RAMP DEFINES
+#ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
 #define ACCELERATION_RATE .0375
+#endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
 // how often the ramp() function changes the motor power
 #define TIME_INCREMENT 25
-#define BREAK_TIME_INCREMENT 12.5
-// DO NOT CHANGE THIS EVER!!!!!
-#define PWM_CONVERSION_FACTOR 0.3543307087
 
+
+// drive param generation
 #define NORMAL_TURN_CONSTANT 0.05
-
-// Controller Defines
+// Value for the tank mode speed reduction percentage
+#define TANK_MODE_PCT 0.75
+// Value for the Drift Mode Reduction Factor Percentage
+#define DRIFT_MODE_PCT 0.8
 #define turnMax 0.3 // the max allowable turning when the bot is traveling at lowest speed
 #define turnMin 0.1 // the min allowable turning when the bot is traveling at full speed
+
+
+// Controller Defines
 #define STICK_DEADZONE 0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
+
+// MOTOR MAX SPEED DEFINES;
 // this is 1.0, the maximum power possible to the motors.
 #define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
 #define BIG_NORMAL_PCT 0.4 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
 #define BIG_SLOW_PCT 0.2   // the value for brake button to slow down the motors at the button press
-#define BRAKE_BUTTON_PCT 0
 
 // BSN for Short/Small Motors
 #define SMALL_BOOST_PCT 0.5
 #define SMALL_NORMAL_PCT 0.3
 #define SMALL_SLOW_PCT 0.1
-// Value for the tank mode speed reduction percentage
-#define TANK_MODE_PCT 0.75
-// Value for the Drift Mode Reduction Factor Percentage
-#define DRIFT_MODE_PCT 0.8
+
+// BSN for the 12v motors used on the new center
+#define MECANUM_BOOST_PCT  0.8
+#define MECANUM_NORMAL_PCT 0.6
+#define MECANUM_SLOW_PCT   0.3
+
+// BSN for the falcon motors used on the runningback
+#define FALCON_BOOST_PCT  0.95
+#define FALCON_NORMAL_PCT 0.8
+#define FALCON_SLOW_PCT   0.4
+
+#define BRAKE_BUTTON_PCT 0
 
 class Drive {
+protected:
+    MotorControl M1, M2;
+    float stickForwardRev, stickTurn;
+    float lastTurnPwr;
+    float turnPower;
+    unsigned long lastRampTime[NUM_MOTORS];
 private:
-  float stickForwardRev, stickTurn;
-  float BSNscalar;
-  float lastTurnPwr;
-  float turnPower;
+    MOTORS motorType;
+    float BSNscalar;
 
-  MOTORS motorType;
-  uint8_t motorPins[NUM_MOTORS];
-  unsigned long lastRampTime[NUM_MOTORS];
-  float motorPower[NUM_MOTORS];
-  float currentPower[NUM_MOTORS];
-  float lastRampPower[NUM_MOTORS];
-  // float inputPower[NUM_MOTORS];
-  // float rampedPower[NUM_MOTORS];
-  void calcTurningMotorValues(float stickTrn,  float prevPwr, int dir);
-  float turnMotorValues[2] = {0,0};
-  void generateMotionValues();
-  float ramp(float requestedPower, uint8_t mtr);
-  // use the inline keywork to ensure the function will get called again as soon as possible
-  uint32_t Convert2PWM(float rampPwr);
-  uint16_t convert2Duty(uint32_t timeon_us);
-  void setMotorPWM(float pwr, byte pin); //__attribute__((always_inline));
-
+    float motorPower[NUM_MOTORS];
+    float currentPower[NUM_MOTORS];
+    float lastRampPower[NUM_MOTORS];
+    float turnMotorValues[NUM_MOTORS];
+    // float inputPower[NUM_MOTORS];
+    // float rampedPower[NUM_MOTORS];
+    void generateMotionValues();
+    void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
 public:
-  enum SPEED {
-    normal,
-    boost,
-    slow,
-    brake
-  };
-  Drive();
-  void setServos(uint8_t lpin, uint8_t rpin);
-  void setMotorType(MOTORS motorType);
-  void attach();
-  void setStickPwr(int8_t leftY, int8_t rightX);
-  void setBSN(SPEED bsn); //(float powerMultiplier);
-  float getMotorPwr(uint8_t mtr);
-  void emergencyStop();
-  void update();
-  void drift();
-  void printDebugInfo();
+
+    enum SPEED {
+        normal,
+        boost,
+        slow,
+        brake
+    };
+    Drive();
+    void setServos(uint8_t lpin, uint8_t rpin);
+    void setMotorType(MOTORS motorType);
+    void setStickPwr(int8_t leftY, int8_t rightX);
+    void setBSN(SPEED bsn); //(float powerMultiplier);
+    float getBSN();
+    float getMotorPwr(uint8_t mtr);
+    void setMotorPwr(float power, uint8_t mtr);
+    void emergencyStop();
+    float ramp(float requestedPower, uint8_t mtr);
+    void update();
+    void drift();
+    void printDebugInfo();
 };
 
 #endif /* DRIVE_H */

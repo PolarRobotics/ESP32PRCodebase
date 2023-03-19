@@ -2,9 +2,9 @@
 // void setRobotState(BOT_STATE state);
 
 #include <FastLED.h>
-#define LED_PIN 22
-#define NUM_LEDS 39
-#define TIME_BETWEEN_TOGGLES 25
+#define LED_PIN 4
+#define NUM_LEDS 30
+#define TIME_BETWEEN_TOGGLES 500
 
 class Lights {
 private:
