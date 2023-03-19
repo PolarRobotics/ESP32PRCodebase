@@ -2,29 +2,38 @@
 #include <ps5Controller.h> // esp ps5 library
 
 // Custom Polar Robotics Libraries:
-#include "PolarRobotics.h"
-#include "pairing.h"
-// #include <Robot/Robot.h>
-#include "Drive/Drive.h"
+#include <PolarRobotics.h>
+#include <pairing.h>
 // #include <Robot/Lights.h>
 
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
+    #include <Drive/Drive.h>
+    Drive DriveMotors;
 #elif BOT_TYPE == 1  // Receiver
+    #include <Drive/Drive.h>
+    Drive DriveMotors;
 #elif BOT_TYPE == 2  // Old Center
+    #include <Drive/Drive.h>
     #include <Robot/Center.h>
+    Drive DriveMotors;
     Center centerBot;
 #elif BOT_TYPE == 3  // Mecanum Center
+    #include <Drive/DriveMecanum.h>
+    DriveMecanum DriveMotors;
 #elif BOT_TYPE == 4  // Quarterback
+    #include <Drive/Drive.h>
     #include <Robot/Quarterback.h>
     Quarterback qbBot(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+    Drive DriveMotors;
 #elif BOT_TYPE == 5  // Kicker
+    #include <Drive/Drive.h>
     #include <Robot/Kicker.h>
     Kicker kickerBot;
+    Drive DriveMotors;
 #endif
 
-// Robot Drivebase
-Drive DriveMotors;
+
 // Lights robotLED;
 
 // Prototypes for Controller Callbacks
@@ -52,19 +61,20 @@ void setup() {
     #else                  // Big Motor
         DriveMotors.setMotorType(MOTORS::big);
     #endif
-    
-    // Set the main driving motors
-    DriveMotors.setServos(LEFT_MOT_PIN, RIGHT_MOT_PIN);
 
     // Set the special bot type
-    #if BOT_TYPE == 0    // Lineman
-    #elif BOT_TYPE == 1  // Receiver
+    #if BOT_TYPE == 0 | BOT_TYPE == 1   // Lineman/receiver
+        DriveMotors.setServos(M1_PIN, M2_PIN);
     #elif BOT_TYPE == 2  // Old Center
+        DriveMotors.setServos(M1_PIN, M2_PIN);
         centerBot.setServos(SPECBOT_PIN1, SPECBOT_PIN2);
     #elif BOT_TYPE == 3  // Mecanum Center
+        DriveMotors.setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
     #elif BOT_TYPE == 4  // Quarterback
+        DriveMotors.setServos(M1_PIN, M2_PIN);
         qbBot.setup();
     #elif BOT_TYPE == 5  // Kicker
+        DriveMotors.setServos(M1_PIN, M2_PIN);
         kickerBot.setup(SPECBOT_PIN1);
     #endif
  
@@ -94,12 +104,11 @@ void loop() {
         // Serial.print(F("\r\nConnected"));
         // ps5.setLed(255, 0, 0);   // set LED red
 
-        // for debugging connection
-        // if (ps5.Square()) {
-        //     Serial.println(F("Square pressed"));
-        // }
-
-        DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
+        #if BOT_TYPE == 3 // temporary solution
+            DriveMotors.setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
+        #elif BOT_TYPE != 3
+            DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
+        #endif
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
@@ -120,7 +129,7 @@ void loop() {
         // }
         
         // Update the motors based on the inputs from the controller
-        if(ps5.L2()) {
+        if(ps5.L2()) {  // && BOT_TYPE != 3
             ps5.setLed(255, 255, 0);   // set LED yellow
             DriveMotors.drift();
         } else {
