@@ -119,6 +119,9 @@ void Drive::setBSN(SPEED bsn) {
     }
 }
 
+float Drive::getBSN() {
+    return this->BSNscalar;
+}
 
 /**
  * generateTurnScalar takes the input stick power and scales the max turning power allowed with the forward power input

@@ -1,10 +1,17 @@
 // void updateLEDS(BOT_STATE status); //private
 // void setRobotState(BOT_STATE state);
-
+#include <Arduino.h>
 #include <FastLED.h>
-#define LED_PIN 4
+#include <PolarRobotics.h>
+
 #define NUM_LEDS 30
 #define TIME_BETWEEN_TOGGLES 500
+
+// LED Variables
+static unsigned long tackleTime = 0;
+static const int switchTime = 2000;
+static unsigned long CURRENTTIME;
+static int ledStatus = 0;
 
 class Lights {
 private:
