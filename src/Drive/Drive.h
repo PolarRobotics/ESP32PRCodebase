@@ -12,7 +12,6 @@
 #define NUM_MOTORS 2
 #endif // !NUM_MOTORS
 
-
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec

@@ -33,8 +33,13 @@
     Drive DriveMotors;
 #endif
 
+Lights robotLED;
 
-// Lights robotLED;
+// LED Variables
+unsigned long tackleTime = 0;
+const int switchTime = 2000;
+unsigned long CURRENTTIME;
+int ledStatus = 0;
 
 // Prototypes for Controller Callbacks
 void onConnection();
@@ -79,8 +84,8 @@ void setup() {
     #endif
  
     // Set initial LED color state
-    // robotLED.setupLEDS();
-    // robotLED.setLEDStatus(Lights::PAIRING);
+    robotLED.setupLEDS();
+    robotLED.setLEDStatus(Lights::PAIRING);
 
     activatePairing();
 
@@ -110,6 +115,10 @@ void loop() {
             DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
         #endif
 
+        if(robotLED.returnStatus() == Lights::PAIRING){
+            robotLED.setLEDStatus(Lights::PAIRED);
+        }
+
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
             DriveMotors.emergencyStop();
@@ -123,10 +132,28 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
+        // Manual LED State Toggle (Defense/Offense)
+        if(PS5.Up()){
+        robotLED.togglePosition();
+        }
+
+
+        // Update the LEDs based on tackle (tPin input) for offensive robot
+        if(digitalRead(tPin) == HIGH){
+        robotLED.setLEDStatus(Lights::TACKLED);
+        tackleTime = millis();
+        }
+
+        // Switch the LED state back to offense after being tackled a certain amount of time ago
+        if((millis() - tackleTime) >= switchTime){
+        robotLED.setLEDStatus(Lights::OFFENSE);
+        }
+
         // Toggle the position of the LEDs
         // if(ps5.Options()){
         //    robotLED.togglePosition();
         // }
+
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {  // && BOT_TYPE != 3
@@ -199,10 +226,9 @@ void loop() {
         // Emergency stop if the controller disconnects
         // ps5.setLed(255, 255, 0);   // set LED yellow
         DriveMotors.emergencyStop();
-        // delay(300);
+        robotLED.setLEDStatus(Lights::PAIRING);
     }
-    // DriveMotors.printDebugInfo();
-    // robotLED.updateLEDS();
+
 }
 
 /**
