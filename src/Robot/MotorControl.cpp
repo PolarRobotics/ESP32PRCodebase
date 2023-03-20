@@ -35,6 +35,12 @@ MotorControl::MotorControl() {
     else
         this->motorIndex = 255;
     // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+
+    pwm_config0.frequency = PWM_FREQ;  //frequency 
+    pwm_config0.cmpr_a = 0;      //duty cycle of PWMxA = 50.0%
+    pwm_config0.cmpr_b = 0;      //duty cycle of PWMxB = 50.0%
+    pwm_config0.counter_mode = MCPWM_UP_COUNTER; // Up-down counter (triangle wave)
+    pwm_config0.duty_mode = MCPWM_DUTY_MODE_0; // Active HIGH
 }
 
 /**
@@ -63,14 +69,21 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
     if(this->motorIndex < MAX_NUM_MOTORS - 1) {
         // pinMode(pin, OUTPUT);                             // set servo pin to output
         // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
-        servos[this->motorIndex].pin = pin;                  // assign this servo a pin
+        SERVOS.pin = pin;                  // assign this servo a pin
         // servos[this->motorIndex].isactive = true;            // set the servo to active
-        servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
+        // servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
         this->min = min; 
         this->max = max;
-        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
-        ledcAttachPin(pin, this->motorIndex);
-        ledcWrite(this->motorIndex, 0);
+
+        SERVOS.mcunitnum = MCUnitNumREF[this->motorIndex % 2];
+        // map the output pin defined for mcpwm to the servo
+        SERVOS.mcoutputmodule = MCOutputREF[this->motorIndex];
+        mcpwm_gpio_init(SERVOS.mcunitnum, SERVOS.mcoutputmodule, pin);
+        mcpwm_init(SERVOS.mcunitnum, USE_TIMER, &(this->pwm_config0));
+        mcpwm_set_frequency(SERVOS.mcunitnum, USE_TIMER, PWM_FREQ);
+        // ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
+        // ledcAttachPin(pin, this->motorIndex);
+        // ledcWrite(this->motorIndex, 0);
     }
     return this->motorIndex;
 }
@@ -85,7 +98,8 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
  * @param pwr input power
 */
 void MotorControl::write(float pwr) {
-    ledcWrite(this->motorIndex, power2Duty(pwr));
+    // ledcWrite(this->motorIndex, power2Duty(pwr));
+    mcpwm_set_duty(SERVOS.mcunitnum, USE_TIMER, MCPWM_GEN_A, power2Duty(pwr));
 }
 
 void MotorControl::displayPinInfo() {
@@ -117,7 +131,8 @@ void MotorControl::displayPinInfo() {
 uint16_t MotorControl::power2Duty(float power) {
     // this can be written in compiler code, but we are trying to save on flash memory
     this->tempTimeon = (power + 1) * 500 + 1000;
-    return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
+    // return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
+    return tempTimeon / (PWM_PERIOD * 1000);
 }
 
 /**
