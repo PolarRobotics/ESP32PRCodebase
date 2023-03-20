@@ -81,7 +81,7 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
         mcpwm_gpio_init(SERVOS.mcunitnum, SERVOS.mcoutputmodule, pin);
         mcpwm_init(SERVOS.mcunitnum, USE_TIMER, &(this->pwm_config0));
         mcpwm_set_frequency(SERVOS.mcunitnum, USE_TIMER, PWM_FREQ);
-        // ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
+        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
         // ledcAttachPin(pin, this->motorIndex);
         // ledcWrite(this->motorIndex, 0);
     }
