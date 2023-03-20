@@ -47,7 +47,7 @@
 // BSN for Short/Small Motors
 #define SMALL_BOOST_PCT 0.5
 #define SMALL_NORMAL_PCT 0.3
-#define SMALL_SLOW_PCT 0.1
+#define SMALL_SLOW_PCT 0.15
 
 // BSN for the 12v motors used on the new center
 #define MECANUM_BOOST_PCT  0.8

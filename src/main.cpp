@@ -60,7 +60,7 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::big);
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(MOTORS::small);
-#else MOTOR_TYPE == 2             
+#elif MOTOR_TYPE == 2             
     DriveMotors.setMotorType(MOTORS::mecanummotor);
 #endif
 
@@ -118,7 +118,7 @@ void loop() {
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
-            DriveMotors.emergencyStop();
+            // DriveMotors.emergencyStop();
             DriveMotors.setBSN(Drive::brake);
         } else if (ps5.R1()) {
             DriveMotors.setBSN(Drive::boost);
@@ -153,7 +153,7 @@ void loop() {
         } else {
             DriveMotors.update();
             
-            // DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
+            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
         // PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());

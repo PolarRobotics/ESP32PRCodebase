@@ -164,3 +164,55 @@ void MotorControl::writelow() {
 //     // digitalWrite(motorPins[1], LOW);
 //     // delayMicroseconds(2000 - Convert2PWMVal(motorPower[1]) - 40); //-170
 // }
+
+/*
+#include "driver/mcpwm.h"
+#include "soc/mcpwm_reg.h"
+#include "soc/mcpwm_struct.h"
+#define GPIO_PWM0A_OUT 19   //HV
+#define GPIO_PWM1A_OUT 18   //HV
+#define GPIO_PWM0B_OUT 17  //LV
+#define GPIO_PWM1B_OUT 16  //LV
+int freq0 = 50000;
+int freq1 = 1000;
+float duty0 = 25;
+float duty1 = 25;
+
+bool pwm0 = false;
+bool pwm1 = false;
+
+void setuppwm(){
+   mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0A_OUT);
+   mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, GPIO_PWM1A_OUT);
+   mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0B, GPIO_PWM0B_OUT);
+   mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM1B, GPIO_PWM1B_OUT);
+ mcpwm_config_t pwm_config0;
+     pwm_config0.frequency = freq0;  //frequency 
+     pwm_config0.cmpr_a = 0;      //duty cycle of PWMxA = 50.0%
+     pwm_config0.cmpr_b = 0;      //duty cycle of PWMxB = 50.0%
+     pwm_config0.counter_mode = MCPWM_UP_COUNTER; // Up-down counter (triangle wave)
+     pwm_config0.duty_mode = MCPWM_DUTY_MODE_0; // Active HIGH
+   mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config0);    //Configure PWM0A & PWM0B with above settings
+   mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_1, &pwm_config0);    //Configure PWM0A & PWM0B with above settings
+   mcpwm_init(MCPWM_UNIT_1, MCPWM_TIMER_0, &pwm_config0);    //Configure PWM0A & PWM0B with above settings
+   mcpwm_init(MCPWM_UNIT_1, MCPWM_TIMER_1, &pwm_config0);    //
+   delay(20);
+   mcpwm_set_frequency(MCPWM_UNIT_1, MCPWM_TIMER_1,freq1);
+   delay(20);
+   mcpwm_set_timer_sync_output(MCPWM_UNIT_0, MCPWM_TIMER_0,MCPWM_SWSYNC_SOURCE_TEZ);
+   mcpwm_sync_enable(MCPWM_UNIT_0, MCPWM_TIMER_0,MCPWM_SELECT_TIMER0_SYNC, 0);   
+   mcpwm_sync_enable(MCPWM_UNIT_0, MCPWM_TIMER_1,MCPWM_SELECT_TIMER0_SYNC, 500); 
+   delay(20);
+   mcpwm_set_timer_sync_output(MCPWM_UNIT_1, MCPWM_TIMER_0,MCPWM_SWSYNC_SOURCE_TEZ);
+   mcpwm_sync_enable(MCPWM_UNIT_1, MCPWM_TIMER_0,MCPWM_SELECT_TIMER0_SYNC, 0); 
+   mcpwm_sync_enable(MCPWM_UNIT_1, MCPWM_TIMER_1,MCPWM_SELECT_TIMER0_SYNC, 500); 
+    delay(20);
+     mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_GEN_A, duty0);
+     mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_GEN_A, duty0);
+     
+ }
+void setup() {
+ setuppwm();
+
+}
+*/

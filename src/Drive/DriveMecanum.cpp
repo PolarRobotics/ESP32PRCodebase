@@ -122,10 +122,5 @@ void DriveMecanum::printDebugInfo() {
     Serial.print(scaledRightX);
 
     Serial.print(F("  Output motor powers: "));
-    for (int i = 0; i < NUM_MOTORS; i++) {
-        Serial.print(i);
-        Serial.print(F("  "));
-        Serial.print(getMotorPwr(i));
-        Serial.print(F("  "));
-    }
+    Serial.printf("LF: %d, RF: %d, LR: %d, RR: %d", getMotorPwr(0), getMotorPwr(1), getMotorPwr(2), getMotorPwr(3));
 }
