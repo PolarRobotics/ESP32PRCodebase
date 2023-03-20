@@ -20,6 +20,8 @@
     Center centerBot;
 #elif BOT_TYPE == 3  // Mecanum Center
     #include <Drive/DriveMecanum.h>
+    #include <Robot/MecanumCenter.h>
+    MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2)
     DriveMecanum DriveMotors;
 #elif BOT_TYPE == 4  // Quarterback
     #include <Drive/Drive.h>
@@ -72,6 +74,7 @@ void setup() {
     centerBot.setServos(SPECBOT_PIN1, SPECBOT_PIN2);
 #elif BOT_TYPE == 3  // Mecanum Center
     DriveMotors.setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+    mcBot.setup();
 #elif BOT_TYPE == 4  // Quarterback
     DriveMotors.setServos(M1_PIN, M2_PIN);
     qbBot.setup();
@@ -182,6 +185,17 @@ void loop() {
             centerBot.clawControl(clawStatus::clawStop);
         }
     #elif BOT_TYPE == 3  // Mecanum Center
+         // Toogle the Conveyor and Flywheels
+        if (ps5.Square())
+            qbBot.toggleConveyor();
+        else if (ps5.Circle())
+            qbBot.toggleFlywheels();
+        
+        // Change the flywheel speed
+        if(ps5.Triangle())
+            qbBot.changeFWSpeed(speedStatus::increase);
+        else if (ps5.Cross())
+            qbBot.changeFWSpeed(speedStatus::decrease);
     #elif BOT_TYPE == 4  // Quarterback
         // Update the bools within the class to see if the user wants to go up or down
         if (ps5.Up())
