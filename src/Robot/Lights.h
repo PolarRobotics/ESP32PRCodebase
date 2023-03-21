@@ -4,10 +4,11 @@
 #include <FastLED.h>
 #include <PolarRobotics.h>
 
-#define NUM_LEDS 30
+#define NUM_LEDS 100
 #define TIME_BETWEEN_TOGGLES 500
 
 // LED Variables
+bool tackled = false;
 static unsigned long tackleTime = 0;
 static const int switchTime = 2000;
 static unsigned long CURRENTTIME;

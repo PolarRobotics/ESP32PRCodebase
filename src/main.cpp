@@ -60,7 +60,7 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::big);
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(MOTORS::small);
-#else MOTOR_TYPE == 2             
+#else MOTOR_TYPE == 2        
     DriveMotors.setMotorType(MOTORS::mecanummotor);
 #endif
 
@@ -139,11 +139,14 @@ void loop() {
         if(digitalRead(TACKLE_PIN) == HIGH){
             robotLED.setLEDStatus(Lights::TACKLED);
             tackleTime = millis();
+            tackled = true;
         }
 
         // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime){
+        if(((millis() - tackleTime) >= switchTime) && tackled){
             robotLED.setLEDStatus(Lights::OFFENSE);
+            tackleTime = millis();
+            tackled = false;
         }
         
         // Update the motors based on the inputs from the controller
