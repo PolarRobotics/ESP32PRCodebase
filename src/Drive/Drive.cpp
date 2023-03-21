@@ -60,8 +60,8 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
     // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
     // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / (float)127.5);
-    stickTurn = (rightX / (float)127.5);  
+    stickForwardRev = (leftY / 127.5f);
+    stickTurn = (rightX / 127.5f);  
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone

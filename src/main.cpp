@@ -62,7 +62,7 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::big);
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(MOTORS::small);
-#else MOTOR_TYPE == 2             
+#elif MOTOR_TYPE == 2             
     DriveMotors.setMotorType(MOTORS::mecanummotor);
 #endif
 
@@ -111,7 +111,7 @@ void loop() {
 
     #if BOT_TYPE == 3 // temporary solution
         DriveMotors.setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-    #elif BOT_TYPE != 3
+    #else //if BOT_TYPE != 3
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
     #endif
 
@@ -156,7 +156,7 @@ void loop() {
         } else {
             DriveMotors.update();
             
-            // DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
+            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
         }
         // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
         // PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
