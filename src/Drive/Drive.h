@@ -37,13 +37,21 @@
 #define BRAKE_BUTTON_PCT 0
 
 // BSN for Short/Small Motors
-#define SMALL_BOOST_PCT 0.5
-#define SMALL_NORMAL_PCT 0.3
-#define SMALL_SLOW_PCT 0.1
-// Value for the tank mode speed reduction percentage
-#define TANK_MODE_PCT 0.75
-// Value for the Drift Mode Reduction Factor Percentage
-#define DRIFT_MODE_PCT 0.8
+#define SMALL_BOOST_PCT 0.7
+#define SMALL_NORMAL_PCT 0.5
+#define SMALL_SLOW_PCT 0.2
+
+// BSN for the 12v motors used on the new center
+#define MECANUM_BOOST_PCT  0.8
+#define MECANUM_NORMAL_PCT 0.6
+#define MECANUM_SLOW_PCT   0.3
+
+// BSN for the falcon motors used on the runningback
+#define FALCON_BOOST_PCT  0.95
+#define FALCON_NORMAL_PCT 0.8
+#define FALCON_SLOW_PCT   0.4
+
+#define BRAKE_BUTTON_PCT 0
 
 class Drive {
 private:
