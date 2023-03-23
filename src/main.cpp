@@ -4,7 +4,8 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
-#include <Robot/Lights.h>
+// #include <Robot/Lights.h>
+
 
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
@@ -22,6 +23,7 @@
     #include <Drive/DriveMecanum.h>
     #include <Robot/MecanumCenter.h>
     MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2)
+
     DriveMecanum DriveMotors;
 #elif BOT_TYPE == 4  // Quarterback
     #include <Drive/Drive.h>
@@ -118,6 +120,7 @@ void loop() {
         // if(robotLED.returnStatus() == Lights::PAIRING){
         //     robotLED.setLEDStatus(Lights::PAIRED);
         // }
+
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
