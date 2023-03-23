@@ -144,13 +144,12 @@ void activatePairing(bool doRePair, int discoverTime) {
       timer += LOOP_DELAY;
       
       // Double Blink when in Pairing Mode like PS5 Controller
-      if ((timer % 1000) % (9 * LOOP_DELAY) == 0)
+      // at: 300/400, 600/700
+      if ((timer % 1000) % (7 * LOOP_DELAY) == 0)
         toggleBuiltInLED();
-      else if ((timer % 1000) % (7 * LOOP_DELAY) == 0)
+      else if ((timer % 1000) % (4 * LOOP_DELAY) == 0)
         toggleBuiltInLED();
-      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0)
-        toggleBuiltInLED();
-      else if ((timer % 1000) % LOOP_DELAY == 0)
+      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0) // also does 600
         toggleBuiltInLED();
     }
     Serial.println(F("Stopping discoverAsync... "));
