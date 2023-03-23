@@ -35,7 +35,7 @@
     Drive DriveMotors;
 #endif
 
-Lights robotLED;
+// Lights robotLED;
 
 // Prototypes for Controller Callbacks
 void onConnection();
@@ -84,8 +84,8 @@ void setup() {
 #endif
  
     // Set initial LED color state
-    robotLED.setupLEDS();
-    robotLED.setLEDStatus(Lights::PAIRING);
+    // robotLED.setupLEDS();
+    // robotLED.setLEDStatus(Lights::PAIRING);
 
     activatePairing();
 
@@ -115,9 +115,9 @@ void loop() {
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
     #endif
 
-        if(robotLED.returnStatus() == Lights::PAIRING){
-            robotLED.setLEDStatus(Lights::PAIRED);
-        }
+        // if(robotLED.returnStatus() == Lights::PAIRING){
+        //     robotLED.setLEDStatus(Lights::PAIRED);
+        // }
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
@@ -133,21 +133,21 @@ void loop() {
         }
 
         // Manual LED State Toggle (Defense/Offense)
-        if(ps5.Options()){
-            robotLED.togglePosition();
-        }
+        // if(ps5.Options()){
+        //     robotLED.togglePosition();
+        // }
 
 
         // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(digitalRead(TACKLE_PIN) == HIGH){
-            robotLED.setLEDStatus(Lights::TACKLED);
-            tackleTime = millis();
-        }
+        // if(digitalRead(TACKLE_PIN) == HIGH){
+        //     robotLED.setLEDStatus(Lights::TACKLED);
+        //     tackleTime = millis();
+        // }
 
         // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime){
-            robotLED.setLEDStatus(Lights::OFFENSE);
-        }
+        // if((millis() - tackleTime) >= switchTime){
+        //     robotLED.setLEDStatus(Lights::OFFENSE);
+        // }
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {  // && BOT_TYPE != 3
@@ -230,7 +230,7 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
-        robotLED.setLEDStatus(Lights::PAIRING);
+        // robotLED.setLEDStatus(Lights::PAIRING);
     }
 }
 
