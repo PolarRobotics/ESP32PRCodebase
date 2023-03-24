@@ -206,8 +206,7 @@ void loop() {
         else if (ps5.Down())
             qbBot.aim(qbAim::aimDown);
         
-        // Update the aim on quarterback to see if we need to stop or not
-        qbBot.updateAim();
+        
 
         // Toogle the Conveyor and Flywheels
         if (ps5.Square())
@@ -220,6 +219,10 @@ void loop() {
             qbBot.changeFWSpeed(speedStatus::increase);
         else if (ps5.Cross())
             qbBot.changeFWSpeed(speedStatus::decrease);
+        
+
+        // Update the aim and flywheels on quarterback to see if we need to stop or not
+        qbBot.update();
     #elif BOT_TYPE == 5  // Kicker
         // Control the motor on the kicker
         if (ps5.Triangle())

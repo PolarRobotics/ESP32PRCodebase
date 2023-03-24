@@ -10,6 +10,11 @@
 #define FLYWHEEL_SPEED_FULL 0.5 // this should be between 90 and 140. 
 #define FLYWHEEL_STOP_SPEED 0
 
+#define FW_TIME_INCREMENT 25
+#define FW_BRAKE_PERCENTAGE 0.9
+#define FW_ACCEL_RATE .025
+
+
 // Elevation (linear actuators) defines
 #define SERVO_SPEED_UP 1
 #define SERVO_SPEED_STOP 0
@@ -53,6 +58,8 @@ class Quarterback { //: public Robot
     uint8_t currentElevation, targetElevation;
     unsigned long lastElevationTime;
     unsigned long lastFlywheelToggleTime;
+    unsigned long lastFlywheelRampTime;
+    float currentFWPower;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0;
     float flywheelSpeedFactor;
   public:
@@ -60,10 +67,11 @@ class Quarterback { //: public Robot
         uint8_t conveyorpin, uint8_t elevationpin);
     void setup();
     void toggleFlywheels();
+    float rampFW(float requestedpwr);
     void aim(qbAim dir);
     void toggleConveyor();
     void changeFWSpeed(speedStatus speed);
-    void updateAim();
+    void update();
 };
 
 Quarterback::Quarterback(uint8_t fwpin, 
@@ -102,18 +110,43 @@ void Quarterback::setup() {
 
 
 void Quarterback::toggleFlywheels() {
-  if (millis() - lastDBFW >= DEBOUNCE_WAIT) {
-    // Toggle the flywheels and use the speed factor to know what speed
-    if (!flywheelsOn){
-      FWMotor.write(FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
-    } else {
-      FWMotor.write(FLYWHEEL_STOP_SPEED);
-    }
+  if (millis() - lastDBFW >= DEBOUNCE_WAIT) {  
     // Toggle the bool so we know if its on or not
     flywheelsOn = !flywheelsOn;
 
     lastDBFW = millis();
   }
+}
+
+float Quarterback::rampFW(float requestedPower) {
+
+    if (millis() - lastFlywheelRampTime >= FW_TIME_INCREMENT) {
+        if (abs(requestedPower) < THRESHOLD) { // if the input is effectively zero
+        // Experimental Braking Code
+            if (abs(currentFWPower) < 0.1) { // if the current power is very small just set it to zero
+                currentFWPower = 0;
+            }
+            else {
+                currentFWPower *= FW_BRAKE_PERCENTAGE;
+            }
+            lastFlywheelRampTime = millis();
+        }
+        else if (abs(requestedPower - currentFWPower) < FW_ACCEL_RATE) { // if the input is effectively at the current power
+            return requestedPower;
+        }
+        // if we need to increase speed and we are going forward
+        else if (requestedPower > currentFWPower) { 
+            currentFWPower = currentFWPower + FW_ACCEL_RATE;
+            lastFlywheelRampTime = millis();
+        }
+        // if we need to decrease speed and we are going forward
+        else if (requestedPower < currentFWPower) { 
+            currentFWPower = currentFWPower - FW_ACCEL_RATE;
+            lastFlywheelRampTime = millis();
+        }
+    }
+
+    return currentFWPower;
 }
 
 // Aiming related functions
@@ -130,35 +163,42 @@ void Quarterback::aim(qbAim dir) {
   }
 }
 
-  void Quarterback::updateAim() { 
-    // Setup the motors on startup so they go down to absolute zero
-    if (setupMotors){
-      if (millis() - lastElevationTime >= 8000) {
-        setupMotors = false;
-      } else {
-        elevationMotors.write(SERVO_SPEED_DOWN);
-      }
-    // Control the motors based on if they want to aim up or down
-    } else if (millis() - lastElevationTime >= ELEVATION_PERIOD) {
-      if (aimingUp && currentElevation < MAX_ELEVATION) {
-        // Set the elevation of the top to 50% higher
-        elevationMotors.write(SERVO_SPEED_UP);
-        currentElevation += 50;
-        aimingUp = false;
-        lastElevationTime = millis();
-
-      } else if (aimingDown && currentElevation > 0) {
-        // Set the elevation of the bottom to 50% lower
-        elevationMotors.write(SERVO_SPEED_DOWN);
-        currentElevation -= 50;
-        aimingDown = false;
-        lastElevationTime = millis();
-
-      } else {
-        // Stop the linear actuators if it is not supposed to move up or down anymore
-        elevationMotors.write(SERVO_SPEED_STOP);
-      }
+void Quarterback::update() { 
+  // Setup the motors on startup so they go down to absolute zero
+  if (setupMotors){
+    if (millis() - lastElevationTime >= 8000) {
+      setupMotors = false;
+    } else {
+      elevationMotors.write(SERVO_SPEED_DOWN);
     }
+  // Control the motors based on if they want to aim up or down
+  } else if (millis() - lastElevationTime >= ELEVATION_PERIOD) {
+    if (aimingUp && currentElevation < MAX_ELEVATION) {
+      // Set the elevation of the top to 50% higher
+      elevationMotors.write(SERVO_SPEED_UP);
+      currentElevation += 50;
+      aimingUp = false;
+      lastElevationTime = millis();
+
+    } else if (aimingDown && currentElevation > 0) {
+      // Set the elevation of the bottom to 50% lower
+      elevationMotors.write(SERVO_SPEED_DOWN);
+      currentElevation -= 50;
+      aimingDown = false;
+      lastElevationTime = millis();
+
+    } else {
+      // Stop the linear actuators if it is not supposed to move up or down anymore
+      elevationMotors.write(SERVO_SPEED_STOP);
+    }
+  }
+
+  // update flywheels if needed
+  if (flywheelsOn){
+    FWMotor.write(rampFW(FLYWHEEL_SPEED_FULL + flywheelSpeedFactor));
+  } else {
+    FWMotor.write(rampFW(FLYWHEEL_STOP_SPEED));
+  }
 }
 
 void Quarterback::toggleConveyor() {
@@ -188,11 +228,11 @@ void Quarterback::changeFWSpeed(speedStatus speed) {
     flywheelSpeedFactor = constrain(flywheelSpeedFactor, -0.15, 0.15);
 
     // Update the motors if they are spinning for the new speed
-    if (flywheelsOn){
-      FWMotor.write(FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
-    } else {
-      FWMotor.write(FLYWHEEL_STOP_SPEED);
-    }
+    // if (flywheelsOn){
+    //   FWMotor.write(FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
+    // } else {
+    //   FWMotor.write(FLYWHEEL_STOP_SPEED);
+    // }
 
     lastDBFWChange = millis();
   }
