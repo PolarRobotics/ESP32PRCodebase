@@ -79,10 +79,10 @@ void setup() {
     centerBot.setServos(SPECBOT_PIN1, SPECBOT_PIN2);
 #elif BOT_TYPE == 3  // Mecanum Center
     DriveMotors.setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
-    // mcBot.setup();
+    mcBot.setup();
 #elif BOT_TYPE == 4  // Quarterback
     DriveMotors.setServos(M1_PIN, M2_PIN);
-    // qbBot.setup();
+    qbBot.setup();
 #elif BOT_TYPE == 5  // Kicker
     DriveMotors.setServos(M1_PIN, M2_PIN);
     kickerBot.setup(SPECBOT_PIN1);
@@ -193,17 +193,17 @@ void loop() {
             centerBot.clawControl(clawStatus::clawStop);
         }
     #elif BOT_TYPE == 3  // Mecanum Center
-         // Toogle the Conveyor and Flywheels
-        // if (ps5.Square())
-        //     mcBot.toggleConveyor();
-        // else if (ps5.Circle())
-        //     mcBot.toggleFlywheels();
+        // Toggle the Conveyor and Flywheels
+        if (ps5.Square())
+            mcBot.toggleConveyor();
+        else if (ps5.Circle())
+            mcBot.toggleFlywheels();
         
-        // // Change the flywheel speed
-        // if(ps5.Triangle())
-        //     mcBot.changeFWSpeed(speedStatus::increase);
-        // else if (ps5.Cross())
-        //     mcBot.changeFWSpeed(speedStatus::decrease);
+        // Change the flywheel speed
+        if(ps5.Triangle())
+            mcBot.changeFWSpeed(speedStatus::increase);
+        else if (ps5.Cross())
+            mcBot.changeFWSpeed(speedStatus::decrease);
     #elif BOT_TYPE == 4  // Quarterback
         // Update the bools within the class to see if the user wants to go up or down
         if (ps5.Up())
