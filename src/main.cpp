@@ -6,7 +6,6 @@
 #include <pairing.h>
 #include <Robot/Lights.h>
 
-
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
     #include <Drive/Drive.h>
@@ -22,7 +21,7 @@
 #elif BOT_TYPE == 3  // Mecanum Center
     #include <Drive/DriveMecanum.h>
     #include <Robot/MecanumCenter.h>
-    MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2);
+    // MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2);
 
     DriveMecanum DriveMotors;
 #elif BOT_TYPE == 4  // Quarterback
@@ -37,7 +36,7 @@
     Drive DriveMotors;
 #endif
 
-#if BOT_TYPE != 4 | BOT_TYPE != 2
+#if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
 Lights robotLED;
 #endif
 
@@ -80,17 +79,17 @@ void setup() {
     centerBot.setServos(SPECBOT_PIN1, SPECBOT_PIN2);
 #elif BOT_TYPE == 3  // Mecanum Center
     DriveMotors.setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
-    mcBot.setup();
+    // mcBot.setup();
 #elif BOT_TYPE == 4  // Quarterback
     DriveMotors.setServos(M1_PIN, M2_PIN);
-    qbBot.setup();
+    // qbBot.setup();
 #elif BOT_TYPE == 5  // Kicker
     DriveMotors.setServos(M1_PIN, M2_PIN);
     kickerBot.setup(SPECBOT_PIN1);
 #endif
  
     // Set initial LED color state
-    #if BOT_TYPE != 4 | BOT_TYPE != 2
+    #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
     robotLED.setupLEDS();
     robotLED.setLEDStatus(Lights::PAIRING);
     #endif
@@ -141,7 +140,7 @@ void loop() {
         }
 
         // Manual LED State Toggle (Defense/Offense)
-        #if BOT_TYPE != 4 | BOT_TYPE != 2
+        #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
         if(ps5.Options()){
             robotLED.togglePosition();
         }
@@ -195,16 +194,16 @@ void loop() {
         }
     #elif BOT_TYPE == 3  // Mecanum Center
          // Toogle the Conveyor and Flywheels
-        if (ps5.Square())
-            mcBot.toggleConveyor();
-        else if (ps5.Circle())
-            mcBot.toggleFlywheels();
+        // if (ps5.Square())
+        //     mcBot.toggleConveyor();
+        // else if (ps5.Circle())
+        //     mcBot.toggleFlywheels();
         
-        // Change the flywheel speed
-        if(ps5.Triangle())
-            mcBot.changeFWSpeed(speedStatus::increase);
-        else if (ps5.Cross())
-            mcBot.changeFWSpeed(speedStatus::decrease);
+        // // Change the flywheel speed
+        // if(ps5.Triangle())
+        //     mcBot.changeFWSpeed(speedStatus::increase);
+        // else if (ps5.Cross())
+        //     mcBot.changeFWSpeed(speedStatus::decrease);
     #elif BOT_TYPE == 4  // Quarterback
         // Update the bools within the class to see if the user wants to go up or down
         if (ps5.Up())

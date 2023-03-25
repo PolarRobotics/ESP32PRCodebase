@@ -20,6 +20,7 @@
 class DriveMecanum : public Drive {
 private:
     MotorControl LF, RF, LR, RR;
+    float mmotorpwr[NUM_MOTORS];
     float scaledLeftX;
     float scaledLeftY;
     float scaledRightX;

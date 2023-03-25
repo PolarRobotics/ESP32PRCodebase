@@ -70,20 +70,33 @@ void DriveMecanum::generateMotorValues() {
     // motorPwr[2] = r * sin(theta) + turnPwr;
     // motorPwr[3] = r * cos(theta) - turnPwr;
 
-    setMotorPwr(r * x_comp / max + turnPwr, 0);
-    setMotorPwr(r * y_comp / max - turnPwr, 1);
-    setMotorPwr(r * y_comp / max + turnPwr, 2);
-    setMotorPwr(r * x_comp / max - turnPwr, 3);
+    // setMotorPwr(r * x_comp + turnPwr, 0);
+    // setMotorPwr(r * y_comp - turnPwr, 1);
+    // setMotorPwr(r * y_comp + turnPwr, 2);
+    // setMotorPwr(r * x_comp - turnPwr, 3);
 
-    float tempbsn = getBSN();
+    
+    mmotorpwr[0] = r * x_comp + turnPwr;
+    mmotorpwr[1] = r * y_comp - turnPwr;
+    mmotorpwr[2] = r * y_comp + turnPwr;
+    mmotorpwr[3] = r * x_comp - turnPwr;
+
+
+
+    // setMotorPwr(r * x_comp / max + turnPwr, 0);
+    // setMotorPwr(r * y_comp / max - turnPwr, 1);
+    // setMotorPwr(r * y_comp / max + turnPwr, 2);
+    // setMotorPwr(r * x_comp / max - turnPwr, 3);
+
+    // float tempbsn = getBSN();
 
     // scale the motor power, so it doesnt exceed 1, which would be bad
-    if ((r + abs(turnPwr)) > tempbsn) {
-        setMotorPwr(getMotorPwr(0) / (r + abs(turnPwr)), 0);
-        setMotorPwr(getMotorPwr(1) / (r + abs(turnPwr)), 1);
-        setMotorPwr(getMotorPwr(2) / (r + abs(turnPwr)), 2);
-        setMotorPwr(getMotorPwr(3) / (r + abs(turnPwr)), 3);
-    }
+    // if ((r + abs(turnPwr)) > tempbsn) {
+    //     setMotorPwr(getMotorPwr(0) / (r + abs(turnPwr)), 0);
+    //     setMotorPwr(getMotorPwr(1) / (r + abs(turnPwr)), 1);
+    //     setMotorPwr(getMotorPwr(2) / (r + abs(turnPwr)), 2);
+    //     setMotorPwr(getMotorPwr(3) / (r + abs(turnPwr)), 3);
+    // }
 
 }
 
@@ -103,10 +116,10 @@ void DriveMecanum::update() {
     // setMotorPwr(ramp(getMotorPwr(2), 2), 2);
     // setMotorPwr(ramp(getMotorPwr(3), 3), 3);
 
-    this->LF.write(getMotorPwr(0));
-    this->RF.write(getMotorPwr(1));
-    this->LR.write(getMotorPwr(2));
-    this->RR.write(getMotorPwr(3));
+    this->LF.write(mmotorpwr[0]); // getMotorPwr(0)
+    this->RF.write(mmotorpwr[1]); // getMotorPwr(1)
+    this->LR.write(mmotorpwr[2]); // getMotorPwr(2)
+    this->RR.write(mmotorpwr[3]); // getMotorPwr(3)
 }
 
 void DriveMecanum::drift() {
@@ -120,6 +133,11 @@ void DriveMecanum::printDebugInfo() {
     Serial.print(scaledLeftY);
     Serial.print(F("  RIX: "));
     Serial.print(scaledRightX);
+
+    Serial.print(F("  Xcomp: "));
+    Serial.print(this->x_comp);
+    Serial.print(F("  Ycomp: "));
+    Serial.print(this->y_comp);
 
     Serial.print(F("  PWRO: "));
     for (int i = 0; i < NUM_MOTORS; i++) {
