@@ -29,6 +29,7 @@
 #define TANK_MODE_PCT 0.75
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
+//these should = normal speed, QB needs 0.5 for both 
 #define turnMax 0.5 // the max allowable turning when the bot is traveling at lowest speed
 #define turnMin 0.5 // the min allowable turning when the bot is traveling at full speed
 
@@ -41,7 +42,7 @@
 // MOTOR MAX SPEED DEFINES;
 // this is 1.0, the maximum power possible to the motors.
 #define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-#define BIG_NORMAL_PCT 0.3 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
+#define BIG_NORMAL_PCT 0.5 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
 #define BIG_SLOW_PCT 0.2   // the value for brake button to slow down the motors at the button press
 
 // BSN for Short/Small Motors
