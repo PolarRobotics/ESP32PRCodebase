@@ -7,7 +7,7 @@
 #include <Robot/MotorControl.h>
 
 // Flywheel defines 
-#define FLYWHEEL_SPEED_FULL 0.5 // this should be between 90 and 140. 
+#define FLYWHEEL_SPEED_FULL 0.2 // this should be between 90 and 140. 
 #define FLYWHEEL_STOP_SPEED 0
 
 #define FW_TIME_INCREMENT 25
@@ -48,6 +48,7 @@ class Quarterback { //: public Robot
     uint8_t m_FlywheelPin;
     uint8_t m_conveyorPin;
     uint8_t m_ElevationPin;
+    int arrayPos = 0;
     MotorControl FWMotor;
     MotorControl conveyorMotor;
     MotorControl elevationMotors;
@@ -61,7 +62,8 @@ class Quarterback { //: public Robot
     unsigned long lastFlywheelRampTime;
     float currentFWPower;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0;
-    float flywheelSpeedFactor;
+    float flywheelSpeedFactor = 0;
+    const float speedFac[4] = {0.0, 0.2, 0.5, 0.8};
   public:
     Quarterback(uint8_t fwpin, 
         uint8_t conveyorpin, uint8_t elevationpin);
@@ -219,13 +221,18 @@ void Quarterback::toggleConveyor() {
 void Quarterback::changeFWSpeed(speedStatus speed) {
   // Debounce for button press
   if (millis() - lastDBFWChange >= DEBOUNCE_WAIT) {
-    // Change the speed factor based on whether the user wants to increase or decrease
+    // Change the speed factor based on whether the user wants to increase or decrease (HARD CODED)
     switch(speed) {
-      case increase: flywheelSpeedFactor += 0.05; break;
-      case decrease: flywheelSpeedFactor -= 0.05; break;
+      case increase: arrayPos++; break;
+      case decrease: arrayPos--; break;
     }
-    // Cap it so they only have two levels to speed up and two levels to slow down
-    flywheelSpeedFactor = constrain(flywheelSpeedFactor, -0.15, 0.15);
+
+    // Cap the arrayPos so it doesn't go out of bounds
+    arrayPos = constrain(arrayPos, 0, 3);
+
+    // Set the flywheelSpeedFactor
+    flywheelSpeedFactor = speedFac[arrayPos];
+
 
     // Update the motors if they are spinning for the new speed
     // if (flywheelsOn){
