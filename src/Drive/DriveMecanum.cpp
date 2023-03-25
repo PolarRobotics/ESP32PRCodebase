@@ -98,10 +98,10 @@ void DriveMecanum::update() {
     generateMotorValues();
 
     // ramp may need removed, including for testing purposes
-    setMotorPwr(ramp(getMotorPwr(0), 0), 0);
-    setMotorPwr(ramp(getMotorPwr(1), 1), 1);
-    setMotorPwr(ramp(getMotorPwr(2), 2), 2);
-    setMotorPwr(ramp(getMotorPwr(3), 3), 3);
+    // setMotorPwr(ramp(getMotorPwr(0), 0), 0);
+    // setMotorPwr(ramp(getMotorPwr(1), 1), 1);
+    // setMotorPwr(ramp(getMotorPwr(2), 2), 2);
+    // setMotorPwr(ramp(getMotorPwr(3), 3), 3);
 
     this->LF.write(getMotorPwr(0));
     this->RF.write(getMotorPwr(1));
@@ -114,18 +114,19 @@ void DriveMecanum::drift() {
 }
 
 void DriveMecanum::printDebugInfo() {
-    Serial.print(F("L_Hat_X: "));
+    Serial.print(F("LIX: "));
     Serial.print(scaledLeftX);
-    Serial.print(F("  L_Hat_Y: "));
+    Serial.print(F("  LIY: "));
     Serial.print(scaledLeftY);
-    Serial.print(F("  R_HAT_X: "));
+    Serial.print(F("  RIX: "));
     Serial.print(scaledRightX);
 
-    Serial.print(F("  Output motor powers: "));
+    Serial.print(F("  PWRO: "));
     for (int i = 0; i < NUM_MOTORS; i++) {
         Serial.print(i);
         Serial.print(F("  "));
         Serial.print(getMotorPwr(i));
         Serial.print(F("  "));
     }
+    Serial.print(F("\n"));
 }

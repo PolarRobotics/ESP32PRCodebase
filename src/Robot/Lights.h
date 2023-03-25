@@ -4,7 +4,7 @@
 #include <FastLED.h>
 #include <PolarRobotics.h>
 
-#define NUM_LEDS 30
+#define NUM_LEDS 39
 #define TIME_BETWEEN_TOGGLES 500
 
 // LED Variables
@@ -73,18 +73,18 @@ void Lights::updateLEDS() {
         break;
     }
     case PAIRED: {
-        leds = CRGB::Blue;
+        leds = CRGB::Purple;
         break;
     }
     case OFFENSE: {
-        for(int i = 0; i < 39; i ++){
-        if(i % 2 == 0){leds[i] = CRGB::Blue;}
-        else{leds[i] = CRGB::Green;}
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::Blue;}
+            else{leds[i] = CRGB::Green;}
         }
         break;
     }
     case DEFENSE: {
-        leds = CRGB::Green;
+        leds = CRGB::Blue;
         break;
     }
     case TACKLED: {
@@ -104,11 +104,10 @@ void Lights::togglePosition() {
     // i think the ps5 library already does this we probably should check
     if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
         if (m_isOffense) {
-            setLEDStatus(DEFENSE);
+            setLEDStatus(OFFENSE);
         }
         else {
-
-            setLEDStatus(OFFENSE);
+            setLEDStatus(DEFENSE);
         }
         m_isOffense = !m_isOffense;
         lastToggleTime = millis();

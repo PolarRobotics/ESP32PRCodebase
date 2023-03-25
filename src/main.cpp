@@ -4,7 +4,7 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
-// #include <Robot/Lights.h>
+#include <Robot/Lights.h>
 
 
 // Robot Libraries:
@@ -37,7 +37,9 @@
     Drive DriveMotors;
 #endif
 
-// Lights robotLED;
+#if BOT_TYPE != 4 | BOT_TYPE != 2
+Lights robotLED;
+#endif
 
 // Prototypes for Controller Callbacks
 void onConnection();
@@ -69,7 +71,9 @@ void setup() {
 #endif
 
 // Set the special bot type
-#if BOT_TYPE == 0 | BOT_TYPE == 1   // Lineman/receiver
+#if BOT_TYPE == 0
+    DriveMotors.setServos(M1_PIN, M2_PIN);
+#elif BOT_TYPE == 1   // Lineman/receiver
     DriveMotors.setServos(M1_PIN, M2_PIN);
 #elif BOT_TYPE == 2  // Old Center
     DriveMotors.setServos(M1_PIN, M2_PIN);
@@ -86,9 +90,10 @@ void setup() {
 #endif
  
     // Set initial LED color state
-    // robotLED.setupLEDS();
-    // robotLED.setLEDStatus(Lights::PAIRING);
-
+    #if BOT_TYPE != 4 | BOT_TYPE != 2
+    robotLED.setupLEDS();
+    robotLED.setLEDStatus(Lights::PAIRING);
+    #endif
     activatePairing();
 
     // Serial.print(F("\r\nConnected"));
@@ -128,7 +133,7 @@ void loop() {
             DriveMotors.setBSN(Drive::brake);
         } else if (ps5.R1()) {
             DriveMotors.setBSN(Drive::boost);
-            ps5.setLed(0, 255, 0);   // set LED red
+            // ps5.setLed(0, 255, 0);   // set LED red
         } else if (ps5.L1()) {
             DriveMotors.setBSN(Drive::slow);
         } else {
@@ -136,10 +141,11 @@ void loop() {
         }
 
         // Manual LED State Toggle (Defense/Offense)
-        // if(ps5.Options()){
-        //     robotLED.togglePosition();
-        // }
-
+        #if BOT_TYPE != 4 | BOT_TYPE != 2
+        if(ps5.Options()){
+            robotLED.togglePosition();
+        }
+        #endif
 
         // Update the LEDs based on tackle (tPin input) for offensive robot
         // if(digitalRead(TACKLE_PIN) == HIGH){
@@ -154,7 +160,7 @@ void loop() {
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {  // && BOT_TYPE != 3
-            ps5.setLed(255, 255, 0);   // set LED yellow
+            // ps5.setLed(255, 255, 0);   // set LED yellow
             DriveMotors.drift();
         } else {
             DriveMotors.update();
@@ -236,7 +242,7 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
-        // robotLED.setLEDStatus(Lights::PAIRING);
+        robotLED.setLEDStatus(Lights::PAIRING);
     }
 }
 
@@ -246,7 +252,8 @@ void loop() {
 void onConnection() {
     if(ps5.isConnected()) {
         Serial.println(F("Controller Connected."));
-        ps5.setLed(0, 255, 0);   // set LED green
+        // ps5.setLed(0, 255, 0);   // set LED green
+        robotLED.setLEDStatus(Lights::PAIRED);
     }
 }
 
