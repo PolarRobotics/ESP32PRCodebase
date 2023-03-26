@@ -70,6 +70,14 @@ void DriveMecanum::generateMotorValues() {
     // motorPwr[2] = r * sin(theta) + turnPwr;
     // motorPwr[3] = r * cos(theta) - turnPwr;
 
+    /*
+        mecanum edge cases:
+            theta is undefined when X and Y are both zero
+
+        not even sure if a mecanum bot can strafe at 45 degrees
+        https://robotics.stackexchange.com/questions/20088/how-to-drive-mecanum-wheels-robot-code-or-algorithm
+    */
+
     // setMotorPwr(r * x_comp + turnPwr, 0);
     // setMotorPwr(r * y_comp - turnPwr, 1);
     // setMotorPwr(r * y_comp + turnPwr, 2);
