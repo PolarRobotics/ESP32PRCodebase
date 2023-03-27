@@ -65,7 +65,7 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::big);
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(MOTORS::small);
-#elif MOTOR_TYPE == 2             
+#else MOTOR_TYPE == 2             
     DriveMotors.setMotorType(MOTORS::mecanummotor);
 #endif
 
@@ -147,15 +147,15 @@ void loop() {
         #endif
 
         // Update the LEDs based on tackle (tPin input) for offensive robot
-        // if(digitalRead(TACKLE_PIN) == HIGH){
-        //     robotLED.setLEDStatus(Lights::TACKLED);
-        //     tackleTime = millis();
-        // }
+        if(digitalRead(TACKLE_PIN) == HIGH){
+            robotLED.setLEDStatus(Lights::TACKLED);
+            tackleTime = millis();
+        }
 
         // Switch the LED state back to offense after being tackled a certain amount of time ago
-        // if((millis() - tackleTime) >= switchTime){
-        //     robotLED.setLEDStatus(Lights::OFFENSE);
-        // }
+        if((millis() - tackleTime) >= switchTime){
+            robotLED.setLEDStatus(Lights::OFFENSE);
+        }
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {  // && BOT_TYPE != 3
