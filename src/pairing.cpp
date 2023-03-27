@@ -114,6 +114,11 @@ void activatePairing(bool doRePair, int discoverTime) {
       while (timer < discoverTime && !ps5.isConnected()) {
         delay(LOOP_DELAY);
         timer += LOOP_DELAY;
+
+        // Slow blink when searching for previous device
+        if (timer % (5 * LOOP_DELAY) == 0) {
+          toggleBuiltInLED();
+        }
       }
       if (ps5.isConnected()) {
         Serial.println(F("PS5 Controller Connected!"));
@@ -137,6 +142,15 @@ void activatePairing(bool doRePair, int discoverTime) {
     while (timer < discoverTime && !foundController) {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
+      
+      // Double Blink when in Pairing Mode like PS5 Controller
+      // at: 300/400, 600/700
+      if ((timer % 1000) % (7 * LOOP_DELAY) == 0)
+        toggleBuiltInLED();
+      else if ((timer % 1000) % (4 * LOOP_DELAY) == 0)
+        toggleBuiltInLED();
+      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0) // also does 600
+        toggleBuiltInLED();
     }
     Serial.println(F("Stopping discoverAsync... "));
     SerialBT.discoverAsyncStop();
