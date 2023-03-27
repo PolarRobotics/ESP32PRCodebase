@@ -21,7 +21,7 @@
 #elif BOT_TYPE == 3  // Mecanum Center
     #include <Drive/DriveMecanum.h>
     #include <Robot/MecanumCenter.h>
-    // MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2);
+    MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2);
 
     DriveMecanum DriveMotors;
 #elif BOT_TYPE == 4  // Quarterback

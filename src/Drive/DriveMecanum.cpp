@@ -62,8 +62,8 @@ void DriveMecanum::generateMotorValues() {
     this->theta = atan2(scaledLeftX, scaledLeftY);
     this->turnPwr = scaledRightX;
 
-    this->x_comp = cos(theta - (PI/4));
-    this->y_comp = sin(theta - (PI/4));
+    this->x_comp = cos(theta + (PI/4));
+    this->y_comp = sin(theta + (PI/4));
     this->max = _max(x_comp, y_comp);
     // motorPwr[0] = r * cos(theta) + turnPwr;
     // motorPwr[1] = r * sin(theta) - turnPwr;
