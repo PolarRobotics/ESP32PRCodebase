@@ -89,11 +89,6 @@ void getAddress(const char* &addr) {
   else addr = &str.c_str()[0]; // get value of char ptr string
 }
 
-
-
-
-// 
-
 /// @brief Search for PS5 Controllers and pair to the first one found
 /// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
@@ -115,7 +110,7 @@ void activatePairing(bool doRePair, int discoverTime) {
         delay(LOOP_DELAY);
         timer += LOOP_DELAY;
 
-        // Slow blink when searching for previous device
+        // slow blink when searching for previous device
         if (timer % (5 * LOOP_DELAY) == 0) {
           toggleBuiltInLED();
         }
@@ -143,7 +138,7 @@ void activatePairing(bool doRePair, int discoverTime) {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
       
-      // Double Blink when in Pairing Mode like PS5 Controller
+      // double blink when in pairing mode like PS5 controller
       // at: 300/400, 600/700
       if ((timer % 1000) % (7 * LOOP_DELAY) == 0)
         toggleBuiltInLED();
@@ -185,18 +180,24 @@ void activatePairing(bool doRePair, int discoverTime) {
           Serial.println(addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected()) {
-            toggleBuiltInLED();
+            toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
           storeAddress(&addr.toString().c_str()[0], true);
+          setBuiltInLED(true); // solid blue light when fully paired
         }
       }
+
+      // if not connected at this point, no valid controllers have been found
+      if (!ps5.isConnected()) setBuiltInLED(false); // turn the led off
     } else {
       Serial.println(F("Found no pairable devices."));
+      setBuiltInLED(false);
     }
   } else {
     Serial.println(F("Asynchronous discovery failed."));
+    setBuiltInLED(false);
   }
 }

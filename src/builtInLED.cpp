@@ -12,3 +12,13 @@ void toggleBuiltInLED() {
   if (built_in_led_on) digitalWrite(LED_BUILTIN, HIGH);
   else digitalWrite(LED_BUILTIN, LOW);
 }
+
+void setBuiltInLED(bool on) {
+  if (on) {
+    built_in_led_on = true;
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    built_in_led_on = false;
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+}

@@ -4,5 +4,7 @@
 
 bool builtInLedOn();
 void toggleBuiltInLED();
+void setBuiltInLED(bool on = true);
+
 
 // #endif
