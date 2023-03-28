@@ -58,4 +58,6 @@ enum MOTORS {
   falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 };
 
+extern void extUpdateLEDs();
+
 #endif

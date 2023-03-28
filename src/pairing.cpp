@@ -94,7 +94,7 @@ void getAddress(const char* &addr) {
 /// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime) {
-  robotLED.setLEDStatus(Lights::PAIRING);
+  // robotLED.setLEDStatus(Lights::PAIRING);
   Serial.begin(115200);
   // pinMode(LED_BUILTIN, OUTPUT);
 
@@ -139,6 +139,7 @@ void activatePairing(bool doRePair, int discoverTime) {
     while (timer < discoverTime && !foundController) {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
+      extUpdateLEDs();
       
       // double blink when in pairing mode like PS5 controller
       // at: 300/400, 600/700
@@ -184,12 +185,13 @@ void activatePairing(bool doRePair, int discoverTime) {
           while (!ps5.isConnected()) {
             toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
+            extUpdateLEDs();
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
           storeAddress(&addr.toString().c_str()[0], true);
           setBuiltInLED(true); // solid blue light when fully paired
-          robotLED.setLEDStatus(Lights::PAIRED);
+          // robotLED.setLEDStatus(Lights::PAIRED);
         }
       }
 

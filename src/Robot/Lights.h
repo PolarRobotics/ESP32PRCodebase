@@ -67,7 +67,7 @@ void Lights::setLEDStatus(LEDState status) {
     updateLEDS();
 }
 
- void Lights::setLEDStatus(int sus){
+void Lights::setLEDStatus(int sus){
     currState = sus;
     updateLEDS();
 }
@@ -76,33 +76,33 @@ void Lights::setLEDStatus(LEDState status) {
 // To change LED color
 void Lights::updateLEDS() {
     switch (currState) {
-    case PAIRING: {
-        leds = CRGB::DarkOrange;
-        break;
-    }
-    case PAIRED: {
-        leds = CRGB::Purple;
-        break;
-    }
-    case OFFENSE: {
-        for(int i = 0; i < NUM_LEDS; i ++){
-            if(i % 2 == 0){leds[i] = CRGB::Blue;}
-            else{leds[i] = CRGB::Green;}
-        }
-        break;
-    }
-    case DEFENSE: {
-        leds = CRGB::Blue;
-        break;
-    }
-    case TACKLED: {
-        leds = CRGB::Red;
-        break;
-    }
-    default: {
-        leds = CRGB::Black;
-        break;
-    }
+      case PAIRING: {
+          leds = CRGB::DarkOrange;
+          break;
+      }
+      case PAIRED: {
+          leds = CRGB::Purple;
+          break;
+      }
+      case OFFENSE: {
+          for(int i = 0; i < NUM_LEDS; i ++){
+              if(i % 2 == 0){leds[i] = CRGB::Blue;}
+              else{leds[i] = CRGB::Green;}
+          }
+          break;
+      }
+      case DEFENSE: {
+          leds = CRGB::Blue;
+          break;
+      }
+      case TACKLED: {
+          leds = CRGB::Red;
+          break;
+      }
+      default: {
+          leds = CRGB::Black;
+          break;
+      }
     }
     FastLED.show();
 }

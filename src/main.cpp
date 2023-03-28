@@ -4,7 +4,7 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
-// #include <Robot/Lights.h>
+#include <Robot/Lights.h>
 
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
@@ -93,7 +93,9 @@ void setup() {
     robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
     #endif
+    robotLED.setLEDStatus(Lights::PAIRING);
     activatePairing();
+    robotLED.setLEDStatus(Lights::PAIRED);
 
     // Serial.print(F("\r\nConnected"));
 
@@ -263,4 +265,8 @@ void onConnection() {
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
     DriveMotors.emergencyStop();
+}
+
+extern void extUpdateLEDs() {
+  robotLED.updateLEDS();
 }
