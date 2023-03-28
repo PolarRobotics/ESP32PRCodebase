@@ -67,12 +67,6 @@ void Lights::setLEDStatus(LEDState status) {
     updateLEDS();
 }
 
-void Lights::setLEDStatus(int sus){
-    currState = sus;
-    updateLEDS();
-}
-
-
 // To change LED color
 void Lights::updateLEDS() {
     switch (currState) {
@@ -123,7 +117,7 @@ void Lights::togglePosition() {
     }
 }
 
-int Lights::returnStatus(){
+int Lights::returnStatus() {
     int status = 0;
     status = currState;
     return status;

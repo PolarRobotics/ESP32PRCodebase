@@ -147,7 +147,8 @@ void activatePairing(bool doRePair, int discoverTime) {
         toggleBuiltInLED();
       else if ((timer % 1000) % (4 * LOOP_DELAY) == 0)
         toggleBuiltInLED();
-      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0) // also does 600
+      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0 &&
+               (timer % 1000) % (9 * LOOP_DELAY) != 0) // also does 600
         toggleBuiltInLED();
     }
     Serial.println(F("Stopping discoverAsync... "));

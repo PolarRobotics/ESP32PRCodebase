@@ -112,7 +112,6 @@ void setup() {
 
 */
 void loop() {
-    robotLED.setLEDStatus(robotLED.returnStatus());
     // The main looping code, controls driving and any actions during a game
 
     if (ps5.isConnected()) {
@@ -241,7 +240,7 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
-        robotLED.setLEDStatus(Lights::PAIRING);
+        robotLED.setLEDStatus(Lights::TACKLED);
     }
 }
 
