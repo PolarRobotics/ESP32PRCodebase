@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <ps5Controller.h>
-// #include <Robot/Lights.h>
 
 // Pin Declarations  |     configurations     |
 //     | mot# |##|   | 2 wheels  |  4 wheels  |
@@ -21,7 +20,7 @@
 // pin for ws2812 LEDs to indicate positions 
 // linemen/receiver, tackled, etc...
 #define LED_PIN    4   
-#define TACKLE_PIN 13
+#define TACKLE_PIN 32
 
 // Robot Type Enum
 // 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
@@ -58,6 +57,5 @@ enum MOTORS {
   mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
   falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 };
-
 
 #endif

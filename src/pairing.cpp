@@ -22,6 +22,7 @@
 #include <Preferences.h> // to store on flash
 #include "pairing.h"
 #include <builtinLED.h>
+// #include <Robot/Lights.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -93,6 +94,7 @@ void getAddress(const char* &addr) {
 /// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime) {
+  robotLED.setLEDStatus(Lights::PAIRING);
   Serial.begin(115200);
   // pinMode(LED_BUILTIN, OUTPUT);
 
@@ -187,6 +189,7 @@ void activatePairing(bool doRePair, int discoverTime) {
           Serial.println(ps5.isConnected());
           storeAddress(&addr.toString().c_str()[0], true);
           setBuiltInLED(true); // solid blue light when fully paired
+          robotLED.setLEDStatus(Lights::PAIRED);
         }
       }
 

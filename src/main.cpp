@@ -4,7 +4,7 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
-#include <Robot/Lights.h>
+// #include <Robot/Lights.h>
 
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
@@ -36,9 +36,9 @@
     Drive DriveMotors;
 #endif
 
-#if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
+// #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
 Lights robotLED;
-#endif
+// #endif
 
 // Prototypes for Controller Callbacks
 void onConnection();
@@ -65,7 +65,7 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::big);
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(MOTORS::small);
-#else MOTOR_TYPE == 2             
+#elif MOTOR_TYPE == 2             
     DriveMotors.setMotorType(MOTORS::mecanummotor);
 #endif
 
@@ -91,7 +91,7 @@ void setup() {
     // Set initial LED color state
     #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
     robotLED.setupLEDS();
-    robotLED.setLEDStatus(Lights::PAIRING);
+    // robotLED.setLEDStatus(Lights::PAIRING);
     #endif
     activatePairing();
 
@@ -110,7 +110,9 @@ void setup() {
 
 */
 void loop() {
+    robotLED.setLEDStatus(robotLED.returnStatus());
     // The main looping code, controls driving and any actions during a game
+
     if (ps5.isConnected()) {
         // Serial.print(F("\r\nConnected"));
         // ps5.setLed(255, 0, 0);   // set LED red
@@ -120,10 +122,6 @@ void loop() {
     #else //if BOT_TYPE != 3
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
     #endif
-
-        // if(robotLED.returnStatus() == Lights::PAIRING){
-        //     robotLED.setLEDStatus(Lights::PAIRED);
-        // }
 
 
         // determine BSN percentage (boost, slow, or normal)
@@ -146,16 +144,16 @@ void loop() {
         }
         #endif
 
-        // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(digitalRead(TACKLE_PIN) == HIGH){
-            robotLED.setLEDStatus(Lights::TACKLED);
-            tackleTime = millis();
-        }
+        // // Update the LEDs based on tackle (tPin input) for offensive robot
+        // if(digitalRead(TACKLE_PIN) == HIGH){
+        //     robotLED.setLEDStatus(Lights::TACKLED);
+        //     tackleTime = millis();
+        // }
 
-        // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime){
-            robotLED.setLEDStatus(Lights::OFFENSE);
-        }
+        // // Switch the LED state back to offense after being tackled a certain amount of time ago
+        // if((millis() - tackleTime) >= switchTime){
+        //     robotLED.setLEDStatus(Lights::OFFENSE);
+        // }
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) {  // && BOT_TYPE != 3

@@ -1,5 +1,6 @@
 // void updateLEDS(BOT_STATE status); //private
 // void setRobotState(BOT_STATE state);
+#pragma once
 #include <Arduino.h>
 #include <FastLED.h>
 #include <PolarRobotics.h>
@@ -34,6 +35,7 @@ public:
     Lights();
     void setupLEDS();
     void setLEDStatus(LEDState status);
+    void setLEDStatus(int sus);
     // void setLEDColor(uint8_t r, uint8_t g, )
     void updateLEDS();
     //   void runLoop(int count);
@@ -62,6 +64,11 @@ void Lights::setupLEDS() {
 // To set LED status
 void Lights::setLEDStatus(LEDState status) {
     currState = status;
+    updateLEDS();
+}
+
+ void Lights::setLEDStatus(int sus){
+    currState = sus;
     updateLEDS();
 }
 
@@ -99,6 +106,7 @@ void Lights::updateLEDS() {
     }
     FastLED.show();
 }
+
 
 void Lights::togglePosition() {
     // debounce makes sure you cant hold down the button, 
