@@ -10,7 +10,7 @@
 #if BOT_TYPE == 0    // Lineman
     #include <Drive/Drive.h>
     Drive DriveMotors;
-#elif BOT_TYPE == 1  // Receiver
+#elif BOT_TYPE == 1  // Receiver/Runningback
     #include <Drive/Drive.h>
     Drive DriveMotors;
 #elif BOT_TYPE == 2  // Old Center
@@ -36,9 +36,9 @@
     Drive DriveMotors;
 #endif
 
-// #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
+#if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
 Lights robotLED;
-// #endif
+#endif
 
 // Prototypes for Controller Callbacks
 void onConnection();
@@ -67,6 +67,8 @@ void setup() {
     DriveMotors.setMotorType(MOTORS::small);
 #elif MOTOR_TYPE == 2             
     DriveMotors.setMotorType(MOTORS::mecanummotor);
+#elif MOTOR_TYPE == 3
+    DriveMotors.setMotorType(MOTORS::falconmotor);
 #endif
 
 // Set the special bot type
@@ -157,7 +159,7 @@ void loop() {
         // }
         
         // Update the motors based on the inputs from the controller
-        if(ps5.L2()) {  // && BOT_TYPE != 3
+        if(ps5.L2()) { 
             // ps5.setLed(255, 255, 0);   // set LED yellow
             DriveMotors.drift();
         } else {
@@ -210,8 +212,6 @@ void loop() {
         else if (ps5.Down())
             qbBot.aim(qbAim::aimDown);
         
-        
-
         // Toogle the Conveyor and Flywheels
         if (ps5.Square())
             qbBot.toggleConveyor();

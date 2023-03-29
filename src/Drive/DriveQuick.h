@@ -2,5 +2,5 @@
 
 class DriveQuick : public Drive {
     public:
-        DriveQuick(int l, int r) : Drive(l, r) {};
+        DriveQuick(int l, int r);
 };
