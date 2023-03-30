@@ -4,7 +4,10 @@
 #include <Arduino.h>
 #include <ps5Controller.h>
 
-// Pin Declarations  |     configurations     |
+// PIN DECLARATIONS:
+// please follow: 
+// https://docs.google.com/spreadsheets/d/17pdff4T_3GTAkoctwm2IMg07Znoo-iJkyDGN5CqXq3w/edit#gid=0
+//  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   | 2 wheels  |  4 wheels  |
 // ____|______|__|___|___________|____________|
 #define M1_PIN 32 // | leftDriv  | leftFront  |
@@ -12,15 +15,16 @@
 #define M3_PIN 26 // |    N/A    | leftRear   |
 #define M4_PIN 27 // |    N/A    | rightRear  |
 
+// Pins for special bot features, conveyor, flywheels, etc...
 #define SPECBOT_PIN1  18   // Special Bot Pins
 #define SPECBOT_PIN2  19
 #define SPECBOT_PIN3  21
 #define SPECBOT_PIN4  22
 
 // pin for ws2812 LEDs to indicate positions 
-// linemen/receiver, tackled, etc...
 #define LED_PIN    4   
-#define TACKLE_PIN 32
+// linemen/receiver, tackled, etc...
+#define TACKLE_PIN 13
 
 // Robot Type Enum
 // 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker

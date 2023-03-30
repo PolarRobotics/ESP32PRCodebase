@@ -147,16 +147,16 @@ void loop() {
         }
         #endif
 
-        // // Update the LEDs based on tackle (tPin input) for offensive robot
-        // if(digitalRead(TACKLE_PIN) == HIGH){
-        //     robotLED.setLEDStatus(Lights::TACKLED);
-        //     tackleTime = millis();
-        // }
+        // Update the LEDs based on tackle (tPin input) for offensive robot
+        if(digitalRead(TACKLE_PIN) == HIGH){
+            robotLED.setLEDStatus(Lights::TACKLED);
+            tackleTime = millis();
+        }
 
-        // // Switch the LED state back to offense after being tackled a certain amount of time ago
-        // if((millis() - tackleTime) >= switchTime){
-        //     robotLED.setLEDStatus(Lights::OFFENSE);
-        // }
+        // Switch the LED state back to offense after being tackled a certain amount of time ago
+        if((millis() - tackleTime) >= switchTime){
+            robotLED.setLEDStatus(Lights::OFFENSE);
+        }
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) { 
