@@ -13,7 +13,7 @@ https://m.media-amazon.com/images/I/516SPcBz+pL._AC_SY350_.jpg
 
 <img src="/media/NodeMCU_32s_Pinout.jpg" 
   alt="NodeMCU pinout"
-  style="margin: 0 auto; width: 600px"> -->
+  style="margin: 0 auto; width: 300px"> -->
 
 ## Filestructure and Inheritance
 ```
