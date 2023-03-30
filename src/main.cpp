@@ -242,6 +242,7 @@ void loop() {
         DriveMotors.emergencyStop();
         robotLED.setLEDStatus(Lights::TACKLED);
     }
+    robotLED.updateLEDS();
 }
 
 /**

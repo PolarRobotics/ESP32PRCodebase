@@ -63,13 +63,13 @@ void Lights::setupLEDS() {
 
 // To set LED status
 void Lights::setLEDStatus(LEDState status) {
-    currState = status;
+    this->currState = status;
     updateLEDS();
 }
 
 // To change LED color
 void Lights::updateLEDS() {
-    switch (currState) {
+    switch (this->currState) {
       case PAIRING: {
           leds = CRGB::DarkOrange;
           break;
