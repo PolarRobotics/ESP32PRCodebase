@@ -21,7 +21,7 @@
 #include <ps5Controller.h>
 #include <Preferences.h> // to store on flash
 #include "pairing.h"
-#include <builtinLED.h>
+#include <Pairing/builtinLED.h>
 // #include <Robot/Lights.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)

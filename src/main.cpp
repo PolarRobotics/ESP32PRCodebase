@@ -3,7 +3,7 @@
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
-#include <pairing.h>
+#include <Pairing/pairing.h>
 #include <Robot/Lights.h>
 
 // Robot Libraries:
