@@ -371,6 +371,6 @@ void Drive::drift() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
 
-    M1.write(motorPower[0]);
+    M1.write(motorPower[0]); //add a negitive on this to correct the right falcon motor's diraction, this connot be done physicly so it must be done here (this could be the wrong motor to flip if so plase filp the other motor and move this comment)
     M2.write(motorPower[1]);
 }

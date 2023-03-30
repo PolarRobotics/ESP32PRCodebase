@@ -15,7 +15,7 @@
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
-#define ACCELERATION_RATE .0375
+#define ACCELERATION_RATE .0375 // probably lower for runningback
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
@@ -56,8 +56,8 @@
 #define MECANUM_SLOW_PCT   0.3
 
 // BSN for the falcon motors used on the runningback
-#define FALCON_BOOST_PCT  0.95
-#define FALCON_NORMAL_PCT 0.8
+#define FALCON_BOOST_PCT  0.6
+#define FALCON_NORMAL_PCT 0.5
 #define FALCON_SLOW_PCT   0.4
 
 #define BRAKE_BUTTON_PCT 0
