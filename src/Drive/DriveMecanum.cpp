@@ -37,9 +37,9 @@ void DriveMecanum::setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_
 
 void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
     // normalize the 8-bit input to 1
-    this->scaledLeftX  = leftX  / (float)127.5;
-    this->scaledLeftY  = leftY  / (float)127.5;
-    this->scaledRightX = rightX / (float)127.5;
+    this->scaledLeftX  = leftX  / 127.5f;
+    this->scaledLeftY  = leftY  / 127.5f;
+    this->scaledRightX = rightX / 127.5f;
     // account for stick deadzone
     this->scaledLeftX  = fabs(scaledLeftX)  < STICK_DEADZONE ? 0 : scaledLeftX;
     this->scaledLeftY  = fabs(scaledLeftY)  < STICK_DEADZONE ? 0 : scaledLeftY;

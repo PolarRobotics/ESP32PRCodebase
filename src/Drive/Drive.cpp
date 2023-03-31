@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
+#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -72,6 +73,13 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     }
 }
 
+float Drive::getFwdRev() {
+    return stickForwardRev;
+}
+
+float Drive::getTurn() {
+    return stickTurn;
+}
 
 /**
  * @brief setBSN sets the internal variable to the requested percent power, this is what the motor power gets multiplied by,
@@ -376,6 +384,6 @@ void Drive::drift() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
 
-    M1.write(motorPower[0]); //add a negitive on this to correct the right falcon motor's diraction, this connot be done physicly so it must be done here (this could be the wrong motor to flip if so plase filp the other motor and move this comment)
+    M1.write(motorPower[0]);
     M2.write(motorPower[1]);
 }

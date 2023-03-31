@@ -92,6 +92,8 @@ public:
     void setServos(uint8_t lpin, uint8_t rpin);
     void setMotorType(MOTORS motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
+    float getFwdRev();
+    float getTurn();
     void setBSN(SPEED bsn); //(float powerMultiplier);
     float getBSN();
     float getMotorPwr(uint8_t mtr);
