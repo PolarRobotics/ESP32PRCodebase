@@ -79,7 +79,6 @@ private:
     float turnMotorValues[NUM_MOTORS];
     // float inputPower[NUM_MOTORS];
     // float rampedPower[NUM_MOTORS];
-    void generateMotionValues();
     void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
 public:
 
@@ -97,8 +96,10 @@ public:
     float getBSN();
     float getMotorPwr(uint8_t mtr);
     void setMotorPwr(float power, uint8_t mtr);
+    void setLastRampPwr(float power, uint8_t mtr);
     void emergencyStop();
     float ramp(float requestedPower, uint8_t mtr);
+    void generateMotionValues();
     void update();
     void drift();
     void printDebugInfo();

@@ -34,6 +34,9 @@
     #include <Robot/Kicker.h>
     Kicker kickerBot;
     Drive DriveMotors;
+#elif BOT_TYPE == 6 // runningback
+    #include <Drive/DriveQuick.h>
+    DriveQuick DriveMotors;
 #endif
 
 #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
@@ -88,16 +91,18 @@ void setup() {
 #elif BOT_TYPE == 5  // Kicker
     DriveMotors.setServos(M1_PIN, M2_PIN);
     kickerBot.setup(SPECBOT_PIN1);
+#elif BOT_TYPE == 6  // Runningback
+    DriveMotors.setServos(M1_PIN, M2_PIN);
 #endif
  
     // Set initial LED color state
     #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
     robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
-    #endif
     robotLED.setLEDStatus(Lights::PAIRING);
     activatePairing();
     robotLED.setLEDStatus(Lights::PAIRED);
+    #endif
 
     // Serial.print(F("\r\nConnected"));
 
@@ -145,18 +150,20 @@ void loop() {
         if(ps5.Options()){
             robotLED.togglePosition();
         }
-        #endif
 
         // Update the LEDs based on tackle (tPin input) for offensive robot
         if(digitalRead(TACKLE_PIN) == HIGH){
             robotLED.setLEDStatus(Lights::TACKLED);
             tackleTime = millis();
+            tackled = true;
         }
 
         // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime){
+        if((millis() - tackleTime) >= switchTime && tackled == true){
+            tackled = false;
             robotLED.setLEDStatus(Lights::OFFENSE);
         }
+        #endif
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) { 
@@ -242,7 +249,7 @@ void loop() {
         DriveMotors.emergencyStop();
         robotLED.setLEDStatus(Lights::TACKLED);
     }
-    robotLED.updateLEDS();
+    // robotLED.updateLEDS();
 }
 
 /**

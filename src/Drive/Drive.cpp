@@ -274,8 +274,13 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
 float Drive::getMotorPwr(uint8_t mtr) {
     return this->motorPower[mtr];
 }
+
 void Drive::setMotorPwr(float power, uint8_t mtr) {
     this->motorPower[mtr] = power;
+}
+
+void Drive::setLastRampPwr(float power, uint8_t mtr) {
+    this->lastRampPower[mtr] = power;
 }
 
 void Drive::emergencyStop() {
