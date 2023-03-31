@@ -1,5 +1,6 @@
-#include "Drive/DriveQuick.h"
-#include "Drive/Drive.h"
+#include <Arduino.h>
+#include <Drive/Drive.h>
+#include "DriveQuick.h"
 
 /*
 drive quick is meant for the experimental running back
@@ -22,18 +23,18 @@ Features:
  * going forward, this math model may need some tweaking, but this is something we can test for the future 
  *  
  */
-void DriveQuick::generateMotionValues() {
-    // generate the motion vector in polar form
-    this->r = hypot(getFwdRev(), getTurn());
-    this->falconTurnPwr = atan2(getFwdRev(), getTurn());
+// void DriveQuick::generateMotionValues() {
+//     // generate the motion vector in polar form
+//     this->r = hypot(getFwdRev(), getTurn());
+//     this->falconTurnPwr = atan2(getFwdRev(), getTurn());
 
-    // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
-    this->r = constrain(this->r, 0, 1) * getBSN(); 
+//     // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
+//     this->r = constrain(this->r, 0, 1) * getBSN(); 
     
-    // set both motor powers
-    falcon_motor_pwr[0] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
-    falcon_motor_pwr[1] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
-}
+//     // set both motor powers
+//     falcon_motor_pwr[0] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
+//     falcon_motor_pwr[1] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
+// }
 
 /**
  * @brief updates the motors after calling all the functions to generate
@@ -50,16 +51,18 @@ void DriveQuick::update() {
     generateMotionValues();
 
     // calculate the ramped power
-    falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
-    falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
+    // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
+    // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
+    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0);
+    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1);
 
     // set the last ramp power, used in ramp
     setLastRampPwr(falcon_motor_pwr[0], 0);
     setLastRampPwr(falcon_motor_pwr[1], 1);
 
     // if the requested motor power is really small, set the motors to zero to prevent stalls
-    falcon_motor_pwr[0] = falcon_motor_pwr[0] < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[0];
-    falcon_motor_pwr[1] = falcon_motor_pwr[1] < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[1];
+    falcon_motor_pwr[0] = fabs(falcon_motor_pwr[0]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[0];
+    falcon_motor_pwr[1] = fabs(falcon_motor_pwr[1]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[1];
     
     // write calculated powers to the motors 
     // note: adding a negative, because we cant change the motor direction in hardware

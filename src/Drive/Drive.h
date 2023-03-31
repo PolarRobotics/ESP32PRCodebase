@@ -15,7 +15,8 @@
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
-#define ACCELERATION_RATE .0375 // probably lower for runningback
+// #define ACCELERATION_RATE .0375 // probably lower for runningback
+#define ACCELERATION_RATE 0.01 // probably lower for runningback
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
@@ -30,8 +31,8 @@
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
-#define turnMax 0.5 // the max allowable turning when the bot is traveling at lowest speed
-#define turnMin 0.5 // the min allowable turning when the bot is traveling at full speed
+#define turnMax 0.4 // the max allowable turning when the bot is traveling at lowest speed
+#define turnMin 0.3 // the min allowable turning when the bot is traveling at full speed
 
 
 // Controller Defines
@@ -57,8 +58,8 @@
 
 // BSN for the falcon motors used on the runningback
 #define FALCON_BOOST_PCT  0.6
-#define FALCON_NORMAL_PCT 0.5
-#define FALCON_SLOW_PCT   0.4
+#define FALCON_NORMAL_PCT 0.4
+#define FALCON_SLOW_PCT   0.3
 
 #define BRAKE_BUTTON_PCT 0
 
