@@ -9,6 +9,6 @@ class DriveQuick : public Drive {
         float falcon_motor_pwr[NUM_MOTORS];
         float r, falconTurnPwr, max;
     public:
-        // void generateMotionValues();
+        void generateMotionValues();
         void update();
 };

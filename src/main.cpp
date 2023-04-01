@@ -8,9 +8,11 @@
 
 // Robot Libraries:
 #if BOT_TYPE == 0    // Lineman
-    #include <Drive/Drive.h>
-    Drive DriveMotors;
-#elif BOT_TYPE == 1  // Receiver/Runningback
+    // #include <Drive/Drive.h>
+    // Drive DriveMotors;
+    #include <Drive/DriveQuick.h>
+    DriveQuick DriveMotors;
+#elif BOT_TYPE == 1  // Receiver
     #include <Drive/Drive.h>
     Drive DriveMotors;
 #elif BOT_TYPE == 2  // Old Center
