@@ -46,8 +46,8 @@
 #define turnMax 0.5
 #define turnMin 0.2
 #else
-#define turnMax 0.5 // the max allowable turning when the bot is traveling at lowest speed
-#define turnMin 0.5 // the min allowable turning when the bot is traveling at full speed
+#define turnMax 0.65 // the max allowable turning when the bot is traveling at lowest speed
+#define turnMin 0.65 // the min allowable turning when the bot is traveling at full speed
 #endif
 
 // Controller Defines
