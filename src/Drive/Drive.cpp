@@ -231,7 +231,7 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
  * @param mtr pass 0 for left and 1 for right, used to help ease with storing values for multiple motors
  * @return float
  */
-float Drive::ramp(float requestedPower, uint8_t mtr) {
+float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
 
     if (millis() - lastRampTime[mtr] >= TIME_INCREMENT) {
         if (abs(requestedPower) < THRESHOLD) { // if the input is effectively zero
@@ -245,27 +245,27 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
             //currentPower[mtr] = 0;
             lastRampTime[mtr] = millis();
         }
-        else if (abs(requestedPower - currentPower[mtr]) < ACCELERATION_RATE) { // if the input is effectively at the current power
+        else if (abs(requestedPower - currentPower[mtr]) < accelRate) { // if the input is effectively at the current power
             return requestedPower;
         }
         // if we need to increase speed and we are going forward
         else if (requestedPower > currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going forward
         else if (requestedPower < currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to increase speed and we are going in reverse
         else if (requestedPower < currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going in reverse
         else if (requestedPower > currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
     }
