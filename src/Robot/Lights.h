@@ -32,7 +32,7 @@ public:
         OFFENSE,     // blue and green
         DEFENSE,     // green
         TACKLED,     // turn red when tackled
-        DEFAULTL
+        OFF
     };
     Lights();
     void setupLEDS();
@@ -101,7 +101,7 @@ void Lights::updateLEDS() {
           leds = CRGB::Red;
           break;
       }
-      case DEFAULTL: {
+      case OFF: {
           leds = CRGB::Black;
           break;
       }

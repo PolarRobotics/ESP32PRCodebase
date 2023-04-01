@@ -23,8 +23,12 @@
 
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN    4   
-// linemen/receiver, tackled, etc...
-#define TACKLE_PIN 13 // change this in the future
+// receiver, tackled, etc...
+#if BOT_TYPE == 6
+#define TACKLE_PIN 12
+#else
+#define TACKLE_PIN 13
+#endif
 
 // Robot Type Enum
 // 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker

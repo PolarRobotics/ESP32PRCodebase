@@ -61,7 +61,7 @@ void setup() {
     Serial.begin(115200);
     // Serial.print(F("\r\nStarting..."));
     pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(TACKLE_PIN, INPUT);
+    pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
 
     // Set the motor type
 #if MOTOR_TYPE == 0    // Big Motor
