@@ -32,17 +32,19 @@
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
 
-#if BOT_TYPE == 6
-// #define turnMax 0.4 //old
-// #define turnMin 0.3 
-#define turnMax 0.5
-#define turnMin 0.2
+
+#if BOT_TYPE == 1
+#define turnMax 0.8 
+#define turnMin 0.8 
 #elif BOT_TYPE == 2
 #define turnMax 0.2 
 #define turnMin 0.2 
 #elif BOT_TYPE == 4
 #define turnMax 0.4
 #define turnMin 0.4
+#elif BOT_TYPE == 6
+#define turnMax 0.5
+#define turnMin 0.2
 #else
 #define turnMax 0.5 // the max allowable turning when the bot is traveling at lowest speed
 #define turnMin 0.5 // the min allowable turning when the bot is traveling at full speed
