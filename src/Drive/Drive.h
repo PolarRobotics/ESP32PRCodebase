@@ -33,8 +33,10 @@
 //these should = normal speed, QB needs 0.5 for both 
 
 #if BOT_TYPE == 6
-#define turnMax 0.4
-#define turnMin 0.3 
+// #define turnMax 0.4 //old
+// #define turnMin 0.3 
+#define turnMax 0.5
+#define turnMin 0.2
 #elif BOT_TYPE == 2
 #define turnMax 0.2 
 #define turnMin 0.2 
@@ -65,7 +67,7 @@
 #define MECANUM_SLOW_PCT   0.3
 
 // BSN for the falcon motors used on the runningback
-#define FALCON_BOOST_PCT  0.6
+#define FALCON_BOOST_PCT  1.0
 #define FALCON_NORMAL_PCT 0.4
 #define FALCON_SLOW_PCT   0.3
 
