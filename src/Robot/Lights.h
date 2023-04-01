@@ -59,7 +59,7 @@ void Lights::setupLEDS() {
     FastLED.clear();
 
     updateLEDS();
-    FastLED.setBrightness(110);
+    FastLED.setBrightness(50);
 }
 
 // To set LED status
