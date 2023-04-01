@@ -11,7 +11,7 @@
 // LED Variables
 bool tackled = false;
 static unsigned long tackleTime = 0;
-static const int switchTime = 2000;
+static const int switchTime = 1000; // KEEP THIS HERE!!!
 static unsigned long CURRENTTIME;
 static int ledStatus = 0;
 
@@ -28,14 +28,15 @@ public:
     enum LEDState {
         PAIRING,     // Yellow
         PAIRED,      // green then fade out
+        NOTPAIRED,
         OFFENSE,     // blue and green
         DEFENSE,     // green
         TACKLED,     // turn red when tackled
+        DEFAULTL
     };
     Lights();
     void setupLEDS();
     void setLEDStatus(LEDState status);
-    void setLEDStatus(int sus);
     // void setLEDColor(uint8_t r, uint8_t g, )
     void updateLEDS();
     //   void runLoop(int count);
@@ -63,19 +64,26 @@ void Lights::setupLEDS() {
 
 // To set LED status
 void Lights::setLEDStatus(LEDState status) {
-    currState = status;
+    this->currState = status;
     updateLEDS();
 }
 
 // To change LED color
 void Lights::updateLEDS() {
-    switch (currState) {
+    switch (this->currState) {
       case PAIRING: {
           leds = CRGB::DarkOrange;
           break;
       }
       case PAIRED: {
           leds = CRGB::Purple;
+          break;
+      }
+      case NOTPAIRED: {
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::Black;}
+            else{leds[i] = CRGB::White;}
+          }
           break;
       }
       case OFFENSE: {
@@ -86,14 +94,14 @@ void Lights::updateLEDS() {
           break;
       }
       case DEFENSE: {
-          leds = CRGB::Blue;
+          leds = CRGB::Green;
           break;
       }
       case TACKLED: {
           leds = CRGB::Red;
           break;
       }
-      default: {
+      case DEFAULTL: {
           leds = CRGB::Black;
           break;
       }

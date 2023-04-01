@@ -34,6 +34,9 @@
     #include <Robot/Kicker.h>
     Kicker kickerBot;
     Drive DriveMotors;
+#elif BOT_TYPE == 6 // runningback
+    #include <Drive/DriveQuick.h>
+    DriveQuick DriveMotors;
 #endif
 
 #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
@@ -72,9 +75,9 @@ void setup() {
 #endif
 
 // Set the special bot type
-#if BOT_TYPE == 0
+#if BOT_TYPE == 0 // Lineman
     DriveMotors.setServos(M1_PIN, M2_PIN);
-#elif BOT_TYPE == 1   // Lineman/receiver
+#elif BOT_TYPE == 1   // Receiver
     DriveMotors.setServos(M1_PIN, M2_PIN);
 #elif BOT_TYPE == 2  // Old Center
     DriveMotors.setServos(M1_PIN, M2_PIN);
@@ -88,16 +91,18 @@ void setup() {
 #elif BOT_TYPE == 5  // Kicker
     DriveMotors.setServos(M1_PIN, M2_PIN);
     kickerBot.setup(SPECBOT_PIN1);
+#elif BOT_TYPE == 6  // Runningback
+    DriveMotors.setServos(M1_PIN, M2_PIN);
 #endif
  
     // Set initial LED color state
     #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
     robotLED.setupLEDS();
     // robotLED.setLEDStatus(Lights::PAIRING);
-    #endif
     robotLED.setLEDStatus(Lights::PAIRING);
     activatePairing();
     robotLED.setLEDStatus(Lights::PAIRED);
+    #endif
 
     // Serial.print(F("\r\nConnected"));
 
@@ -145,18 +150,22 @@ void loop() {
         if(ps5.Options()){
             robotLED.togglePosition();
         }
-        #endif
 
+        #if BOT_TYPE != 0 // if the bot is not a linemen
         // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(digitalRead(TACKLE_PIN) == HIGH){
+        if(robotLED.returnStatus() == robotLED.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+            // robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLED);
             tackleTime = millis();
-        }
-
-        // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime){
+            tackled = true;
+        } 
+        // Switch the LED state back to offense after being tackled a certain amount of time
+        else if((millis() - tackleTime) >= switchTime && tackled == true){
             robotLED.setLEDStatus(Lights::OFFENSE);
+            tackled = false;
         }
+        #endif
+        #endif
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) { 
@@ -240,8 +249,9 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
-        robotLED.setLEDStatus(Lights::TACKLED);
+        robotLED.setLEDStatus(Lights::NOTPAIRED);
     }
+    // robotLED.updateLEDS();
 }
 
 /**

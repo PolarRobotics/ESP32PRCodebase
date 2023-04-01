@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
+#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -72,6 +73,13 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     }
 }
 
+float Drive::getFwdRev() {
+    return stickForwardRev;
+}
+
+float Drive::getTurn() {
+    return stickTurn;
+}
 
 /**
  * @brief setBSN sets the internal variable to the requested percent power, this is what the motor power gets multiplied by,
@@ -223,7 +231,7 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
  * @param mtr pass 0 for left and 1 for right, used to help ease with storing values for multiple motors
  * @return float
  */
-float Drive::ramp(float requestedPower, uint8_t mtr) {
+float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
 
     if (millis() - lastRampTime[mtr] >= TIME_INCREMENT) {
         if (abs(requestedPower) < THRESHOLD) { // if the input is effectively zero
@@ -237,27 +245,27 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
             //currentPower[mtr] = 0;
             lastRampTime[mtr] = millis();
         }
-        else if (abs(requestedPower - currentPower[mtr]) < ACCELERATION_RATE) { // if the input is effectively at the current power
+        else if (abs(requestedPower - currentPower[mtr]) < accelRate) { // if the input is effectively at the current power
             return requestedPower;
         }
         // if we need to increase speed and we are going forward
         else if (requestedPower > currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going forward
         else if (requestedPower < currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to increase speed and we are going in reverse
         else if (requestedPower < currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going in reverse
         else if (requestedPower > currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
     }
@@ -274,8 +282,13 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
 float Drive::getMotorPwr(uint8_t mtr) {
     return this->motorPower[mtr];
 }
+
 void Drive::setMotorPwr(float power, uint8_t mtr) {
     this->motorPower[mtr] = power;
+}
+
+void Drive::setLastRampPwr(float power, uint8_t mtr) {
+    this->lastRampPower[mtr] = power;
 }
 
 void Drive::emergencyStop() {
@@ -371,6 +384,6 @@ void Drive::drift() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
 
-    M1.write(motorPower[0]); //add a negitive on this to correct the right falcon motor's diraction, this connot be done physicly so it must be done here (this could be the wrong motor to flip if so plase filp the other motor and move this comment)
+    M1.write(motorPower[0]);
     M2.write(motorPower[1]);
 }
