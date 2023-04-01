@@ -7,7 +7,7 @@
 #include <Robot/MotorControl.h>
 
 // Flywheel defines 
-#define FLYWHEEL_SPEED_FULL 0.2 // this should be between 90 and 140. 
+#define FLYWHEEL_SPEED_FULL 0.3
 #define FLYWHEEL_STOP_SPEED 0
 
 #define FW_TIME_INCREMENT 25
