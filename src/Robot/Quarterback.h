@@ -63,7 +63,7 @@ class Quarterback { //: public Robot
     float currentFWPower;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0;
     float flywheelSpeedFactor = 0;
-    const float speedFac[4] = {0.0, 0.2, 0.5, 0.8};
+    const float speedFac[4] = {0.0, 0.3, 0.5, 0.8};
   public:
     Quarterback(uint8_t fwpin, 
         uint8_t conveyorpin, uint8_t elevationpin);
