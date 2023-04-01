@@ -159,11 +159,6 @@ void loop() {
             tackleTime = millis();
             tackled = true;
         } 
-        // else if(tackled == true) {
-        //     tackled = false;
-        //     robotLED.setLEDStatus(Lights::OFFENSE); 
-        // }
-
         // Switch the LED state back to offense after being tackled a certain amount of time ago
         else if((millis() - tackleTime) >= switchTime && tackled == true){
             robotLED.setLEDStatus(Lights::OFFENSE);
