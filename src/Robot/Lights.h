@@ -28,6 +28,7 @@ public:
     enum LEDState {
         PAIRING,     // Yellow
         PAIRED,      // green then fade out
+        NOTPAIRED,
         OFFENSE,     // blue and green
         DEFENSE,     // green
         TACKLED,     // turn red when tackled
@@ -35,7 +36,6 @@ public:
     Lights();
     void setupLEDS();
     void setLEDStatus(LEDState status);
-    void setLEDStatus(int sus);
     // void setLEDColor(uint8_t r, uint8_t g, )
     void updateLEDS();
     //   void runLoop(int count);
@@ -76,6 +76,13 @@ void Lights::updateLEDS() {
       }
       case PAIRED: {
           leds = CRGB::Purple;
+          break;
+      }
+      case NOTPAIRED: {
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::Black;}
+            else{leds[i] = CRGB::White;}
+          }
           break;
       }
       case OFFENSE: {
