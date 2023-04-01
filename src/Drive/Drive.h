@@ -31,9 +31,17 @@
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
-#define turnMax 0.4 // the max allowable turning when the bot is traveling at lowest speed
-#define turnMin 0.3 // the min allowable turning when the bot is traveling at full speed
 
+#if BOT_TYPE == 6
+#define turnMax 0.4
+#define turnMin 0.3 
+#elif BOT_TYPE == 2
+#define turnMax 0.2 
+#define turnMin 0.2 
+#else
+#define turnMax 0.5 // the max allowable turning when the bot is traveling at lowest speed
+#define turnMin 0.5 // the min allowable turning when the bot is traveling at full speed
+#endif
 
 // Controller Defines
 #define STICK_DEADZONE 0.0390625F // 8.0 / 127.0
@@ -101,7 +109,7 @@ public:
     void setMotorPwr(float power, uint8_t mtr);
     void setLastRampPwr(float power, uint8_t mtr);
     void emergencyStop();
-    float ramp(float requestedPower, uint8_t mtr);
+    float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();
     void update();
     void drift();

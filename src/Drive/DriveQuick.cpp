@@ -53,8 +53,8 @@ void DriveQuick::update() {
     // calculate the ramped power
     // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
     // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
-    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0);
-    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1);
+    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1, RB_ACCELERATION_RATE);
 
     // set the last ramp power, used in ramp
     setLastRampPwr(falcon_motor_pwr[0], 0);
