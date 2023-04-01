@@ -55,12 +55,12 @@
 
 // MOTOR MAX SPEED DEFINES;
 // this is 1.0, the maximum power possible to the motors.
-#define BIG_BOOST_PCT 0.8  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
+#define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
 #define BIG_NORMAL_PCT 0.6 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
 #define BIG_SLOW_PCT 0.3   // the value for brake button to slow down the motors at the button press
 
 // BSN for Short/Small Motors
-#define SMALL_BOOST_PCT 0.9
+#define SMALL_BOOST_PCT 0.85
 #define SMALL_NORMAL_PCT 0.7
 #define SMALL_SLOW_PCT 0.4
 
