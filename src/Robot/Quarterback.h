@@ -23,11 +23,11 @@
 #define ELEVATION_PERIOD 3750
 
 // Conveyor defines
-#define CONVEYOR_ON 0.5
+#define CONVEYOR_ON 1
 #define CONVEYOR_OFF 0
 
 // Debounce Vars
-#define DEBOUNCE_WAIT 500
+#define DEBOUNCE_WAIT 250
 
 // Enum for Increasing or Decreasing Flywheel Speed
 enum speedStatus {
