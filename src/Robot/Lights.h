@@ -11,7 +11,7 @@
 // LED Variables
 bool tackled = false;
 static unsigned long tackleTime = 0;
-static const int switchTime = 10; // KEEP THIS HERE!!!
+static const int switchTime = 1000; // KEEP THIS HERE!!!
 static unsigned long CURRENTTIME;
 static int ledStatus = 0;
 
