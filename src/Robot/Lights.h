@@ -11,7 +11,7 @@
 // LED Variables
 bool tackled = false;
 static unsigned long tackleTime = 0;
-static const int switchTime = 2000;
+static const int switchTime = 10; // KEEP THIS HERE!!!
 static unsigned long CURRENTTIME;
 static int ledStatus = 0;
 
@@ -32,6 +32,7 @@ public:
         OFFENSE,     // blue and green
         DEFENSE,     // green
         TACKLED,     // turn red when tackled
+        DEFAULTL
     };
     Lights();
     void setupLEDS();
@@ -93,14 +94,14 @@ void Lights::updateLEDS() {
           break;
       }
       case DEFENSE: {
-          leds = CRGB::Blue;
+          leds = CRGB::Green;
           break;
       }
       case TACKLED: {
           leds = CRGB::Red;
           break;
       }
-      default: {
+      case DEFAULTL: {
           leds = CRGB::Black;
           break;
       }

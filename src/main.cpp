@@ -75,9 +75,9 @@ void setup() {
 #endif
 
 // Set the special bot type
-#if BOT_TYPE == 0
+#if BOT_TYPE == 0 // Lineman
     DriveMotors.setServos(M1_PIN, M2_PIN);
-#elif BOT_TYPE == 1   // Lineman/receiver
+#elif BOT_TYPE == 1   // Receiver
     DriveMotors.setServos(M1_PIN, M2_PIN);
 #elif BOT_TYPE == 2  // Old Center
     DriveMotors.setServos(M1_PIN, M2_PIN);
@@ -152,16 +152,22 @@ void loop() {
         }
 
         // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(robotLED.returnStatus() == robotLED.OFFENSE && (TACKLE_PIN) == HIGH){
+        if(robotLED.returnStatus() == robotLED.OFFENSE && digitalRead(TACKLE_PIN) == LOW
+                && BOT_TYPE != 0 && BOT_TYPE != 4){
+            robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLED);
             tackleTime = millis();
             tackled = true;
-        }
+        } 
+        // else if(tackled == true) {
+        //     tackled = false;
+        //     robotLED.setLEDStatus(Lights::OFFENSE); 
+        // }
 
         // Switch the LED state back to offense after being tackled a certain amount of time ago
-        if((millis() - tackleTime) >= switchTime && tackled == true){
-            tackled = false;
+        else if((millis() - tackleTime) >= switchTime && tackled == true){
             robotLED.setLEDStatus(Lights::OFFENSE);
+            tackled = false;
         }
         #endif
         
