@@ -56,11 +56,11 @@ void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
  * - https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
  * Drive directions cheat sheet: https://gm0.org/en/latest/_images/mecanum-drive-directions.png 
  * 
+ * Current model in desmos:
+ * https://www.desmos.com/calculator/xoqso2wmiw
  */
 void DriveMecanum::generateMotorValues() {
     // generate motion vector (strafe direction)
-    // might want to move these, because ramp may need to be called before these
-    // we may want to ramp the magnitude and turnPwr, instead of individual motors
     this->r = hypot(scaledLeftX, scaledLeftY);
     this->theta = atan2(scaledLeftX, scaledLeftY);
     this->turnPwr = scaledRightX;
@@ -69,22 +69,17 @@ void DriveMecanum::generateMotorValues() {
     this->r = constrain(this->r, 0, 1);
 
     // calculate the x and y components from the stick input with an angle offset of 45 degrees
-    // if the motor magnitude is zero, the angle would be undefined, so set the power to 0
+    // if the motor magnitude is zero, the angle would be undefined, so set the component value to zero
     this->x_comp = (r == 0) ? 0 : r * sin(theta + (PI/4));
     this->y_comp = (r == 0) ? 0 : r * cos(theta + (PI/4));
 
     // find the max value for each of the inputs, use to normalize the motor powers to 1
-    this->max = _max(_max(fabs(x_comp),fabs(y_comp)), _max(fabs(turnPwr),1));
+    // this->max = _max(_max(fabs(x_comp),fabs(y_comp)), _max(fabs(turnPwr),1));
 
-    // setMotorPwr(r * x_comp + turnPwr, 0);
-    // setMotorPwr(r * y_comp - turnPwr, 1);
-    // setMotorPwr(r * y_comp + turnPwr, 2);
-    // setMotorPwr(r * x_comp - turnPwr, 3);
-
-    mmotorpwr[0] = (x_comp + turnPwr) / max;
-    mmotorpwr[1] = (y_comp - turnPwr) / max;
-    mmotorpwr[2] = (y_comp + turnPwr) / max;
-    mmotorpwr[3] = (x_comp - turnPwr) / max;
+    mmotorpwr[0] = (x_comp + turnPwr); // / max;
+    mmotorpwr[1] = (y_comp - turnPwr); // / max;
+    mmotorpwr[2] = (y_comp + turnPwr); // / max;
+    mmotorpwr[3] = (x_comp - turnPwr); // / max;
 
     // setMotorPwr(r * x_comp / max + turnPwr, 0);
     // setMotorPwr(r * y_comp / max - turnPwr, 1);
@@ -127,6 +122,8 @@ void DriveMecanum::update() {
 
 void DriveMecanum::drift() {
     this->update(); // if drift is called, just call update
+    // in the future we could change this to allow for left and right pivots
+    // pivot around a point between the two left and two right wheels
 }
 
 void DriveMecanum::printDebugInfo() {
