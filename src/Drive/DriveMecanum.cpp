@@ -6,20 +6,20 @@
  * @brief 
  * 
  * 
- * Motor Layout
- *                  ^
- *                  | Fwd
- *       _______________________
- *      |   __             __   |
- *      |  |LF|           |RF|  |
- *      |  |1 |           |2 |  |
- *      |  |__|           |__|  |
- *      |           .           |
- *      |   __             __   |
- *      |  |LR|           |RR|  |
- *      |  |3 |           |4 |  |
- *      |  |__|           |__|  |
- *      |_______________________|
+ * Motor Layout                                 Bottom-up view
+ *                  ^                                  ^            
+ *                  | Fwd                              | Fwd        
+ *       _______________________            ______________________ 
+ *      |   __             __   |          |                      |
+ *      |  |LF|           |RF|  |          |  \\\            ///  |
+ *      |  |1 |           |2 |  |          |  \\\            ///  |
+ *      |  |__|           |__|  |          |  \\\            ///  |
+ *      |           .           |          |          .           |
+ *      |   __             __   |          |                      |
+ *      |  |LR|           |RR|  |          |  ///            \\\  |
+ *      |  |3 |           |4 |  |          |  ///            \\\  |
+ *      |  |__|           |__|  |          |  ///            \\\  |
+ *      |_______________________|          |______________________|
  * 
  */
 
@@ -50,8 +50,11 @@ void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
 /**
  * @brief generateMotorValues
  * 
- * referenced from: 
+ * Research links: 
  * - https://www.youtube.com/watch?v=gnSW2QpkGXQ
+ * - https://robotics.stackexchange.com/questions/20088/how-to-drive-mecanum-wheels-robot-code-or-algorithm
+ * - https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
+ * Drive directions cheat sheet: https://gm0.org/en/latest/_images/mecanum-drive-directions.png 
  * 
  */
 void DriveMecanum::generateMotorValues() {
@@ -62,34 +65,26 @@ void DriveMecanum::generateMotorValues() {
     this->theta = atan2(scaledLeftX, scaledLeftY);
     this->turnPwr = scaledRightX;
 
-    this->x_comp = sin(theta + (PI/4));
-    this->y_comp = cos(theta + (PI/4));
-    this->max = _max(x_comp, y_comp);
-    // motorPwr[0] = r * cos(theta) + turnPwr;
-    // motorPwr[1] = r * sin(theta) - turnPwr;
-    // motorPwr[2] = r * sin(theta) + turnPwr;
-    // motorPwr[3] = r * cos(theta) - turnPwr;
+    // ensure motor power doesnt exceed 100%
+    this->r = constrain(this->r, 0, 1);
 
-    /*
-        mecanum edge cases:
-            theta is undefined when X and Y are both zero
+    // calculate the x and y components from the stick input with an angle offset of 45 degrees
+    // if the motor magnitude is zero, the angle would be undefined, so set the power to 0
+    this->x_comp = (r == 0) ? 0 : r * sin(theta + (PI/4));
+    this->y_comp = (r == 0) ? 0 : r * cos(theta + (PI/4));
 
-        not even sure if a mecanum bot can strafe at 45 degrees
-        https://robotics.stackexchange.com/questions/20088/how-to-drive-mecanum-wheels-robot-code-or-algorithm
-    */
+    // find the max value for each of the inputs, use to normalize the motor powers to 1
+    this->max = _max(_max(fabs(x_comp),fabs(y_comp)), _max(fabs(turnPwr),1));
 
     // setMotorPwr(r * x_comp + turnPwr, 0);
     // setMotorPwr(r * y_comp - turnPwr, 1);
     // setMotorPwr(r * y_comp + turnPwr, 2);
     // setMotorPwr(r * x_comp - turnPwr, 3);
 
-    
-    mmotorpwr[0] = r * x_comp + turnPwr;
-    mmotorpwr[1] = r * y_comp - turnPwr;
-    mmotorpwr[2] = r * y_comp + turnPwr;
-    mmotorpwr[3] = r * x_comp - turnPwr;
-
-
+    mmotorpwr[0] = (x_comp + turnPwr) / max;
+    mmotorpwr[1] = (y_comp - turnPwr) / max;
+    mmotorpwr[2] = (y_comp + turnPwr) / max;
+    mmotorpwr[3] = (x_comp - turnPwr) / max;
 
     // setMotorPwr(r * x_comp / max + turnPwr, 0);
     // setMotorPwr(r * y_comp / max - turnPwr, 1);
