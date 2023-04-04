@@ -108,15 +108,10 @@ void setup() {
 #endif
  
     // Set initial LED color state
-    #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
     robotLED.setupLEDS();
-    // robotLED.setLEDStatus(Lights::PAIRING);
     robotLED.setLEDStatus(Lights::PAIRING);
     activatePairing();
     robotLED.setLEDStatus(Lights::PAIRED);
-    #endif
-
-    // Serial.print(F("\r\nConnected"));
 
     ps5.attachOnConnect(onConnection);
     ps5.attachOnDisconnect(onDisconnect);
@@ -142,7 +137,6 @@ void loop() {
     #else //if BOT_TYPE != 3
         DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
     #endif
-
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad()){
