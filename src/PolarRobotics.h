@@ -1,12 +1,20 @@
+/**
+ * @brief Polar Robotics Main Header File
+ * 
+ * Contains pin declarations/defines, various global enums, 
+ * and other structures that are useful in a global scope.
+ **/
+
 #ifndef POLAR_ROBOTICS_H_
 #define POLAR_ROBOTICS_H_
 
 #include <Arduino.h>
 #include <ps5Controller.h>
 
-// PIN DECLARATIONS:
+// [PIN DECLARATIONS]
 // please follow: 
 // https://docs.google.com/spreadsheets/d/17pdff4T_3GTAkoctwm2IMg07Znoo-iJkyDGN5CqXq3w/edit#gid=0
+//
 //  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   | 2 wheels  |  4 wheels  |
 // ____|______|__|___|___________|____________|
@@ -16,13 +24,13 @@
 #define M4_PIN 27 // |    N/A    | rightRear  |
 
 // Pins for special bot features, conveyor, flywheels, etc...
-#define SPECBOT_PIN1  18   // Special Bot Pins
-#define SPECBOT_PIN2  19
-#define SPECBOT_PIN3  21
-#define SPECBOT_PIN4  22
+#define SPECBOT_PIN1 18   // Special Bot Pins
+#define SPECBOT_PIN2 19
+#define SPECBOT_PIN3 21
+#define SPECBOT_PIN4 22
 
 // pin for ws2812 LEDs to indicate positions 
-#define LED_PIN    4   
+#define LED_PIN 4   
 // receiver, tackled, etc...
 #if BOT_TYPE == 6
 #define TACKLE_PIN 12
@@ -30,8 +38,11 @@
 #define TACKLE_PIN 13
 #endif
 
+
+// TODO: Some of our enums are capitalized, some are not. We should probably standardize this.
+
 // Robot Type Enum
-// 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
+// Ordinals: 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
 enum TYPE {
   lineman,
   receiver,
@@ -66,6 +77,8 @@ enum MOTORS {
   falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 };
 
-extern void extUpdateLEDs();
+// external function implemented in main to allow accessing LED state from other files,
+// like `pairing.cpp`, that would otherwise cause circular dependencies
+extern void extUpdateLEDs(); 
 
 #endif

@@ -1,5 +1,14 @@
+/**
+ * @brief Main Code File
+ * 
+ * The place where the magic happens.
+ * This code is what's run by default by the ESP32.
+ * `setup()` is called once upon startup. Initialization and preparation occur here.
+ * `loop()` is called infinitely after `setup()` completes. Most real-time logic is here.
+ **/
+
 #include <Arduino.h>
-#include <ps5Controller.h> // esp ps5 library
+#include <ps5Controller.h> // ESP PS5 library
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
@@ -44,6 +53,7 @@ Lights robotLED;
 #endif
 
 // Prototypes for Controller Callbacks
+// Implementations located at the bottom of this file
 void onConnection();
 void onDisconnect();
 
@@ -267,15 +277,15 @@ void onConnection() {
 
 /**
  * @brief onDisconnect: Function to be called on controller disconnect
- * this may be extremely helpful in the future to fix bots driving off aimlessly in the future
- * and we theoretically could reconnect to the bot if a bot were to loose power and it was restored 
- * without having to touch the bot
+ * Stops bots from driving off and ramming into a wall or someone's foot if they disconnect
  */
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
     DriveMotors.emergencyStop();
 }
 
+/// @brief Allows accessing LED state from other files like `pairing.cpp`
+/// Used to avoid circular dependencies
 extern void extUpdateLEDs() {
   robotLED.updateLEDS();
 }
