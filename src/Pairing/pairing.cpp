@@ -3,9 +3,10 @@
  * @author Max Phillips
  * Adapted from: https://github.com/espressif/arduino-esp32/blob/master/libraries/BluetoothSerial/examples/DiscoverConnect/DiscoverConnect.ino
  * 
- * Provides several functions to handle pairing of an ESP32 to a PS5 controller.
- * The primary function is `activatePairing()`, which should be called in your main code file during setup.
+ * Provides a framework to handle pairing of an ESP32 to a PS5 controller.
+ * `activatePairing()` should be called in your main code file during setup.
  * It is a *blocking* function (not asynchronous and takes a discrete amount of time), so consider that.
+ * Other functions in this file are helper functions for `activatePairing()` and generally should not be called outside it.
  */
 
 /**
