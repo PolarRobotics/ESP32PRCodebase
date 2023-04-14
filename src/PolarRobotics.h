@@ -9,7 +9,6 @@
 #define POLAR_ROBOTICS_H_
 
 #include <Arduino.h>
-#include <ps5Controller.h>
 
 // [PIN DECLARATIONS]
 // please follow: 
@@ -32,23 +31,29 @@
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
 // receiver, tackled, etc...
-#if BOT_TYPE == 6
 #define TACKLE_PIN 12
-#else
-#define TACKLE_PIN 13
-#endif
 
+#define NUM_BOTS 13 // used in BotTypes.h
 
-// TODO: Some of our enums are capitalized, some are not. We should probably standardize this.
+// ENUM Definitions
 
 // Robot Type Enum
-// Ordinals: 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
-enum TYPE {
+// Lineman: 0, Receiver: 1, Runningback: 2, Center: 3, Mecanum Center: 4, QuarterBack: 5, Kicker: 6
+enum eBOT_TYPE {
   lineman,
   receiver,
+  runningback,
   center,
+  mecanum_center,
   quarterback,
   kicker
+};
+
+enum eMOTOR_TYPE {
+  big,          // MOTOR_TYPE value of 0 for long/big 24v motors
+  small,        // MOTOR_TYPE value of 1 for short/small 24v motors
+  mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
+  falconmotor   // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 };
 
 enum BOT_STATE {
@@ -60,22 +65,9 @@ enum BOT_STATE {
   TACKLED
 };
 
-enum AGE {
-  OLD,
-  NEW
-};
 
-enum ELEVATION {
-  low,
-  high
-};
 
-enum MOTORS {
-  big, // MOTOR_TYPE value of 0 for long/big motors
-  small, // MOTOR_TYPE value of 1 for short/small motors
-  mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
-  falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
-};
+
 
 // external function implemented in main to allow accessing LED state from other files,
 // like `pairing.cpp`, that would otherwise cause circular dependencies

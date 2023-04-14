@@ -39,6 +39,11 @@ enum qbAim {
   aimUp, aimDown
 };
 
+enum ELEVATION {
+  low,
+  high
+};
+
 /**
  * @brief Quarterback Subclass Header
  * @authors Rhys Davies
