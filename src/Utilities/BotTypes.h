@@ -22,11 +22,24 @@
 // };
 
 
+/**
+ * @brief 
+ * 
+ * 
+ * Order to write to eeprom:
+ * Bot Name index
+ * Bot Type enum
+ * Motor Type enum
+ * Gear Ratio index
+ * ? code last uploaded date and time
+ */
+
+
 typedef const struct botconfig {
   uint8_t index;
   eBOT_TYPE bot_type;
   eMOTOR_TYPE mot_type;
-  // placegolder gear ratio index
+  // placeholder gear ratio index
 } botconfig_t;
 
 // BOT CONFIGURATIONS
@@ -52,29 +65,29 @@ botconfig_t bot_config_arr[NUM_BOTS] = {
 */
 class BotTypes {
 private:
-    botconfig_t config;
+    botconfig_t* config;
     // uint8_t m_bot_index;
     // eBOT_TYPE m_bot_type;
 public:
     BotTypes();
     void readBotInfo();
-    const char* botName2_str(uint8_t n_idx);
+    const char* botNameToString(uint8_t n_idx);
 
 }
 
 
-/**
- * @brief BotConfigurator
- * used for writing the bot info to the eeprom
- * inherits bottypes
- */
+// /**
+//  * @brief BotConfigurator
+//  * used for writing the bot info to the eeprom
+//  * inherits bottypes
+//  */
 
-class BotConfigurator : public BotTypes {
-private:
-public: 
+// class BotConfigurator : public BotTypes {
+// private:
+// public: 
 
-    string botName2_str(uint8_t n_idx);
+//     string botName2_str(uint8_t n_idx);
 
-}
+// }
 
 #endif /* A5BF803D_491D_477A_8854_A7D87F1E0251 */
