@@ -107,22 +107,6 @@ void Lights::updateLEDS() {
     FastLED.show();
 }
 
-
-void Lights::togglePosition() {
-    // debounce makes sure you cant hold down the button, 
-    // i think the ps5 library already does this we probably should check
-    if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-        if (m_isOffense) {
-            setLEDStatus(OFFENSE);
-        }
-        else {
-            setLEDStatus(DEFENSE);
-        }
-        m_isOffense = !m_isOffense;
-        lastToggleTime = millis();
-    }
-}
-
 int Lights::returnStatus() {
     int status = 0;
     status = currState;
