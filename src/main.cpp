@@ -171,6 +171,12 @@ void loop() {
             tackled = true;
         } 
 
+        // Reset the LED state after being tackled a certain amount of time
+        else if((millis() - tackleTime) >= switchTime && tackled == true){
+            robotLED.setLEDStatus(Lights::OFF);
+            tackled = false;
+        }
+
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) { 

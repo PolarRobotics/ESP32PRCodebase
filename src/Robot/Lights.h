@@ -100,7 +100,7 @@ void Lights::updateLEDS() {
           break;
       }
       case OFF: {
-          leds = CRGB::Black;
+          leds = CRGB::White;
           break;
       }
       }
