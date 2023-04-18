@@ -155,7 +155,7 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
-        // Update the LEDs based on tackle1 (tPin1 input)
+        // Update the LEDs based on tackle1
         if(digitalRead(TACKLE_PIN1) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLE1);
@@ -168,7 +168,7 @@ void loop() {
             tackled1 = false;
         }        
 
-        // Update the LEDs based on tackle1 (tPin1 input)
+        // Update the LEDs based on tackle2 
             if(digitalRead(TACKLE_PIN2) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLE2);
