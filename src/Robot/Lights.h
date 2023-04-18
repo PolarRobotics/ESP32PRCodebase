@@ -9,8 +9,10 @@
 #define TIME_BETWEEN_TOGGLES 500
 
 // LED Variables
-bool tackled = false;
-static unsigned long tackleTime = 0;
+bool tackled1 = false;
+bool tackled2 = false;
+static unsigned long tackleTime1 = 0;
+static unsigned long tackleTime2 = 0;
 static const int switchTime = 1000; // KEEP THIS HERE!!!
 static unsigned long CURRENTTIME;
 static int ledStatus = 0;
@@ -86,18 +88,16 @@ void Lights::updateLEDS() {
           break;
       }
       case TACKLE1: {
-        for(int i = 0; i < NUM_LEDS; i ++){
-            if(i % 2 == 0){leds[i] = CRGB::Red;}
-            else{leds[i] = CRGB::White;}
+        for(int i = 0; i < NUM_LEDS/2; i ++){
+            leds[i] = CRGB::Red;
           }
           break;
       }
       case TACKLE2: {
-        for(int i = 0; i < NUM_LEDS; i ++){
-            if(i % 2 == 0){leds[i] = CRGB::White;}
-            else{leds[i] = CRGB::Red;}
-          }
-          break;
+        for(int i = 0; i < NUM_LEDS/2+1; i ++){
+            leds[i] = CRGB::Red;
+        }
+        break;
       }
       case OFF: {
           leds = CRGB::White;

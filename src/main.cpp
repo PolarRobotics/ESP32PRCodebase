@@ -159,23 +159,29 @@ void loop() {
         if(digitalRead(TACKLE_PIN1) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLE1);
-            tackleTime = millis();
-            tackled = true;
+            tackleTime1 = millis();
+            tackled1 = true;
         } 
+        // Reset the LED state after being tackled a certain amount of time
+        else if((millis() - tackleTime1) >= switchTime && tackled1 == true){
+            robotLED.setLEDStatus(Lights::OFF);
+            tackled1 = false;
+        }        
 
         // Update the LEDs based on tackle1 (tPin1 input)
-            if(digitalRead(TACKLE_PIN1) == LOW) {
+            if(digitalRead(TACKLE_PIN2) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
             robotLED.setLEDStatus(Lights::TACKLE2);
-            tackleTime = millis();
-            tackled = true;
+            tackleTime2 = millis();
+            tackled2 = true;
         } 
 
         // Reset the LED state after being tackled a certain amount of time
-        else if((millis() - tackleTime) >= switchTime && tackled == true){
+        else if((millis() - tackleTime2) >= switchTime && tackled2 == true){
             robotLED.setLEDStatus(Lights::OFF);
-            tackled = false;
+            tackled2 = false;
         }
+        
 
         
         // Update the motors based on the inputs from the controller
