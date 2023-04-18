@@ -155,27 +155,22 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
-        // Manual LED State Toggle (Defense/Offense)
-        #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
-        if(ps5.Options()){
-            robotLED.togglePosition();
-        }
-
-        #if BOT_TYPE != 0 // if the bot is not a linemen
-        // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(robotLED.returnStatus() == robotLED.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+        // Update the LEDs based on tackle1 (tPin1 input)
+        if(digitalRead(TACKLE_PIN1) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
-            robotLED.setLEDStatus(Lights::TACKLED);
+            robotLED.setLEDStatus(Lights::TACKLE1);
             tackleTime = millis();
             tackled = true;
         } 
-        // Switch the LED state back to offense after being tackled a certain amount of time
-        else if((millis() - tackleTime) >= switchTime && tackled == true){
-            robotLED.setLEDStatus(Lights::OFFENSE);
-            tackled = false;
-        }
-        #endif
-        #endif
+
+        // Update the LEDs based on tackle1 (tPin1 input)
+            if(digitalRead(TACKLE_PIN1) == LOW) {
+            // robotLED.setLEDStatus(Lights::DEFAULTL);
+            robotLED.setLEDStatus(Lights::TACKLE2);
+            tackleTime = millis();
+            tackled = true;
+        } 
+
         
         // Update the motors based on the inputs from the controller
         if(ps5.L2()) { 

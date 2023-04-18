@@ -32,11 +32,8 @@
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
 // receiver, tackled, etc...
-#if BOT_TYPE == 6
-#define TACKLE_PIN 12
-#else
-#define TACKLE_PIN 13
-#endif
+#define TACKLE_PIN1 13
+#define TACKLE_PIN2 14
 
 
 // TODO: Some of our enums are capitalized, some are not. We should probably standardize this.

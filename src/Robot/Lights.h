@@ -26,12 +26,11 @@ private:
 public:
     // MUHAMMED ENUM PRAISE BE UPON HIM
     enum LEDState {
-        PAIRING,     // Yellow
-        PAIRED,      // green then fade out
+        PAIRING,
+        PAIRED,
         NOTPAIRED,
-        OFFENSE,     // blue and green
-        DEFENSE,     // green
-        TACKLED,     // turn red when tackled
+        TACKLE1,
+        TACKLE2,
         OFF
     };
     Lights();
@@ -86,26 +85,25 @@ void Lights::updateLEDS() {
           }
           break;
       }
-      case OFFENSE: {
-          for(int i = 0; i < NUM_LEDS; i ++){
-              if(i % 2 == 0){leds[i] = CRGB::Blue;}
-              else{leds[i] = CRGB::Green;}
+      case TACKLE1: {
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::Red;}
+            else{leds[i] = CRGB::White;}
           }
           break;
       }
-      case DEFENSE: {
-          leds = CRGB::Green;
-          break;
-      }
-      case TACKLED: {
-          leds = CRGB::Red;
+      case TACKLE2: {
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::White;}
+            else{leds[i] = CRGB::Red;}
+          }
           break;
       }
       case OFF: {
           leds = CRGB::Black;
           break;
       }
-    }
+      }
     FastLED.show();
 }
 
