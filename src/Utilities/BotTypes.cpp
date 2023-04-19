@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include <string>
+// #include <string>
 #include <PolarRobotics.h>
 
-#include "BotTypes.h"
+#include "Utilities/BotTypes.h"
 
 BotTypes::BotTypes() {
 
@@ -13,7 +13,7 @@ void BotTypes::readBotInfo() {
     
 }
 
-const char* BotTypes::botNameToString(uint8_t n_idx) {
+const char * BotTypes::botNameToString(uint8_t n_idx) {
     switch(n_idx) {
         case 0:  return "i++";
         case 1:  return "sqrt(-1)";
