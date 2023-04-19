@@ -3,7 +3,41 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-// #include <string>
+
+/**
+ * @brief botconfig robot configuration datastructure, 
+ * used to read and write bot information to the esp 
+ * Order to write to eeprom:
+ * Bot Name index
+ * Bot Type enum
+ * Motor Type enum
+ * Gear Ratio index
+ * ? code last uploaded date and time
+ */
+struct botconfig {
+  uint8_t index;
+  eBOT_TYPE bot_type;
+  eMOTOR_TYPE mot_type;
+  // placeholder gear ratio index
+};
+
+typedef const struct botconfig botconfig_t;
+// BOT CONFIGURATIONS
+botconfig_t bot_config_arr[NUM_BOTS] = {
+    {0,  lineman, small},  // 0:  i++
+    {1,  lineman, small},  // 1:  sqrt(-1)
+    {2,  lineman, small},  // 2:  pi
+    {3,  lineman, small},  // 3:  p
+    {4,  lineman, small},  // 4:  2.72
+    {5,  lineman, small},  // 5:  :)
+    {6,  lineman, small},  // 6:  >=
+    {7,  lineman, small},  // 7:  32.2
+    {8,  lineman, small},  // 8:  9.8
+    {9,  lineman, small},  // 9:  c
+    {10, lineman, small},  // 10: 0
+    {11, lineman, small},  // 11: inf
+    {12, lineman, small}   // 12: theta
+};
 
 // enum eBOT_NAME {
 //   iplusplus,            // i++
@@ -20,74 +54,5 @@
 //   infinity,             // inf
 //   theta                 // theta
 // };
-
-
-/**
- * @brief 
- * 
- * 
- * Order to write to eeprom:
- * Bot Name index
- * Bot Type enum
- * Motor Type enum
- * Gear Ratio index
- * ? code last uploaded date and time
- */
-
-struct botconfig {
-  uint8_t index;
-  eBOT_TYPE bot_type;
-  eMOTOR_TYPE mot_type;
-  // placeholder gear ratio index
-};
-
-typedef const struct botconfig botconfig_t;
-// BOT CONFIGURATIONS
-botconfig_t bot_config_arr[NUM_BOTS] = {
-    {0,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 0
-    {1,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 1
-    {2,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 2
-    {3,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 3
-    {4,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 4
-    {5,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 5
-    {6,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 6
-    {7,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 7
-    {8,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 8
-    {9,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 9
-    {10, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 10
-    {11, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 11
-    {12, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 12
-    {13, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 13
-};
-
-/***
- * read the bot info from eeprom
-*/
-class BotTypes {
-private:
-    botconfig_t* config;
-    // uint8_t m_bot_index;
-    // eBOT_TYPE m_bot_type;
-public:
-    BotTypes();
-    void readBotInfo();
-    const char * botNameToString(uint8_t n_idx);
-
-}
-
-
-// /**
-//  * @brief BotConfigurator
-//  * used for writing the bot info to the eeprom
-//  * inherits bottypes
-//  */
-
-// class BotConfigurator : public BotTypes {
-// private:
-// public: 
-
-//     string botName2_str(uint8_t n_idx);
-
-// }
 
 #endif /* A5BF803D_491D_477A_8854_A7D87F1E0251 */

@@ -33,7 +33,7 @@
 // receiver, tackled, etc...
 #define TACKLE_PIN 12
 
-#define NUM_BOTS 14 // used in BotTypes.h
+#define NUM_BOTS 13 // used in BotTypes.h
 
 // ENUM Definitions
 
