@@ -4,28 +4,20 @@
 #define DRIVE_H_
 
 #include <Arduino.h>
-#include <Servo.h>
 #include <PolarRobotics.h>
-// #include <Servo_Hardware_PWM.h>
 
 #ifndef NUM_MOTORS
-// the number of motors associated with driving, usually multiples of 2, default: 2
-#define NUM_MOTORS 2 // 4 for mechanum wheels
+// the number of motors associated with driving
+#define NUM_MOTORS 2
 #endif
 
 //PWM defines:
 #define M1_PWMCH 0
 #define M2_PWMCH 1
 #define PWM_RES 16 //channel resolution in bits
-// frequency in HZ, a Period of 2500us
+// frequency in HZ, a Period of 2500us for the sabertooth
 #define PWM_PERIOD 0.0025
 #define PWM_FREQ 1 / PWM_PERIOD 
-
-// #TODO move this to the robot parent class
-// #ifndef MECHANUM
-// // determine if the motors are in a mechanum configuration or the standard config. default: false
-// #define MECHANUM false
-// #endif
 
 // rate of change of power with respect to time when accelerating %power/10th of sec
 #define ACCELERATION_RATE .0375
@@ -46,8 +38,8 @@
 #define THRESHOLD 0.00001
 
 // this is 1.0, the maximum power possible to the motors.
-#define BIG_BOOST_PCT 0.5  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-#define BIG_NORMAL_PCT 0.3 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
+#define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
+#define BIG_NORMAL_PCT 0.4 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering
 #define BIG_SLOW_PCT 0.2   // the value for brake button to slow down the motors at the button press
 #define BRAKE_BUTTON_PCT 0
 
@@ -103,13 +95,5 @@ public:
   void drift();
   void printDebugInfo();
 };
-
-// // Robot Age Enum
-// // 0 for old robot, 1 for new robot
-// // remove later - deprecated
-// enum AGE {
-//   OLD,
-//   NEW
-// };
 
 #endif /* DRIVE_H */
