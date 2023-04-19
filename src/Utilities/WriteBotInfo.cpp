@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <PolarRobotics.h>
+#include <Utilities/BotTypes.h>
+
 
 Preferences preferences;
 eBOT_TYPE bot_type;

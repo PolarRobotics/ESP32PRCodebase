@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-#include <string>
+// #include <string>
 
 // enum eBOT_NAME {
 //   iplusplus,            // i++
@@ -34,30 +34,30 @@
  * ? code last uploaded date and time
  */
 
-
-typedef const struct botconfig {
+struct botconfig {
   uint8_t index;
   eBOT_TYPE bot_type;
   eMOTOR_TYPE mot_type;
   // placeholder gear ratio index
-} botconfig_t;
+};
 
+typedef const struct botconfig botconfig_t;
 // BOT CONFIGURATIONS
 botconfig_t bot_config_arr[NUM_BOTS] = {
-    {0,  linemen, small},  // 0
-    {1,  linemen, small},  // 1
-    {2,  linemen, small},  // 2
-    {3,  linemen, small},  // 3
-    {4,  linemen, small},  // 4
-    {5,  linemen, small},  // 5
-    {6,  linemen, small},  // 6
-    {7,  linemen, small},  // 7
-    {8,  linemen, small},  // 8
-    {9,  linemen, small},  // 9
-    {10, linemen, small},  // 10
-    {11, linemen, small},  // 11
-    {12, linemen, small},  // 12
-    {13, linemen, small},  // 13
+    {0,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 0
+    {1,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 1
+    {2,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 2
+    {3,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 3
+    {4,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 4
+    {5,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 5
+    {6,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 6
+    {7,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 7
+    {8,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 8
+    {9,  eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 9
+    {10, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 10
+    {11, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 11
+    {12, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 12
+    {13, eBOT_TYPE::lineman, eMOTOR_TYPE::small},  // 13
 };
 
 /***
@@ -71,7 +71,7 @@ private:
 public:
     BotTypes();
     void readBotInfo();
-    const char* botNameToString(uint8_t n_idx);
+    const char * botNameToString(uint8_t n_idx);
 
 }
 
