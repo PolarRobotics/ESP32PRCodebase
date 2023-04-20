@@ -1,10 +1,19 @@
 // void updateLEDS(BOT_STATE status); //private
 // void setRobotState(BOT_STATE state);
-
+#pragma once
+#include <Arduino.h>
 #include <FastLED.h>
-#define LED_PIN 7
-#define NUM_LEDS 30
-#define TIME_BETWEEN_TOGGLES 25
+#include <PolarRobotics.h>
+
+#define NUM_LEDS 100
+#define TIME_BETWEEN_TOGGLES 500
+
+// LED Variables
+bool tackled = false;
+static unsigned long tackleTime = 0;
+static const int switchTime = 1000; // KEEP THIS HERE!!!
+static unsigned long CURRENTTIME;
+static int ledStatus = 0;
 
 class Lights {
 private:
@@ -19,9 +28,11 @@ public:
     enum LEDState {
         PAIRING,     // Yellow
         PAIRED,      // green then fade out
-        OFFENSE,     // blue (also need green)
+        NOTPAIRED,
+        OFFENSE,     // blue and green
         DEFENSE,     // green
-        BALL_CARRIER // turn red and then go back to offense state (testing digital pin signal)
+        TACKLED,     // turn red when tackled
+        OFF
     };
     Lights();
     void setupLEDS();
@@ -30,6 +41,8 @@ public:
     void updateLEDS();
     //   void runLoop(int count);
     void togglePosition();
+    int returnStatus();
+    void pairState(bool state);
 };
 
 // Function Definitions
@@ -41,7 +54,7 @@ Lights::Lights() {
 
 void Lights::setupLEDS() {
     FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 500); // Power Failsafe
+    // FastLED.setMaxPowerInVoltsAndMilliamps(5, 500); // Power Failsafe
     // Clears LEDs when code is updated
     FastLED.clear();
 
@@ -51,61 +64,69 @@ void Lights::setupLEDS() {
 
 // To set LED status
 void Lights::setLEDStatus(LEDState status) {
-    currState = status;
+    this->currState = status;
     updateLEDS();
 }
 
 // To change LED color
 void Lights::updateLEDS() {
-    switch (currState) {
-    case PAIRING: {
-        leds = CRGB::Yellow;
-        break;
-    }
-    case PAIRED: {
-        leds = CRGB::Green;
-        FastLED.setBrightness(iteration);
-        iteration++;
-        break;
-    }
-    case OFFENSE: {
-        leds = CRGB::Blue;
-        break;
-    }
-    case DEFENSE: {
-        leds = CRGB::Green;
-        break;
-    }
-    case BALL_CARRIER: {
-        if (iteration % 255 / 16 == 0) {
-            leds = CRGB::Red;
-            // FastLED.delay(30);
-        }
-        else {
-            leds = CRGB::Black;
-        }
-        iteration++;
-        break;
-    }
-    default: {
-        leds = CRGB::Red;
-        break;
-    }
+    switch (this->currState) {
+      case PAIRING: {
+          leds = CRGB::DarkOrange;
+          break;
+      }
+      case PAIRED: {
+          leds = CRGB::Purple;
+          break;
+      }
+      case NOTPAIRED: {
+        for(int i = 0; i < NUM_LEDS; i ++){
+            if(i % 2 == 0){leds[i] = CRGB::Black;}
+            else{leds[i] = CRGB::White;}
+          }
+          break;
+      }
+      case OFFENSE: {
+          for(int i = 0; i < NUM_LEDS; i ++){
+              if(i % 2 == 0){leds[i] = CRGB::Blue;}
+              else{leds[i] = CRGB::Green;}
+          }
+          break;
+      }
+      case DEFENSE: {
+          leds = CRGB::Green;
+          break;
+      }
+      case TACKLED: {
+          leds = CRGB::Red;
+          break;
+      }
+      case OFF: {
+          leds = CRGB::Black;
+          break;
+      }
     }
     FastLED.show();
 }
+
 
 void Lights::togglePosition() {
     // debounce makes sure you cant hold down the button, 
     // i think the ps5 library already does this we probably should check
     if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
         if (m_isOffense) {
-            setLEDStatus(DEFENSE);
+            setLEDStatus(OFFENSE);
         }
         else {
-            setLEDStatus(OFFENSE);
+            setLEDStatus(DEFENSE);
         }
         m_isOffense = !m_isOffense;
         lastToggleTime = millis();
     }
+}
+
+int Lights::returnStatus() {
+    int status = 0;
+    status = currState;
+    return status;
 }

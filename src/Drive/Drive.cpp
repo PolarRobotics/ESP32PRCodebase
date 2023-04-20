@@ -1,5 +1,6 @@
-#include "Drive/Drive.h"
 #include <Arduino.h>
+#include "Drive/Drive.h"
+#include "Robot/MotorControl.h"
 #include "Drive.h"
 
 /**
@@ -13,7 +14,7 @@
  *
  *               ^
  *               | Fwd
- *       _________________
+ *       _________________ 
  *      |        _        |
  *      |       |O|       |       O: represents the Omniwheel, a wheel that can turn on 2 axis
  *      |       |_|       |       L: represents the left Wheel, powered by the left motor via a chain
@@ -30,16 +31,15 @@
  * @param leftmotorpin the arduino pin needed for the left motor, needed for servo
  * @param rightmotorpin the arduino pin needed for the right motor, needed for servo
 */
+
 Drive::Drive() {
     this->motorType = MOTORS::big; // default to long motors
 }
-void Drive::setServos(uint8_t lpin, uint8_t rpin){
-    motorPins[0] = lpin, motorPins[1] = rpin;
-    ledcAttachPin(lpin, M1_PWMCH);
-    ledcAttachPin(rpin, M2_PWMCH);
-    ledcSetup(M1_PWMCH, PWM_FREQ, PWM_RES);
-    ledcSetup(M2_PWMCH, PWM_FREQ, PWM_RES);
-};
+
+void Drive::setServos(uint8_t lpin, uint8_t rpin) {
+    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    M1.attach(lpin), M2.attach(rpin);
+}
 
 void Drive::setMotorType(MOTORS motorType) {
     this->motorType = motorType;
@@ -60,8 +60,8 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
     // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
     // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / (float)127.5);
-    stickTurn = (rightX / (float)127.5);  
+    stickForwardRev = (leftY / 127.5f);
+    stickTurn = (rightX / 127.5f);  
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -71,11 +71,15 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     if (fabs(stickTurn) < STICK_DEADZONE) {
       stickTurn = 0;
     }
-    // Ensure the stick values do not go above 1 or below -1
-    // stickForwardRev = constrain(stickForwardRev, -1, 1);
-    // stickTurn = constrain(stickTurn, -1, 1);
 }
 
+float Drive::getFwdRev() {
+    return stickForwardRev;
+}
+
+float Drive::getTurn() {
+    return stickTurn;
+}
 
 /**
  * @brief setBSN sets the internal variable to the requested percent power, this is what the motor power gets multiplied by,
@@ -87,21 +91,32 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
 */
 void Drive::setBSN(SPEED bsn) {
     // set the scalar to zero if the requested value is greater than 1, this is not entirely necessary, but is a safety
-    // BSNscalar = (powerMultiplier > 1) ? 0 : powerMultiplier;
     switch (bsn) {
         case boost: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_BOOST_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_BOOST_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_BOOST_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_BOOST_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_BOOST_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_BOOST_PCT; break; }
+            }
             break;
         }
         case normal: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_NORMAL_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_NORMAL_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_NORMAL_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_NORMAL_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_NORMAL_PCT; break; }
+            }
             break;
         }
         case slow: {
-            if (motorType == MOTORS::big) BSNscalar = BIG_SLOW_PCT;
-            else /* motorType == MOTORS::small */ BSNscalar = SMALL_SLOW_PCT;
+            switch (motorType) {
+                case MOTORS::big: { BSNscalar = BIG_SLOW_PCT; break; }
+                case MOTORS::small: { BSNscalar = SMALL_SLOW_PCT; break; }
+                case MOTORS::mecanummotor: { BSNscalar = MECANUM_SLOW_PCT; break; }
+                case MOTORS::falconmotor: { BSNscalar = FALCON_SLOW_PCT; break; }
+            }
             break;
         }
         case brake: {
@@ -111,6 +126,9 @@ void Drive::setBSN(SPEED bsn) {
     }
 }
 
+float Drive::getBSN() {
+    return this->BSNscalar;
+}
 
 /**
  * generateTurnScalar takes the input stick power and scales the max turning power allowed with the forward power input
@@ -144,7 +162,7 @@ void Drive::generateMotionValues() {
             if(stickTurn > STICK_DEADZONE) { // turn Right
                 switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
                     case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[0]), 1); break;
-                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 1); break;
+                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 1); break;
                 }
                 //calcTurningMotorValues(stickTurn, lastRampPower[0], 1);
                 motorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
@@ -152,7 +170,7 @@ void Drive::generateMotionValues() {
             } else if(stickTurn < -STICK_DEADZONE) { // turn Left
                 switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
                     case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[1]), 0); break;
-                    case false: calcTurningMotorValues(stickTurn, abs((BSNscalar * stickForwardRev)), 0); break;
+                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 0); break;
                 }
                 //calcTurningMotorValues(stickTurn, lastRampPower[1], 0);
                 motorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
@@ -213,7 +231,7 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
  * @param mtr pass 0 for left and 1 for right, used to help ease with storing values for multiple motors
  * @return float
  */
-float Drive::ramp(float requestedPower, uint8_t mtr) {
+float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
 
     if (millis() - lastRampTime[mtr] >= TIME_INCREMENT) {
         if (abs(requestedPower) < THRESHOLD) { // if the input is effectively zero
@@ -227,27 +245,27 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
             //currentPower[mtr] = 0;
             lastRampTime[mtr] = millis();
         }
-        else if (abs(requestedPower - currentPower[mtr]) < ACCELERATION_RATE) { // if the input is effectively at the current power
+        else if (abs(requestedPower - currentPower[mtr]) < accelRate) { // if the input is effectively at the current power
             return requestedPower;
         }
         // if we need to increase speed and we are going forward
         else if (requestedPower > currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going forward
         else if (requestedPower < currentPower[mtr] && requestedPower > 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to increase speed and we are going in reverse
         else if (requestedPower < currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] - ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] - accelRate;
             lastRampTime[mtr] = millis();
         }
         // if we need to decrease speed and we are going in reverse
         else if (requestedPower > currentPower[mtr] && requestedPower < 0) { 
-            currentPower[mtr] = currentPower[mtr] + ACCELERATION_RATE;
+            currentPower[mtr] = currentPower[mtr] + accelRate;
             lastRampTime[mtr] = millis();
         }
     }
@@ -257,67 +275,25 @@ float Drive::ramp(float requestedPower, uint8_t mtr) {
 
 
 /**
- * normalizes the signed power value from the ramp function to an unsigned value that the servo function can take
- * @authors Rhys Davies, Grant Brautigam, Alex Brown
- * Updated: 9-13-2022
- *
- * @param rampPwr the value to be normalized. Hopefully a value between [-1, 1]
- * @return normalized PWM value (between 1000 to 2000)
-*/
-uint32_t Drive::Convert2PWM(float rampPwr) {
-    return (rampPwr + 1) * 500 + 1000;
-}
-
-uint16_t Drive::convert2Duty(uint32_t timeon_us) {
-    // convert the time on to a duty cycle, then scale it to a 16-bit number
-    return (timeon_us / (PWM_PERIOD * 1000)) * (pow(2, PWM_RES) / 1000);
-}
-
-/**
- * alternate for servos writeMicroseconds, a function to set the motors based on a power input (-1 to 1),
- * manually sets the motor high for the pwm time.
- * @author Rhys Davies
- * Created: 10-5-2022
- * Updated: 10-29-2022
- *
- * Set the motors by outputting a pulse with a period corresponding to the motor power,
- * determined by Convert2PWMVal. These calculations can not be put into a function,
- * because it confuses the compiler as these are time critical tasks.
- * 
- * FUTURE: write this so both pins are HIGH at the same time, and the one that goes low first is called,
- * because the beginning of the pulse is at the same time for both pins, but this isnt entirely necessary
- * considering both motors operate independently on the sabertooth
- *
- * @param pwr the motor power to be set
- * @param pin the motor to be set (0 for left, 1 for right)
-*/
-void Drive::setMotorPWM(float pwr, byte pin) {
-    digitalWrite(motorPins[pin], HIGH);
-    delayMicroseconds(Convert2PWM(pwr) - 40);
-    digitalWrite(motorPins[pin], LOW);
-    delayMicroseconds(2000 - Convert2PWM(pwr) - 40); //-170
-    // digitalWrite(motorPins[0], HIGH);
-    // delayMicroseconds(Convert2PWMVal(motorPower[0]) - 40);
-    // digitalWrite(motorPins[0], LOW);
-    // // delayMicroseconds(2000 - Convert2PWMVal(motorPower[0]) - 40); //-170
-    // digitalWrite(motorPins[1], HIGH);
-    // delayMicroseconds(Convert2PWMVal(motorPower[1]) - 40);
-    // digitalWrite(motorPins[1], LOW);
-    // delayMicroseconds(2000 - Convert2PWMVal(motorPower[1]) - 40); //-170
-}
-
-/**
  * returns the stored motor value in the class
  * @param mtr the motor number to get, an array index, so 0 -> mtr 1, etc...
  * @return returns the stored motor power for a given motor
 */
 float Drive::getMotorPwr(uint8_t mtr) {
-    return motorPower[mtr];
+    return this->motorPower[mtr];
+}
+
+void Drive::setMotorPwr(float power, uint8_t mtr) {
+    this->motorPower[mtr] = power;
+}
+
+void Drive::setLastRampPwr(float power, uint8_t mtr) {
+    this->lastRampPower[mtr] = power;
 }
 
 void Drive::emergencyStop() {
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(0)));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(0)));
+    M1.writelow(), M2.writelow();
+    // M1.write(0); M2.write(0);
 }
 
 /**
@@ -354,16 +330,7 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(motorPower[1]);
 
-    Serial.print(F("  |  Left Motor: "));
-    Serial.print(Convert2PWM(-motorPower[0]));
-    Serial.print(F("  Right: "));
-    Serial.println(Convert2PWM(motorPower[1]));
-
-    // Serial.print(F("  |  Left Motor: "));
-    // Serial.print(convert2Duty(Convert2PWM(-motorPower[0])));
-    // Serial.print(F("  Right: "));
-    // Serial.println(convert2Duty(Convert2PWM(motorPower[1])));
-
+    Serial.print(F("\n"));
 }
 
 /**
@@ -388,8 +355,8 @@ void Drive::update() {
     lastRampPower[0] = motorPower[0];
     lastRampPower[1] = motorPower[1];
     
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
+    M1.write(motorPower[0]);
+    M2.write(motorPower[1]);
 }
 
 /**
@@ -405,7 +372,7 @@ void Drive::drift() {
     if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
         motorPower[0] = BSNscalar * abs(stickTurn)  * DRIFT_MODE_PCT;
         motorPower[1] = 0;
-    } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward much so use tank mode
+    } else if (stickTurn < - STICK_DEADZONE) { // turning left, but not moving forward much so use tank mode
         motorPower[0] = 0;
         motorPower[1] = BSNscalar * abs(stickTurn)  * DRIFT_MODE_PCT;
     } else {
@@ -413,6 +380,10 @@ void Drive::drift() {
         motorPower[1] = 0;
     }
 
-    ledcWrite(M1_PWMCH, convert2Duty(Convert2PWM(motorPower[0])));
-    ledcWrite(M2_PWMCH, convert2Duty(Convert2PWM(motorPower[1])));
+    // Set the ramp value to a function, needed for generateMotionValues
+    lastRampPower[0] = motorPower[0];
+    lastRampPower[1] = motorPower[1];
+
+    M1.write(motorPower[0]);
+    M2.write(motorPower[1]);
 }
