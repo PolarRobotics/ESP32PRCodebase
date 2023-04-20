@@ -267,6 +267,7 @@ void loop() {
     } else { // no response from PS5 controller within last 300 ms, so stop
         // Emergency stop if the controller disconnects
         DriveMotors.emergencyStop();
+        robotLED.setLEDStatus(Lights::NOTPAIRED);
     }
     // robotLED.updateLEDS();
 }
