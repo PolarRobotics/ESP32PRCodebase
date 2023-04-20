@@ -5,7 +5,7 @@
 #include <FastLED.h>
 #include <PolarRobotics.h>
 
-#define NUM_LEDS 100
+#define NUM_LEDS 38
 #define TIME_BETWEEN_TOGGLES 500
 
 // LED Variables
@@ -31,6 +31,8 @@ public:
         PAIRING,
         PAIRED,
         NOTPAIRED,
+        OFFENSE,
+        DEFENSE,
         TACKLE1,
         TACKLE2,
         OFF
@@ -87,6 +89,17 @@ void Lights::updateLEDS() {
           }
           break;
       }
+      case OFFENSE:{
+        for(int i = 0; i < NUM_LEDS; i ++){
+        if(i % 2 == 0){leds[i] = CRGB::Blue;}
+        else{leds[i] = CRGB::Green;}
+        }
+        break;
+      }
+      case DEFENSE:{
+        leds = CRGB::Green;
+        break;
+      }
       case TACKLE1: {
         for(int i = 0; i < NUM_LEDS/2; i ++){
             leds[i] = CRGB::Red;
@@ -94,7 +107,7 @@ void Lights::updateLEDS() {
           break;
       }
       case TACKLE2: {
-        for(int i = 0; i < NUM_LEDS/2+1; i ++){
+        for(int i = NUM_LEDS/2+1; i < NUM_LEDS; i ++){
             leds[i] = CRGB::Red;
         }
         break;
@@ -106,6 +119,22 @@ void Lights::updateLEDS() {
       }
     FastLED.show();
 }
+
+void Lights::togglePosition() {
+    // debounce makes sure you cant hold down the button, 
+    // i think the ps5 library already does this we probably should check
+    if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
+        if (m_isOffense) {
+            setLEDStatus(OFFENSE);
+        }
+        else {
+            setLEDStatus(DEFENSE);
+        }
+        m_isOffense = !m_isOffense;
+        lastToggleTime = millis();
+    }
+}
+
 
 int Lights::returnStatus() {
     int status = 0;

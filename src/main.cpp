@@ -156,6 +156,13 @@ void loop() {
             DriveMotors.setBSN(Drive::normal);
         }
 
+        // Manual LED State Toggle (Defense/Offense)
+        #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
+        if(ps5.Options()){
+            robotLED.togglePosition();
+        }
+        #endif
+
         // Update the LEDs based on tackle1
         if(digitalRead(TACKLE_PIN1) == LOW) {
             // robotLED.setLEDStatus(Lights::DEFAULTL);
@@ -165,7 +172,7 @@ void loop() {
         } 
         // Reset the LED state after being tackled a certain amount of time
         else if((millis() - tackleTime1) >= switchTime && tackled1 == true){
-            robotLED.setLEDStatus(Lights::OFF);
+            robotLED.setLEDStatus(Lights::OFFENSE);
             tackled1 = false;
         }        
 
@@ -179,7 +186,7 @@ void loop() {
 
         // Reset the LED state after being tackled a certain amount of time
         else if((millis() - tackleTime2) >= switchTime && tackled2 == true){
-            robotLED.setLEDStatus(Lights::OFF);
+            robotLED.setLEDStatus(Lights::OFFENSE);
             tackled2 = false;
         }
         
