@@ -33,12 +33,15 @@ eMOTOR_TYPE ReadConfig::MotType() {
     return this->config->mot_type;
 }
 
-const char *ReadConfig::toString() {
-    string temp = "Bot info:
-    \nbot index #: " + config->index + 
-    "\nbot name: " + botNameToString(config->index) +
-    "\nbot type: " + BotTypeToString(config->bot_type) +
-    "\nmotor type: " + MotorTypeToString(config->mot_type);
+const char * ReadConfig::toString() {
+    string temp = "Bot info: \nbot index #: ";
+    temp.append(to_string(config->index));
+    temp.append("\nbot name: ");
+    temp.append(botNameToString(config->index));
+    temp.append("\nbot type: ");
+    temp.append(BotTypeToString(config->bot_type));
+    temp.append("\nmotor type: ");
+    temp.append(MotorTypeToString(config->mot_type));
     return temp.c_str();
 }
 
@@ -73,7 +76,7 @@ const char * ReadConfig::BotTypeToString(eBOT_TYPE bot) {
     }
 }
 
-const char *ReadConfig::MotorTypeToString(eMOTOR_TYPE mot) {
+const char * ReadConfig::MotorTypeToString(eMOTOR_TYPE mot) {
     switch (mot) {
         case big: return "big";
         case small: return "small";
