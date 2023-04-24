@@ -6,7 +6,6 @@
 #include <Arduino.h>
 #include <PolarRobotics.h>
 
-
 /**
  * @brief botconfig robot configuration datastructure, 
  * used to read and write bot information to the esp 
@@ -19,21 +18,21 @@
  */
 struct botconfig {
   uint8_t index;
-  eBOT_TYPE bot_type;
+  eBOT_TYPE bot_type; // primary robot position
   eMOTOR_TYPE mot_type;
-  // placeholder gear ratio index
+  // placeholder: gear ratio index
   // uint8_t GR_index;
   // LED STRIP:
   // bool has_leds;
   // uint8_t num_leds;
-  // PH fHasMultipleBotTypes (for new linemen/receivers)
+  // placeholder: fHasMultipleBotTypes (for new linemen/receivers)
   // eBOT_TYPE secondary_type;
 };
 
 typedef struct botconfig botconfig_t;
 
-// BOT CONFIGURATIONS
-botconfig_t bot_config_arr[] = {
+// PRESET BOT CONFIGURATIONS
+const botconfig_t bot_config_arr[NUM_BOTS] = {
     {0,  lineman, small},      // 0:  i++
     {1,  lineman, small},      // 1:  sqrt(-1)
     {2,  lineman, small},      // 2:  pi

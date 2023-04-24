@@ -47,7 +47,7 @@
 *  QuarterBack: 5
 *  Kicker: 6
 */
-enum eBOT_TYPE {
+typedef enum {
   lineman,
   receiver,
   runningback,
@@ -55,14 +55,14 @@ enum eBOT_TYPE {
   mecanum_center,
   quarterback,
   kicker
-};
+} eBOT_TYPE;
 
-enum eMOTOR_TYPE {
+typedef enum {
   big,          // MOTOR_TYPE value of 0 for long/big 24v motors
   small,        // MOTOR_TYPE value of 1 for short/small 24v motors
   mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
   falconmotor   // MOTOR_TYPE value of 3 for the falcon motors on the runningback
-};
+} eMOTOR_TYPE;
 
 enum BOT_STATE {
   PAIRING,
