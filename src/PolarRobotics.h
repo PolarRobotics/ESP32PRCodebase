@@ -37,8 +37,16 @@
 
 // ENUM Definitions
 
-// Robot Type Enum
-// Lineman: 0, Receiver: 1, Runningback: 2, Center: 3, Mecanum Center: 4, QuarterBack: 5, Kicker: 6
+/**
+*  Robot Type Enum
+*  Lineman: 0
+*  Receiver: 1
+*  Runningback: 2
+*  Center: 3
+*  Mecanum Center: 4
+*  QuarterBack: 5
+*  Kicker: 6
+*/
 enum eBOT_TYPE {
   lineman,
   receiver,
@@ -64,7 +72,6 @@ enum BOT_STATE {
   DEFENSE,
   TACKLED
 };
-
 
 
 
