@@ -1,11 +1,4 @@
-
-#include <Arduino.h>
-#include <string.h>
-#include <Preferences.h>
-
-#include "Utilities/ReadConfig.h"
 #include "ReadConfig.h"
-// #include "ReadConfig.h"
 
 using namespace std;
 
@@ -13,8 +6,22 @@ ReadConfig::ReadConfig() {
     this->config = new botconfig_t();
 }
 
+ReadConfig::~ReadConfig() {
+    delete this->config;
+}
+
+/**
+ * @brief read reads the bot properties from the preferences or pseudo eeprom
+ * and stores those properties to the config data structure, 
+ * which can be accessed through getters
+ * 
+ * the bot configuration is stored in the "bot_config" "namespace" for preferences,
+ * this is a grouping of members, anything under the given namespace is grouped under said namespace
+ * data is accessed by using a key, which is basically a pointer to the location of the 
+ * data you are trying to read/write  
+ */
 void ReadConfig::read() {
-    // open the bot_config namespace
+    // open the bot_config namespace, readonly is true (defaults to false)
     preferences.begin("bot_config", true);
     // read the bot name index   
     this->config->index = preferences.getUChar("bot_name_idx");
@@ -25,16 +32,44 @@ void ReadConfig::read() {
     // close the bot_config namespace
     preferences.end();
 }
+
+/**
+ * @brief BotIdx gets the bot index from the configuration,
+ * this index corresponds to the position in the config array that the bot config is pulled from
+ * @return int the bot index in the array the configuration is from 
+ */
+int ReadConfig::BotIdx() {
+    return this->config->index;
+}
+
+/**
+ * @brief BotType gets the bot type (linemen, receiver, runningback, etc...) from the configuration
+ * @return eBOT_TYPE the stored bot type enumeration
+ */
 eBOT_TYPE ReadConfig::BotType() {
     return this->config->bot_type;
 }
 
+/**
+ * @brief MotType gets the motor type (small, bit, mecaummotor) from the configuration
+ * @return eMOTOR_TYPE the stored motor type enumeration
+ */
 eMOTOR_TYPE ReadConfig::MotType() {
     return this->config->mot_type;
 }
 
+/**
+ * @brief toString
+ * converts the stored configuration into an easy to read string, 
+ * to be printed to the console or other means
+ * 
+ * intended for for easy debugging
+ * 
+ * @return const char* the string containing the bot configuration
+ */
 const char * ReadConfig::toString() {
-    string temp = "Bot info: \nbot index #: ";
+    string temp = "\nBot info: ";
+    temp.append("\nbot array index #: ");
     temp.append(to_string(config->index));
     temp.append("\nbot name: ");
     temp.append(botNameToString(config->index));
@@ -42,6 +77,7 @@ const char * ReadConfig::toString() {
     temp.append(BotTypeToString(config->bot_type));
     temp.append("\nmotor type: ");
     temp.append(MotorTypeToString(config->mot_type));
+    temp.append("\r\n");
     return temp.c_str();
 }
 
@@ -73,6 +109,7 @@ const char * ReadConfig::BotTypeToString(eBOT_TYPE bot) {
         case mecanum_center: return "mecanum_center";
         case quarterback:    return "quarterback";
         case kicker:         return "kicker";
+        default:             return "Robot";
     }
 }
 
@@ -82,6 +119,7 @@ const char * ReadConfig::MotorTypeToString(eMOTOR_TYPE mot) {
         case small: return "small";
         case mecanummotor: return "mecanummotor";
         case falconmotor: return "falconmotor";
+        default: return "big";
     }
 }
 
