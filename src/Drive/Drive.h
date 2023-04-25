@@ -94,13 +94,10 @@ protected:
 private:
     MOTORS motorType;
     float BSNscalar;
-
-    float motorPower[NUM_MOTORS];
-    float currentPower[NUM_MOTORS];
+    float requestedMotorPower[NUM_MOTORS];
+    float currentRampPower[NUM_MOTORS];
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
-    // float inputPower[NUM_MOTORS];
-    // float rampedPower[NUM_MOTORS];
     void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
 public:
 
@@ -114,18 +111,17 @@ public:
     void setServos(uint8_t lpin, uint8_t rpin);
     void setMotorType(MOTORS motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
-    float getFwdRev();
-    float getTurn();
+    float getForwardPower();
+    float getTurnPower();
     void setBSN(SPEED bsn); //(float powerMultiplier);
     float getBSN();
-    float getMotorPwr(uint8_t mtr);
-    void setMotorPwr(float power, uint8_t mtr);
+    float getReqMotorPwr(uint8_t mtr);
+    void setReqMotorPwr(float power, uint8_t mtr);
     void setLastRampPwr(float power, uint8_t mtr);
     void emergencyStop();
     float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();
     void update();
-    void drift();
     void printDebugInfo();
 };
 
