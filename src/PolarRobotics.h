@@ -57,6 +57,7 @@ typedef enum {
   kicker
 } eBOT_TYPE;
 
+
 typedef enum {
   big,          // MOTOR_TYPE value of 0 for long/big 24v motors
   small,        // MOTOR_TYPE value of 1 for short/small 24v motors
