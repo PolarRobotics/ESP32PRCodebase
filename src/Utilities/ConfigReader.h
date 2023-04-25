@@ -10,7 +10,7 @@
 #include <PolarRobotics.h>
 
 
-class ConfigReader {
+class ConfigReader : public BotTypes {
 private:
     const char * botNameToString(uint8_t n_idx);
     const char * BotTypeToString(eBOT_TYPE bot);

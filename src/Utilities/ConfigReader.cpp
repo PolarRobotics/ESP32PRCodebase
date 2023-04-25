@@ -82,14 +82,14 @@ const char * ConfigReader::toString() {
 }
 
 /**
- * @brief botNameToString uses the index of the bot, to index the array, defined in BotTypes.h
+ * @brief botNameToString uses the index of the bot, to index the bot configuration array, defined in BotTypes.h
  * if the bot index is out of range of the number of possible bots, returns "Robot"
  * 
  * @param n_idx the index of the bot in the array
  * @return const char* if the index is within range return the bot name
  */
 const char * ConfigReader::botNameToString(uint8_t n_idx) {
-    return (n_idx > 0 && n_idx < NUM_BOTS - 1) ? bot_name_arr[n_idx] : "Robot"; 
+    return (n_idx > 0 && n_idx < NUM_BOTS - 1) ? bot_config_arr[n_idx].bot_name : "Robot"; 
 }
 
 /**
