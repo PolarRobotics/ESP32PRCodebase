@@ -35,7 +35,7 @@ public:
     DriveMecanum();
     void setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin);
     void setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX);
-    // float getMotorPwr(uint8_t mtr);
+    // float getReqMotorPwr(uint8_t mtr);
     void emergencyStop();
     void update();
     void drift();
