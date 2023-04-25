@@ -78,10 +78,10 @@ void DriveMecanum::generateMotorValues() {
         https://robotics.stackexchange.com/questions/20088/how-to-drive-mecanum-wheels-robot-code-or-algorithm
     */
 
-    // setMotorPwr(r * x_comp + turnPwr, 0);
-    // setMotorPwr(r * y_comp - turnPwr, 1);
-    // setMotorPwr(r * y_comp + turnPwr, 2);
-    // setMotorPwr(r * x_comp - turnPwr, 3);
+    // setReqMotorPwr(r * x_comp + turnPwr, 0);
+    // setReqMotorPwr(r * y_comp - turnPwr, 1);
+    // setReqMotorPwr(r * y_comp + turnPwr, 2);
+    // setReqMotorPwr(r * x_comp - turnPwr, 3);
 
     
     mmotorpwr[0] = r * x_comp + turnPwr;
@@ -91,19 +91,19 @@ void DriveMecanum::generateMotorValues() {
 
 
 
-    // setMotorPwr(r * x_comp / max + turnPwr, 0);
-    // setMotorPwr(r * y_comp / max - turnPwr, 1);
-    // setMotorPwr(r * y_comp / max + turnPwr, 2);
-    // setMotorPwr(r * x_comp / max - turnPwr, 3);
+    // setReqMotorPwr(r * x_comp / max + turnPwr, 0);
+    // setReqMotorPwr(r * y_comp / max - turnPwr, 1);
+    // setReqMotorPwr(r * y_comp / max + turnPwr, 2);
+    // setReqMotorPwr(r * x_comp / max - turnPwr, 3);
 
     // float tempbsn = getBSN();
 
     // scale the motor power, so it doesnt exceed 1, which would be bad
     // if ((r + abs(turnPwr)) > tempbsn) {
-    //     setMotorPwr(getMotorPwr(0) / (r + abs(turnPwr)), 0);
-    //     setMotorPwr(getMotorPwr(1) / (r + abs(turnPwr)), 1);
-    //     setMotorPwr(getMotorPwr(2) / (r + abs(turnPwr)), 2);
-    //     setMotorPwr(getMotorPwr(3) / (r + abs(turnPwr)), 3);
+    //     setReqMotorPwr(getReqMotorPwr(0) / (r + abs(turnPwr)), 0);
+    //     setReqMotorPwr(getReqMotorPwr(1) / (r + abs(turnPwr)), 1);
+    //     setReqMotorPwr(getReqMotorPwr(2) / (r + abs(turnPwr)), 2);
+    //     setReqMotorPwr(getReqMotorPwr(3) / (r + abs(turnPwr)), 3);
     // }
 
 }
@@ -119,15 +119,15 @@ void DriveMecanum::update() {
     generateMotorValues();
 
     // ramp may need removed, including for testing purposes
-    // setMotorPwr(ramp(getMotorPwr(0), 0), 0);
-    // setMotorPwr(ramp(getMotorPwr(1), 1), 1);
-    // setMotorPwr(ramp(getMotorPwr(2), 2), 2);
-    // setMotorPwr(ramp(getMotorPwr(3), 3), 3);
+    // setReqMotorPwr(ramp(getReqMotorPwr(0), 0), 0);
+    // setReqMotorPwr(ramp(getReqMotorPwr(1), 1), 1);
+    // setReqMotorPwr(ramp(getReqMotorPwr(2), 2), 2);
+    // setReqMotorPwr(ramp(getReqMotorPwr(3), 3), 3);
 
-    this->LF.write(mmotorpwr[0]); // getMotorPwr(0)
-    this->RF.write(mmotorpwr[1]); // getMotorPwr(1)
-    this->LR.write(mmotorpwr[2]); // getMotorPwr(2)
-    this->RR.write(mmotorpwr[3]); // getMotorPwr(3)
+    this->LF.write(mmotorpwr[0]); // getReqMotorPwr(0)
+    this->RF.write(mmotorpwr[1]); // getReqMotorPwr(1)
+    this->LR.write(mmotorpwr[2]); // getReqMotorPwr(2)
+    this->RR.write(mmotorpwr[3]); // getReqMotorPwr(3)
 }
 
 void DriveMecanum::drift() {
@@ -151,7 +151,7 @@ void DriveMecanum::printDebugInfo() {
     for (int i = 0; i < NUM_MOTORS; i++) {
         Serial.print(i);
         Serial.print(F("  "));
-        Serial.print(getMotorPwr(i));
+        Serial.print(getReqMotorPwr(i));
         Serial.print(F("  "));
     }
     Serial.print(F("\n"));
