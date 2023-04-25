@@ -178,12 +178,16 @@ void loop() {
         #endif
         
         // Update the motors based on the inputs from the controller
-
-        DriveMotors.update();
+        if(ps5.L2()) { 
+            // ps5.setLed(255, 255, 0);   // set LED yellow
+            DriveMotors.drift();
+        } else {
+            DriveMotors.update();
             
-        DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
-        
-        
+            DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        }
+        // Serial.printf("Left: x: %d, y: %d, Right: x: %d, y: %d\n", 
+        // PS5.LStickX(), PS5.LStickY(), PS5.RStickX(), PS5.RStickY());
 
     // Special Bot Actions
     #if BOT_TYPE == 0    // Lineman
