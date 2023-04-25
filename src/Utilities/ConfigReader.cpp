@@ -1,12 +1,12 @@
-#include "ReadConfig.h"
+#include "ConfigReader.h"
 
 using namespace std;
 
-ReadConfig::ReadConfig() {
+ConfigReader::ConfigReader() {
     this->config = new botconfig_t();
 }
 
-ReadConfig::~ReadConfig() {
+ConfigReader::~ConfigReader() {
     delete this->config;
 }
 
@@ -20,7 +20,7 @@ ReadConfig::~ReadConfig() {
  * data is accessed by using a key, which is basically a pointer to the location of the 
  * data you are trying to read/write  
  */
-void ReadConfig::read() {
+void ConfigReader::read() {
     // open the bot_config namespace, readonly is true (defaults to false)
     preferences.begin("bot_config", true);
     // read the bot name index   
@@ -38,7 +38,7 @@ void ReadConfig::read() {
  * this index corresponds to the position in the config array that the bot config is pulled from
  * @return int the bot index in the array the configuration is from 
  */
-int ReadConfig::BotIdx() {
+int ConfigReader::BotIdx() {
     return this->config->index;
 }
 
@@ -46,7 +46,7 @@ int ReadConfig::BotIdx() {
  * @brief BotType gets the bot type (linemen, receiver, runningback, etc...) from the configuration
  * @return eBOT_TYPE the stored bot type enumeration
  */
-eBOT_TYPE ReadConfig::BotType() {
+eBOT_TYPE ConfigReader::BotType() {
     return this->config->bot_type;
 }
 
@@ -54,7 +54,7 @@ eBOT_TYPE ReadConfig::BotType() {
  * @brief MotType gets the motor type (small, bit, mecaummotor) from the configuration
  * @return eMOTOR_TYPE the stored motor type enumeration
  */
-eMOTOR_TYPE ReadConfig::MotType() {
+eMOTOR_TYPE ConfigReader::MotType() {
     return this->config->mot_type;
 }
 
@@ -67,7 +67,7 @@ eMOTOR_TYPE ReadConfig::MotType() {
  * 
  * @return const char* the string containing the bot configuration
  */
-const char * ReadConfig::toString() {
+const char * ConfigReader::toString() {
     string temp = "\nBot info: ";
     temp.append("\nbot array index #: ");
     temp.append(to_string(config->index));
@@ -81,57 +81,37 @@ const char * ReadConfig::toString() {
     return temp.c_str();
 }
 
-const char * ReadConfig::botNameToString(uint8_t n_idx) {
-    switch(n_idx) {
-        case 0:  return "i++";
-        case 1:  return "sqrt(-1)";
-        case 2:  return "pi";
-        case 3:  return "rho";
-        case 4:  return "2.72";
-        case 5:  return ":)";
-        case 6:  return ">=";
-        case 7:  return "32.2";
-        case 8:  return "9.8";
-        case 9:  return "c";
-        case 10: return "phi";
-        case 11: return "inf";
-        case 12: return "theta";
-        default: return "Robot"; 
-    }
+/**
+ * @brief botNameToString uses the index of the bot, to index the array, defined in BotTypes.h
+ * if the bot index is out of range of the number of possible bots, returns "Robot"
+ * 
+ * @param n_idx the index of the bot in the array
+ * @return const char* if the index is within range return the bot name
+ */
+const char * ConfigReader::botNameToString(uint8_t n_idx) {
+    return (n_idx > 0 && n_idx < NUM_BOTS - 1) ? bot_name_arr[n_idx] : "Robot"; 
 }
 
-const char * ReadConfig::BotTypeToString(eBOT_TYPE bot) {
-    switch (bot) {
-        case lineman:        return "lineman";
-        case receiver:       return "receiver";
-        case runningback:    return "runningback";
-        case center:         return "center";
-        case mecanum_center: return "mecanum_center";
-        case quarterback:    return "quarterback";
-        case kicker:         return "kicker";
-        default:             return "Robot";
-    }
+/**
+ * @brief BotTypeToString returns a string correlating to the position defined in eeprom,
+ * string array defined in BotTypes.h
+ * for example if the bot positon enum is linemen the function returns "linemen"
+ * 
+ * @param bot 
+ * @return const char* 
+ */
+const char * ConfigReader::BotTypeToString(eBOT_TYPE bot) {
+    return bot_type_string_arr[static_cast<uint8_t>(bot)]; 
 }
 
-const char * ReadConfig::MotorTypeToString(eMOTOR_TYPE mot) {
-    switch (mot) {
-        case big: return "big";
-        case small: return "small";
-        case mecanummotor: return "mecanummotor";
-        case falconmotor: return "falconmotor";
-        default: return "big";
-    }
+/**
+ * @brief MotorTypeToString returns a string correlating to the motor type defined in eeprom,
+ * string array defined in BotTypes.h
+ * for example: if the motor type enum is falconmotor the function returns "falconmotor"
+ * 
+ * @param mot the enum to be converted to string
+ * @return const char* the string containing the name of the motor type
+ */
+const char * ConfigReader::MotorTypeToString(eMOTOR_TYPE mot) {
+    return motor_type_string_arr[static_cast<uint8_t>(mot)]; 
 }
-
-// string BotTypes::botType2String(uint8_t t_idx) {
-//   switch (t_idx) {
-//     case 0: return "lineman";
-//     case 1: return "receiver";
-//     case 2: return "runningback";
-//     case 3: return "center";
-//     case 4: return "mecanum_center";
-//     case 5: return "quarterback";
-//     case 6: return "kicker";
-//     default: return "incorrect Bot Type declared";
-//   }
-// }

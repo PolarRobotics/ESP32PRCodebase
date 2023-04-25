@@ -6,10 +6,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
-#include <Utilities/ReadConfig.h>
+#include <Utilities/ConfigReader.h>
 #include <Utilities/BotTypes.h>
 
-class WriteConfig : public ReadConfig {
+class ConfigWriter : public ConfigReader {
 private:
     // bool custom; // is the bot listed in the array above?
     uint8_t bot_name_index;
@@ -17,8 +17,8 @@ private:
     eMOTOR_TYPE motor_type;
     void write2EEPROM(botconfig_t *cfg);
 public:
-    WriteConfig();
-    ~WriteConfig();
+    ConfigWriter();
+    ~ConfigWriter();
     bool setConfig(uint8_t botindex);
     bool setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype);
 };

@@ -10,7 +10,7 @@
 #include <PolarRobotics.h>
 
 
-class ReadConfig {
+class ConfigReader {
 private:
     const char * botNameToString(uint8_t n_idx);
     const char * BotTypeToString(eBOT_TYPE bot);
@@ -19,8 +19,8 @@ protected:
     botconfig_t* config;
     Preferences preferences;
 public:
-    ReadConfig();
-    ~ReadConfig();
+    ConfigReader();
+    ~ConfigReader();
     void read();
     int BotIdx();
     eBOT_TYPE BotType();

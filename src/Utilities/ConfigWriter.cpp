@@ -1,11 +1,11 @@
-#include "WriteConfig.h"
+#include "ConfigWriter.h"
 
-WriteConfig::WriteConfig() {
+ConfigWriter::ConfigWriter() {
     // this->custom = custom_config;
     this->config = new botconfig_t();
 }
 
-WriteConfig::~WriteConfig() {
+ConfigWriter::~ConfigWriter() {
     delete this->config;
 }
 
@@ -19,7 +19,7 @@ WriteConfig::~WriteConfig() {
  * 
  * @param cfg the configuration you wish to save to EEPROM
  */
-void WriteConfig::write2EEPROM(botconfig_t *cfg) {
+void ConfigWriter::write2EEPROM(botconfig_t *cfg) {
     // open the "bot_config" namespace and set it to read/write
     preferences.begin("bot_config", false); 
     // store the bot name to preferences
@@ -43,7 +43,7 @@ void WriteConfig::write2EEPROM(botconfig_t *cfg) {
  * @return true configuration was successfully applied
  * @return false configuration check failed, index out of range of array
  */
-bool WriteConfig::setConfig(uint8_t botindex) {
+bool ConfigWriter::setConfig(uint8_t botindex) {
     // validate bot index
     if (botindex < 0 || botindex > (NUM_BOTS - 1)) return false;
     
@@ -66,7 +66,7 @@ bool WriteConfig::setConfig(uint8_t botindex) {
  * @return true configuration was successfully applied
  * @return false configuration check failed
  */
-bool WriteConfig::setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype) {
+bool ConfigWriter::setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype) {
     // validate bot index
     // if (botindex < 0 || botindex > (NUM_BOTS - 1)) return false;
     this->config->index = botindex;

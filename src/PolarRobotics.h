@@ -37,15 +37,19 @@
 
 // ENUM Definitions
 
-/**
-*  Robot Type Enum
-*  Lineman: 0
-*  Receiver: 1
-*  Runningback: 2
-*  Center: 3
-*  Mecanum Center: 4
-*  QuarterBack: 5
-*  Kicker: 6
+/** eBOT_TYPE
+ * enum for the possible positions a robot can have on the field
+ * NOTE: when this list is updated, make sure to update the bot_type_arr in BotTypes.h
+ * also please keep count at the end of the list, if you need to add anything, add it before count
+ * 
+ *  Robot Type Enum
+ *  Lineman: 0
+ *  Receiver: 1
+ *  Runningback: 2
+ *  Center: 3
+ *  Mecanum Center: 4
+ *  QuarterBack: 5
+ *  Kicker: 6
 */
 typedef enum {
   lineman,
@@ -54,7 +58,8 @@ typedef enum {
   center,
   mecanum_center,
   quarterback,
-  kicker
+  kicker,
+  positions_count         // KEEP AT END, keeps track of the number of bot positions 
 } eBOT_TYPE;
 
 
@@ -62,7 +67,8 @@ typedef enum {
   big,          // MOTOR_TYPE value of 0 for long/big 24v motors
   small,        // MOTOR_TYPE value of 1 for short/small 24v motors
   mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
-  falconmotor   // MOTOR_TYPE value of 3 for the falcon motors on the runningback
+  falconmotor,  // MOTOR_TYPE value of 3 for the falcon motors on the runningback
+  motor_type_count         // KEEP AT END keeps track of the number of motor types
 } eMOTOR_TYPE;
 
 enum BOT_STATE {
@@ -73,9 +79,6 @@ enum BOT_STATE {
   DEFENSE,
   TACKLED
 };
-
-
-
 
 // external function implemented in main to allow accessing LED state from other files,
 // like `pairing.cpp`, that would otherwise cause circular dependencies

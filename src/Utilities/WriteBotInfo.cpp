@@ -2,11 +2,11 @@
 #include <Preferences.h>
 
 #include <PolarRobotics.h>
-#include <Utilities/WriteConfig.h>
+#include <Utilities/ConfigWriter.h>
 
 // Preferences preferences;
 
-WriteConfig Config;
+ConfigWriter Config;
 
 void setup() {
   Serial.begin(115200);

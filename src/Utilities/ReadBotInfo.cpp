@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <PolarRobotics.h>
-#include <Utilities/ReadConfig.h>
+#include <Utilities/ConfigReader.h>
 
 // Preferences preferences;
-ReadConfig Config;
+ConfigReader Config;
 
 void setup() {
   Serial.begin(115200);
