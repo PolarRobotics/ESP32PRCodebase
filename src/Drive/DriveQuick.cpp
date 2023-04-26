@@ -25,8 +25,8 @@ Features:
  */
 // void DriveQuick::generateMotionValues() {
 //     // generate the motion vector in polar form
-//     this->r = hypot(getForwardPower(), getTurnPower());
-//     this->falconTurnPwr = atan2(getForwardPower(), getTurnPower());
+//     this->r = hypot(getFwdRev(), getTurn());
+//     this->falconTurnPwr = atan2(getFwdRev(), getTurn());
 
 //     // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
 //     this->r = constrain(this->r, 0, 1) * getBSN(); 
@@ -53,8 +53,8 @@ void DriveQuick::update() {
     // calculate the ramped power
     // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
     // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
-    falcon_motor_pwr[0] = ramp(getReqMotorPwr(0), 0, RB_ACCELERATION_RATE);
-    falcon_motor_pwr[1] = ramp(getReqMotorPwr(1), 1, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1, RB_ACCELERATION_RATE);
 
     // set the last ramp power, used in ramp
     setLastRampPwr(falcon_motor_pwr[0], 0);
