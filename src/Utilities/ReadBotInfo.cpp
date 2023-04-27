@@ -1,18 +1,18 @@
 #include <Arduino.h>
-#include <Preferences.h>
-#include <PolarRobotics.h>
-#include <Utilities/ConfigReader.h>
+// #include <Preferences.h>
+// #include <PolarRobotics.h>
+#include <Utilities/ConfigManager.h>
 
 // Preferences preferences;
-ConfigReader Config;
+ConfigManager config;
 
 void setup() {
   Serial.begin(115200);
   Serial.println(F("Reading"));
 
-  Config.read();
+  config.read();
   
-  Serial.print(F(Config.toString()));
+  Serial.print(F(config.toString()));
 
   Serial.println(F("Done"));
 }

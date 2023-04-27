@@ -1,6 +1,9 @@
-#pragma once
+#ifndef _MOTOR_TYPES_H_
+#define _MOTOR_TYPES_H_
 
 #define NUM_MOTOR_TYPES 4
+
+#include <Utilities/Pair.h>
 
 typedef enum {
   big,      // MOTOR_TYPE value of 0 for 24v AmpFlow motor E30-400
@@ -9,19 +12,13 @@ typedef enum {
   falcon    // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 } eMOTOR_TYPE;
 
-constexpr Pair<eMOTOR_TYPE, const char*> motorTypeNames[NUM_MOTOR_TYPES] = {
+constexpr Pair<eMOTOR_TYPE, const char*> motorTypeStrings[NUM_MOTOR_TYPES] = {
   {  big,     "big"      },
   {  small,   "small"    },
   {  mecanum, "mecanum"  },
   {  falcon,  "falcon"   }
 };
 
-/**
- * @brief getMotorTypeName returns a string correlating to the passed motor type enum
- * @example for eMOTOR_TYPE `falcon` the function returns "falcon"
- * @param type the enum to be converted to a string
- * @return a const char* representing the motor type
- */
-const char* getMotorTypeName(eMOTOR_TYPE type) {
-  return motorTypeNames[static_cast<int>(type)].value;
-}
+const char* getMotorTypeString(eMOTOR_TYPE type);
+
+#endif /* _MOTOR_TYPES_H_ */

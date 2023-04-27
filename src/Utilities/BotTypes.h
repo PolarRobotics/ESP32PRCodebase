@@ -12,7 +12,7 @@
 // TODO: Merge this into Robot.h (and rename?)
 /** eBOT_TYPE
  * enum for the possible positions a robot can have on the field
- * NOTE: when this list is updated, make sure to update the botTypes array with a corresponding string
+ * NOTE: when this list is updated, make sure to update the botTypeStrings array with a corresponding string
  * 
  *  Robot Type Enum
  *  0: Lineman
@@ -36,21 +36,6 @@ typedef enum {
   quarterback,
   kicker
 } eBOT_TYPE;
-
-// constexpr to be evaluated at compile time
-constexpr Pair<eBOT_TYPE, const char*> botTypes[NUM_POSITIONS] = {
-  { lineman,         "lineman"         },
-  { receiver,        "receiver"        },
-  { runningback,     "runningback"     },
-  { center,          "center"          },
-  { mecanum_center,  "mecanum_center"  },
-  { quarterback,     "quarterback"     },
-  { kicker,          "kicker"          }
-};
-
-const char* getBotTypeName(eBOT_TYPE type) {
-  return botTypes[static_cast<int>(type)].value;
-}
 
 /**
  * @brief BotConfig robot configuration datastructure, 
@@ -76,24 +61,24 @@ typedef struct BotConfig {
   // eBOT_TYPE secondary_type;
 } bot_config_t;
 
-class BotTypes {
-  protected:
-    // PRESET BOT CONFIGURATIONS
-    const bot_config_t botConfigArray[NUM_BOTS] = {
-      { 0,  "i++",      lineman,     small },  // 0:  i++
-      { 1,  "sqrt(-1)", lineman,     small },  // 1:  sqrt(-1)
-      { 2,  "pi",       lineman,     small },  // 2:  pi
-      { 3,  "rho",      lineman,     small },  // 3:  ρ
-      { 4,  "2.72",     lineman,     big   },  // 4:  2.72
-      { 5,  ":)",       lineman,     small },  // 5:  :)
-      { 6,  ">=",       lineman,     big   },  // 6:  >=
-      { 7,  "32.2",     receiver,    big   },  // 7:  32.2
-      { 8,  "9.8",      receiver,    small },  // 8:  9.8
-      { 9,  "c",        runningback, small },  // 9:  c    // TODO: should this be `falcon` motor type?
-      { 10, "phi",      center,      small },  // 10: Φ
-      { 11, "inf",      quarterback, small },  // 11: ∞
-      { 12, "theta",    kicker,      small }   // 12: Θ
-    };
+// PRESET BOT CONFIGURATIONS
+constexpr bot_config_t botConfigArray[NUM_BOTS] = {
+  { 0,  "i++",      lineman,     small },  // 0:  i++
+  { 1,  "sqrt(-1)", lineman,     small },  // 1:  sqrt(-1)
+  { 2,  "pi",       lineman,     small },  // 2:  pi
+  { 3,  "rho",      lineman,     small },  // 3:  ρ
+  { 4,  "2.72",     lineman,     big   },  // 4:  2.72
+  { 5,  ":)",       lineman,     small },  // 5:  :)
+  { 6,  ">=",       lineman,     big   },  // 6:  >=
+  { 7,  "32.2",     receiver,    big   },  // 7:  32.2
+  { 8,  "9.8",      receiver,    small },  // 8:  9.8
+  { 9,  "c",        runningback, small },  // 9:  c    // TODO: should this be `falcon` motor type?
+  { 10, "phi",      center,      small },  // 10: Φ
+  { 11, "inf",      quarterback, small },  // 11: ∞
+  { 12, "theta",    kicker,      small }   // 12: Θ
 };
+
+const char* getBotTypeString(eBOT_TYPE type);
+const char * getBotName(uint8_t index);
 
 #endif /* _BOT_TYPES_H_ */

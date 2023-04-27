@@ -1,12 +1,12 @@
 #include <Arduino.h>
-#include <Preferences.h>
+// #include <Preferences.h>
 
-#include <PolarRobotics.h>
-#include <Utilities/ConfigWriter.h>
+// #include <PolarRobotics.h>
+#include <Utilities/ConfigManager.h>
 
 // Preferences preferences;
 
-ConfigWriter Config;
+ConfigManager config;
 
 void setup() {
   Serial.begin(115200);
@@ -20,18 +20,18 @@ void setup() {
   eMOTOR_TYPE motor_type = mecanum;
 
   // choose the index of the bot in the array, or write a custom bot configuration
-  if (Config.setConfig(bot_name_index))
+  if (config.setConfig(bot_name_index))
     Serial.println(F("Error writing bot config"));
 
   // custom configuration example:
-  // Config.setConfig(bot_name_index, bot_type, motor_type);
+  // config.setConfig(bot_name_index, bot_type, motor_type);
 
   Serial.println(F("Reading"));
 
   // read the configuration from eeprom
-  Config.read();
+  config.read();
   // print the configuration to the serial monitor
-  Serial.print(F(Config.toString()));
+  Serial.print(F(config.toString()));
 
   Serial.println(F("Done"));
 }
