@@ -35,13 +35,6 @@
 // receiver, tackled, etc...
 #define TACKLE_PIN 12
 
-// class Enum {
-//   public:
-// };
-
-// ENUM Definitions
-
-
 enum BOT_STATE {
   PAIRING,
   CONNECTED,

@@ -2,7 +2,7 @@
 
 ConfigWriter::ConfigWriter() {
     // this->custom = custom_config;
-    this->config = new botconfig_t();
+    this->config = new bot_config_t();
 }
 
 ConfigWriter::~ConfigWriter() {
@@ -19,7 +19,7 @@ ConfigWriter::~ConfigWriter() {
  * 
  * @param cfg the configuration you wish to save to EEPROM
  */
-void ConfigWriter::write2EEPROM(botconfig_t *cfg) {
+void ConfigWriter::write2EEPROM(bot_config_t *cfg) {
     // open the "bot_config" namespace and set it to read/write
     preferences.begin("bot_config", false); 
     // store the bot name to preferences
@@ -37,7 +37,7 @@ void ConfigWriter::write2EEPROM(botconfig_t *cfg) {
 
 /**
  * @brief setConfig sets the configuration to be stored to the 
- * configuration defined in the preset bot_config_arr array 
+ * configuration defined in the preset botConfigArray array 
  * 
  * @param botindex index of the preset configuration array to set to the bot
  * @return true configuration was successfully applied
@@ -47,9 +47,9 @@ bool ConfigWriter::setConfig(uint8_t botindex) {
     // validate bot index
     if (botindex < 0 || botindex > (NUM_BOTS - 1)) return false;
     
-    this->config->index = bot_config_arr[botindex].index;
-    this->config->bot_type = bot_config_arr[botindex].bot_type;
-    this->config->mot_type = bot_config_arr[botindex].mot_type;
+    this->config->index = botConfigArray[botindex].index;
+    this->config->bot_type = botConfigArray[botindex].bot_type;
+    this->config->mot_type = botConfigArray[botindex].mot_type;
 
     // write index to predefined configuration from the array defined in the header file
     write2EEPROM(this->config);

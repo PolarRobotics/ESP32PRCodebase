@@ -16,7 +16,7 @@ private:
     uint8_t bot_name_index;
     eBOT_TYPE bot_type;
     eMOTOR_TYPE motor_type;
-    void write2EEPROM(botconfig_t *cfg);
+    void write2EEPROM(bot_config_t *cfg);
 public:
     ConfigWriter();
     ~ConfigWriter();

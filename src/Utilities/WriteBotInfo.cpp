@@ -17,7 +17,7 @@ void setup() {
   // set the bot type you would like to assign to the bot
   eBOT_TYPE bot_type = quarterback;
   // set the motor type you would like to assign to the bot
-  eMOTOR_TYPE motor_type = mecanum_motor;
+  eMOTOR_TYPE motor_type = mecanum;
 
   // choose the index of the bot in the array, or write a custom bot configuration
   if (Config.setConfig(bot_name_index))

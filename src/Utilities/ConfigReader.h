@@ -13,10 +13,9 @@
 class ConfigReader : public BotTypes {
 private:
     const char * botNameToString(uint8_t n_idx);
-    const char * BotTypeToString(eBOT_TYPE bot);
     const char * MotorTypeToString(eMOTOR_TYPE mot);
 protected:
-    botconfig_t* config;
+    bot_config_t* config;
     Preferences preferences;
 public:
     ConfigReader();

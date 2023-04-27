@@ -3,7 +3,7 @@
 using namespace std;
 
 ConfigReader::ConfigReader() {
-    this->config = new botconfig_t();
+    this->config = new bot_config_t();
 }
 
 ConfigReader::~ConfigReader() {
@@ -74,9 +74,9 @@ const char * ConfigReader::toString() {
     temp.append("\nbot name: ");
     temp.append(botNameToString(config->index));
     temp.append("\nbot type: ");
-    temp.append(BotTypeToString(config->bot_type));
+    temp.append(getBotTypeName(config->bot_type));
     temp.append("\nmotor type: ");
-    temp.append(MotorTypeToString(config->mot_type));
+    temp.append(getMotorTypeName(config->mot_type));
     temp.append("\r\n");
     return temp.c_str();
 }
@@ -89,29 +89,5 @@ const char * ConfigReader::toString() {
  * @return const char* if the index is within range return the bot name
  */
 const char * ConfigReader::botNameToString(uint8_t n_idx) {
-    return (n_idx > 0 && n_idx < NUM_BOTS - 1) ? bot_config_arr[n_idx].bot_name : "Robot"; 
-}
-
-/**
- * @brief BotTypeToString returns a string correlating to the position defined in eeprom,
- * string array defined in BotTypes.h
- * for example if the bot positon enum is linemen the function returns "linemen"
- * 
- * @param bot 
- * @return const char* 
- */
-const char * ConfigReader::BotTypeToString(eBOT_TYPE bot) {
-    return bot_type_string_arr[static_cast<uint8_t>(bot)]; 
-}
-
-/**
- * @brief MotorTypeToString returns a string correlating to the motor type defined in eeprom,
- * string array defined in BotTypes.h
- * for example: if the motor type enum is falcon_motor the function returns "falcon_motor"
- * 
- * @param mot the enum to be converted to string
- * @return const char* the string containing the name of the motor type
- */
-const char * ConfigReader::MotorTypeToString(eMOTOR_TYPE mot) {
-    return motor_type_string_arr[static_cast<uint8_t>(mot)]; 
+    return (n_idx > 0 && n_idx < NUM_BOTS - 1) ? botConfigArray[n_idx].bot_name : "Robot"; 
 }
