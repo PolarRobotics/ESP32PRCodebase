@@ -79,9 +79,9 @@ void setup() {
 #elif MOTOR_TYPE == 1  // Small Motor
     DriveMotors.setMotorType(eMOTOR_TYPE::small);
 #elif MOTOR_TYPE == 2             
-    DriveMotors.setMotorType(eMOTOR_TYPE::mecanummotor);
+    DriveMotors.setMotorType(eMOTOR_TYPE::mecanum_motor);
 #elif MOTOR_TYPE == 3
-    DriveMotors.setMotorType(eMOTOR_TYPE::falconmotor);
+    DriveMotors.setMotorType(eMOTOR_TYPE::falcon_motor);
 #endif
 
 // Set the special bot type

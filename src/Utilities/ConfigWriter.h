@@ -7,7 +7,8 @@
 #include <Preferences.h>
 
 #include <Utilities/ConfigReader.h>
-#include <Utilities/BotTypes.h>
+// #include <Utilities/BotTypes.h>
+#include <PolarRobotics.h>
 
 class ConfigWriter : public ConfigReader {
 private:

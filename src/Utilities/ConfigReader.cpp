@@ -107,7 +107,7 @@ const char * ConfigReader::BotTypeToString(eBOT_TYPE bot) {
 /**
  * @brief MotorTypeToString returns a string correlating to the motor type defined in eeprom,
  * string array defined in BotTypes.h
- * for example: if the motor type enum is falconmotor the function returns "falconmotor"
+ * for example: if the motor type enum is falcon_motor the function returns "falcon_motor"
  * 
  * @param mot the enum to be converted to string
  * @return const char* the string containing the name of the motor type

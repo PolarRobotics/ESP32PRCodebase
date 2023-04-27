@@ -4,7 +4,36 @@
 #define _BOT_TYPES_H_
 
 #include <Arduino.h>
-#include <PolarRobotics.h>
+#include <map>
+#include <Utilities/MotorTypes.h>
+
+#define NUM_BOTS 13 // used in BotTypes.h
+
+/** eBOT_TYPE
+ * enum for the possible positions a robot can have on the field
+ * NOTE: when this list is updated, make sure to update the bot_type_arr in BotTypes.h
+ * also please keep count at the end of the list, if you need to add anything, add it before count
+ * 
+ *  Robot Type Enum
+ *  Lineman: 0
+ *  Receiver: 1
+ *  Runningback: 2
+ *  Center: 3
+ *  Mecanum Center: 4
+ *  QuarterBack: 5
+ *  Kicker: 6
+*/
+#define NUM_POSITIONS 7
+typedef enum {
+  lineman,
+  receiver,
+  runningback,
+  center,
+  mecanum_center,
+  quarterback,
+  kicker
+} eBOT_TYPE;
+
 
 /**
  * @brief botconfig robot configuration datastructure, 
@@ -16,6 +45,7 @@
  * Gear Ratio index
  * ? code last uploaded date and time
  */
+
 struct botconfig {
     uint8_t index;
     const char * bot_name;
@@ -51,7 +81,7 @@ protected:
         {12, "theta",    kicker,      small}   // 12: theta
     };
     
-    const char * bot_type_string_arr[static_cast<int>(eBOT_TYPE::positions_count)] = {
+    const char * bot_type_string_arr[NUM_POSITIONS] = {
         "lineman", 
         "receiver", 
         "runningback", 
@@ -61,8 +91,8 @@ protected:
         "kicker"
     };
 
-    const char * motor_type_string_arr[static_cast<int>(eMOTOR_TYPE::motor_type_count)] = {
-        "big", "small", "mecanummotor", "falonmotor"
+    const char * motor_type_string_arr[NUM_MOTOR_TYPES] = {
+        "big", "small", "mecanum_motor", "falcon_motor"
     };
 };
 
