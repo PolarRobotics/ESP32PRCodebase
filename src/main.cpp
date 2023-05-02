@@ -8,7 +8,7 @@
  **/
 
 #include <Arduino.h>
-#include <ps5Controller.h> // ESP PS5 library
+#include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
@@ -75,13 +75,13 @@ void setup() {
 
     // Set the motor type
 #if MOTOR_TYPE == 0    // Big Motor
-    DriveMotors.setMotorType(MOTORS::big);
+    DriveMotors.setMotorType(eMOTOR_TYPE::big);
 #elif MOTOR_TYPE == 1  // Small Motor
-    DriveMotors.setMotorType(MOTORS::small);
+    DriveMotors.setMotorType(eMOTOR_TYPE::small);
 #elif MOTOR_TYPE == 2             
-    DriveMotors.setMotorType(MOTORS::mecanummotor);
+    DriveMotors.setMotorType(eMOTOR_TYPE::mecanum);
 #elif MOTOR_TYPE == 3
-    DriveMotors.setMotorType(MOTORS::falconmotor);
+    DriveMotors.setMotorType(eMOTOR_TYPE::falcon);
 #endif
 
 // Set the special bot type

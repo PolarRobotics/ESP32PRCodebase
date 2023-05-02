@@ -25,7 +25,7 @@
 
 
 DriveMecanum::DriveMecanum() {
-    setMotorType(MOTORS::mecanummotor);
+    setMotorType(eMOTOR_TYPE::mecanum);
 }
 
 void DriveMecanum::setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin) {

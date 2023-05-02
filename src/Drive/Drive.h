@@ -92,7 +92,7 @@ protected:
     float turnPower;
     unsigned long lastRampTime[NUM_MOTORS];
 private:
-    MOTORS motorType;
+    eMOTOR_TYPE motorType;
     float BSNscalar;
     float requestedMotorPower[NUM_MOTORS];
     float currentRampPower[NUM_MOTORS];
@@ -109,7 +109,7 @@ public:
     };
     Drive();
     void setServos(uint8_t lpin, uint8_t rpin);
-    void setMotorType(MOTORS motorType);
+    void setMotorType(eMOTOR_TYPE motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
     float getForwardPower();
     float getTurnPower();
