@@ -23,7 +23,7 @@
 
 class Robot {
   private:
-    // 
+    // ! Drive should be completely decoupled from Robot
     eBOT_TYPE type; // `eBOT_TYPE` enum declared in `BotTypes.h`
   protected:
     // ! setType methods should only be called in the constructor of the derived class!
