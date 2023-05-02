@@ -18,13 +18,18 @@
 class ConfigManager {
   private:
     bool writable = DEFAULT_WRITABLE;
+    
+    bot_config_t* config;
+    
+    // Members of Config
     uint8_t bot_name_index;
     eBOT_TYPE bot_type;
     eMOTOR_TYPE motor_type;
+
+    // Write Function
     bool write(bot_config_t *cfg);
-    bot_config_t* config;
   protected:
-    Preferences preferences; //! Do we know if having more than one instance of Preferences is OK? - MP
+    Preferences preferences;
   public:
     ConfigManager();
     // ConfigManager(bool writable = false);

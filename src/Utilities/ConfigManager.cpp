@@ -32,7 +32,7 @@ void ConfigManager::read() {
     this->config->index = preferences.getUChar("bot_name_idx");
     // read the bot type
     this->config->bot_type = (eBOT_TYPE)preferences.getUChar("bot_type");
-    // read the bot type
+    // read the motor type
     this->config->mot_type = (eMOTOR_TYPE)preferences.getUChar("motor_type");
     // close the bot_config namespace
     preferences.end();

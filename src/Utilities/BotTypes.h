@@ -9,6 +9,8 @@
 
 #define NUM_BOTS 13
 
+#define NUM_POSITIONS 7 // number of members of eBOT_TYPE
+
 // TODO: Merge this into Robot.h (and rename?)
 /** eBOT_TYPE
  * enum for the possible positions a robot can have on the field
@@ -23,10 +25,6 @@
  *  5: Quarterback
  *  6: Kicker
 */
-
-
-#define NUM_POSITIONS 7
-
 typedef enum {
   lineman,
   receiver,
@@ -63,6 +61,7 @@ typedef struct BotConfig {
 
 // PRESET BOT CONFIGURATIONS
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
+// idx  bot_name    bot_type     motors
   { 0,  "i++",      lineman,     small },  // 0:  i++
   { 1,  "sqrt(-1)", lineman,     small },  // 1:  sqrt(-1)
   { 2,  "pi",       lineman,     small },  // 2:  pi
@@ -78,7 +77,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 12, "theta",    kicker,      small }   // 12: Θ
 };
 
-const char* getBotTypeString(eBOT_TYPE type);
+const char * getBotTypeString(eBOT_TYPE type);
 const char * getBotName(uint8_t index);
 
 #endif /* _BOT_TYPES_H_ */

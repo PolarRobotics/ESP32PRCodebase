@@ -11,6 +11,8 @@ void setup() {
   Serial.println(F("Reading"));
 
   config.read();
+  config.getBotType();
+  config.getMotorType();
   
   Serial.print(F(config.toString()));
 
