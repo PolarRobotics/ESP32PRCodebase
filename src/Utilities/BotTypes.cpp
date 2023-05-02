@@ -1,7 +1,8 @@
 #include "BotTypes.h"
 
 // constexpr to be evaluated at compile time
-constexpr Pair<eBOT_TYPE, const char*> botTypeStrings[NUM_POSITIONS] = {
+constexpr Pair<eBOT_TYPE, const char*> 
+botTypeStrings[NUM_POSITIONS] = {
   { lineman,         "lineman"         },
   { receiver,        "receiver"        },
   { runningback,     "runningback"     },

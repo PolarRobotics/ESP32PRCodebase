@@ -12,13 +12,6 @@ typedef enum {
   falcon    // MOTOR_TYPE value of 3 for the falcon motors on the runningback
 } eMOTOR_TYPE;
 
-constexpr Pair<eMOTOR_TYPE, const char*> motorTypeStrings[NUM_MOTOR_TYPES] = {
-  {  big,     "big"      },
-  {  small,   "small"    },
-  {  mecanum, "mecanum"  },
-  {  falcon,  "falcon"   }
-};
-
 const char* getMotorTypeString(eMOTOR_TYPE type);
 
 #endif /* _MOTOR_TYPES_H_ */

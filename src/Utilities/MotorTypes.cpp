@@ -1,5 +1,13 @@
 #include "MotorTypes.h"
 
+constexpr Pair<eMOTOR_TYPE, const char*> 
+motorTypeStrings[NUM_MOTOR_TYPES] = {
+  {  big,     "big"      },
+  {  small,   "small"    },
+  {  mecanum, "mecanum"  },
+  {  falcon,  "falcon"   }
+};
+
 /**
  * @brief getMotorTypeString returns a string correlating to the passed motor type enum
  * @example for eMOTOR_TYPE `falcon` the function returns "falcon"

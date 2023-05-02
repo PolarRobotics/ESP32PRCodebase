@@ -7,8 +7,6 @@
 #include <Utilities/Pair.h>
 #include <Utilities/MotorTypes.h>
 
-#define NUM_BOTS 13
-
 #define NUM_POSITIONS 7 // number of members of eBOT_TYPE
 
 // TODO: Merge this into Robot.h (and rename?)
@@ -58,6 +56,8 @@ typedef struct BotConfig {
   // placeholder: fHasMultipleBotTypes (for new linemen/receivers)
   // eBOT_TYPE secondary_type;
 } bot_config_t;
+
+#define NUM_BOTS 13
 
 // PRESET BOT CONFIGURATIONS
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
