@@ -1,6 +1,5 @@
 #ifndef __BUILT_IN_LED_H__
 #define __BUILT_IN_LED_H__
-
 /**
  * @brief Header for Global ESP Built-In LED Handling
  * @authors Max Phillips

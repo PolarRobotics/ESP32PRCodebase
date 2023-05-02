@@ -6,6 +6,10 @@
 #include <Arduino.h>
 #include "Robot/MotorControl.h"
 
+// TODO: Move definitions to .cpp
+// TODO: Standardize commenting using doxygen (see builtInLED.h, pairing.cpp)
+
+// TODO: stylize enums properly
 enum armStatus {
   Higher, Lower, Stop, Hold
 };
@@ -14,15 +18,15 @@ enum clawStatus {
   Open, Close, clawStop
 };
 
-class Center {
+class Center : public Robot {
   private:
-    // uint8_t clawPin, m_elevationpin;
-    uint8_t motorPins[2];
+    uint8_t motorPins[2]; // TODO: convert '2' to named define
     MotorControl clawMotor, armMotor;
 
   public:
     Center(); 
-    void setServos(int armPin, int clawPin);
+    void action() override; //! robot subclass must override action
+    void setServos(int armPin, int clawPin); // TODO: merge with constructor
     void clawControl(clawStatus reqStatus);
     void armControl(armStatus reqStatus);
 };
@@ -57,6 +61,28 @@ void Center::setServos(int armPin, int clawPin) {
   armMotor.attach(armPin), clawMotor.attach(clawPin);
 }
 
+void Center::action() {
+  // Control the arm of the center
+  if (ps5.Triangle()) {
+    armControl(armStatus::Higher);
+  } else if (ps5.Cross()) {
+    armControl(armStatus::Lower);
+  } else if (ps5.Circle()) {
+    armControl(armStatus::Hold);
+  } else {
+    armControl(armStatus::Stop);
+  }
+
+  // Control the Claw of the center
+  if (ps5.Up()) {
+    clawControl(clawStatus::Open);
+  } else if (ps5.Down()) {
+    clawControl(clawStatus::Close);
+  } else {
+    clawControl(clawStatus::clawStop);
+  }  
+}
+
 /**
  * Description: Public helper function that checks the claw status and updates the claw motor accordingly. 
  * Author: @ n-johnson.3
@@ -87,7 +113,6 @@ void Center::armControl(armStatus reqstatus) {
   } else if (reqstatus == armStatus::Hold) {
     armMotor.write(-0.05);
   }
-
 }
 
 #endif

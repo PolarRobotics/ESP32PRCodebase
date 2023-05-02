@@ -1,6 +1,8 @@
 #include "PolarRobotics.h"
 #include <Arduino.h>
-#include <Servo.h>
+// #include <Servo.h>
+
+// TODO: Can we get rid of this file?
 
 /*
        ___    _   _      _      ____    _____   _____   ____    ____       _       ____   _  __   ____         ___
@@ -22,31 +24,31 @@ enum ELEVATION {
 // Pin and Servo for quarterback flywheels
 int rightFlywheelPin = 18;
 int leftFlywheelPin = 19;
-Servo rightFlywheelMotor;
-Servo leftFlywheelMotor;
+// Servo rightFlywheelMotor;
+// Servo leftFlywheelMotor;
 
 // Pin and Servo for quarterback firing mechanism
 int FirePin = 16;
-Servo FireMotor;
+// Servo FireMotor;
 
 // Pin and Servo for quarterback aiming mechanism
 int ElevationPin = 14;
-Servo ElevationMotor;
+// Servo ElevationMotor;
 
-Servo flywheels;
-Servo conveyor;
+// Servo flywheels;
+// Servo conveyor;
 
-Servo getElevationMotor() { return ElevationMotor; }
+// Servo getElevationMotor() { return ElevationMotor; }
 
 // this function contains everything related to QB from main.cpp
 void setup() {
-  flywheels.attach(4);
-  conveyor.attach(2);
-  rightFlywheelMotor.attach(rightFlywheelPin);
-  leftFlywheelMotor.attach(leftFlywheelPin);
-  FireMotor.attach(FirePin);
-  ElevationMotor.attach(ElevationPin);
-  conveyor.write(30);
+  // flywheels.attach(4);
+  // conveyor.attach(2);
+  // rightFlywheelMotor.attach(rightFlywheelPin);
+  // leftFlywheelMotor.attach(leftFlywheelPin);
+  // FireMotor.attach(FirePin);
+  // ElevationMotor.attach(ElevationPin);
+  // conveyor.write(30);
 }
 
 // /* * * * * * * * * * * * * * *
@@ -85,15 +87,15 @@ unsigned long getAimBenchmark() { return benchmark; }
 void aim(int stage) {
   benchmark = abs(stage) * QB_ELEVATION_INTERVAL;
   if (stage > 0) { // target position above current position
-    getElevationMotor().write(SERVO_SPEED_UP);
+    // getElevationMotor().write(SERVO_SPEED_UP);
   } else if (stage < 0) { // target position below current position
-    getElevationMotor().write(SERVO_SPEED_DOWN);
+    // getElevationMotor().write(SERVO_SPEED_DOWN);
   }
 }
 
 void stopAiming() { // wonder what this does
   // turn elevation motor off
-  getElevationMotor().write(SERVO_SPEED_STOP);
+  // getElevationMotor().write(SERVO_SPEED_STOP);
 }
 
 //debug
@@ -120,45 +122,45 @@ void debug_showTime() {
   Serial.println(millis());
   Serial.print("\n");
   Serial.print("timestamp: ");
-  Serial.println(QBAimTimestamp);
+  // Serial.println(QBAimTimestamp);
 }
 
 /* * * * * * * * * *
  * Flywheel Control *
  * * * * * * * * * */
 
-/** startFlywheel */
-void startFlywheel(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
-  rightFlywheelMotor.write(FLYWHEEL_RIGHT_SPEED_FULL);
-  leftFlywheelMotor.write(FLYWHEEL_LEFT_SPEED_FULL);
-}
+// /** startFlywheel */
+// void startFlywheel(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
+//   rightFlywheelMotor.write(FLYWHEEL_RIGHT_SPEED_FULL);
+//   leftFlywheelMotor.write(FLYWHEEL_LEFT_SPEED_FULL);
+// }
 
-/** stopFlywheel */
-void stopFlywheel(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
-  rightFlywheelMotor.write(FLYWHEEL_STOP_SPEED);
-  leftFlywheelMotor.write(FLYWHEEL_STOP_SPEED);
-}
+// /** stopFlywheel */
+// void stopFlywheel(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
+//   rightFlywheelMotor.write(FLYWHEEL_STOP_SPEED);
+//   leftFlywheelMotor.write(FLYWHEEL_STOP_SPEED);
+// }
 
-/** passBall */
-// pass the ball to the kicker
-void passBall(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
-  //turn flywheels on to low: approx 10 power for a light boost
-  rightFlywheelMotor.write(FLYWHEEL_STOP_SPEED - 10);
-  leftFlywheelMotor.write(FLYWHEEL_STOP_SPEED + 10);
-  //once firing mechanism is finished add that in and make it a macro?
-}
+// /** passBall */
+// // pass the ball to the kicker
+// void passBall(Servo rightFlywheelMotor, Servo leftFlywheelMotor) {
+//   //turn flywheels on to low: approx 10 power for a light boost
+//   rightFlywheelMotor.write(FLYWHEEL_STOP_SPEED - 10);
+//   leftFlywheelMotor.write(FLYWHEEL_STOP_SPEED + 10);
+//   //once firing mechanism is finished add that in and make it a macro?
+// }
 
 /* * * * * * * * * * * * * *
  * Firing Mechanism Control *
  * * * * * * * * * * * * * */
 
 /** fireWeapon */
-void fireWeapon(Servo FireMotor, String requestedStatus) {
-  if (requestedStatus == "Fire") {
-    FireMotor.write(50);
-  } else if (requestedStatus == "Retract") {
-    FireMotor.write(130);
-  } else if (requestedStatus == "Stop") {
-    FireMotor.write(90);
-  }
-}
+// void fireWeapon(Servo FireMotor, String requestedStatus) {
+//   if (requestedStatus == "Fire") {
+//     FireMotor.write(50);
+//   } else if (requestedStatus == "Retract") {
+//     FireMotor.write(130);
+//   } else if (requestedStatus == "Stop") {
+//     FireMotor.write(90);
+//   }
+// }

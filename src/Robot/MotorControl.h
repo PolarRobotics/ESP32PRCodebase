@@ -22,6 +22,11 @@ const int PWM_MAXDUTY = (1 << PWM_RES) - 1;
 
 // class MotorControl;
 
+// Enum for Increasing or Decreasing Flywheel Speed
+enum speedStatus {
+  increase, decrease
+};
+
 typedef struct servo {
     uint8_t pin;
     // bool isactive;
