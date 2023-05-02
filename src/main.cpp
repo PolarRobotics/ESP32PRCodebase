@@ -8,7 +8,7 @@
  **/
 
 #include <Arduino.h>
-#include <ps5Controller.h> // ESP PS5 library
+#include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>

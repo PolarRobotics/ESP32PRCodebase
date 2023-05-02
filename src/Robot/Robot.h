@@ -23,22 +23,24 @@
 
 class Robot {
   private:
-    Drive* drive;
-    TYPE type; // `TYPE` enum declared in `PolarRobotics.h`
+    // 
+    eBOT_TYPE type; // `eBOT_TYPE` enum declared in `BotTypes.h`
+  protected:
+    // ! setType methods should only be called in the constructor of the derived class!
+    void setType(eBOT_TYPE t) { type = t; };
+    void setType(uint8_t t) { type = static_cast<eBOT_TYPE>(t); };
   public:
-    Robot() {};
-    Drive* getDrive() { return drive; };
-    void setDrive(Drive* d) { drive = d; };
-    TYPE getType() { return type; };
-    void setType(TYPE t) { type = t; };
-    void setType(uint8_t t) { type = static_cast<TYPE>(t); };
+    // Robot() {};
+    eBOT_TYPE getType() { return type; };
 
+
+    // TODO: we should be able to avoid using this eventually, and instead use the constructor properly
     // Virtual function that effectively acts like a constructor
     // "virtual" keyword required to enable runtime polymorphism (i.e. actually use overrides)
-    virtual void initialize() {};
+    virtual void initialize() = 0;
 
     // Virtual function to perform any loop actions for special robots
-    virtual void action() {}; 
+    virtual void action() = 0;
 };
 
 #endif /* ROBOT_H_ */
