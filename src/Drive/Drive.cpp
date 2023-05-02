@@ -36,6 +36,10 @@ Drive::Drive() {
     this->motorType = eMOTOR_TYPE::big; // default to long motors
 }
 
+Drive::Drive(eMOTOR_TYPE motorType) {
+  this->motorType = motorType;
+}
+
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     M1.attach(lpin), M2.attach(rpin);

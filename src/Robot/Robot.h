@@ -37,7 +37,7 @@ class Robot {
     // TODO: we should be able to avoid using this eventually, and instead use the constructor properly
     // Virtual function that effectively acts like a constructor
     // "virtual" keyword required to enable runtime polymorphism (i.e. actually use overrides)
-    virtual void initialize() = 0;
+    // virtual void initialize() = 0;
 
     // Virtual function to perform any loop actions for special robots
     virtual void action() = 0;

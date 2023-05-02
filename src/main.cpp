@@ -13,44 +13,36 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <Pairing/pairing.h>
+#include <Utilities/ConfigManager.h>
+
+// Robot Includes
 #include <Robot/Lights.h>
+#include <Robot/Robot.h>
+#include <Robot/Lineman.h>
+#include <Robot/Center.h>
+#include <Robot/MecanumCenter.h>
+#include <Robot/Kicker.h>
+#include <Robot/Quarterback.h>
 
-// Robot Libraries:
-#if BOT_TYPE == 0    // Lineman
-    #include <Drive/Drive.h>
-    Drive DriveMotors;
-#elif BOT_TYPE == 1  // Receiver/Runningback
-    #include <Drive/Drive.h>
-    Drive DriveMotors;
-#elif BOT_TYPE == 2  // Old Center
-    #include <Drive/Drive.h>
-    #include <Robot/Center.h>
-    Drive DriveMotors;
-    Center centerBot;
-#elif BOT_TYPE == 3  // Mecanum Center
-    #include <Drive/DriveMecanum.h>
-    #include <Robot/MecanumCenter.h>
-    MecanumCenter mcBot(SPECBOT_PIN1, SPECBOT_PIN2);
+// Drive Includes
+#include <Drive/Drive.h>
+#include <Drive/DriveMecanum.h>
+#include <Drive/DriveQuick.h>
 
-    DriveMecanum DriveMotors;
-#elif BOT_TYPE == 4  // Quarterback
-    #include <Drive/Drive.h>
-    #include <Robot/Quarterback.h>
-    Quarterback qbBot(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-    Drive DriveMotors;
-#elif BOT_TYPE == 5  // Kicker
-    #include <Drive/Drive.h>
-    #include <Robot/Kicker.h>
-    Kicker kickerBot;
-    Drive DriveMotors;
-#elif BOT_TYPE == 6 // runningback
-    #include <Drive/DriveQuick.h>
-    DriveQuick DriveMotors;
-#endif
+// Primary Parent Component Pointers
+Robot* robot = nullptr; // subclassed if needed
+Drive* drive = nullptr; // subclassed if needed
+Lights* lights = nullptr;
 
-#if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
-Lights robotLED;
-#endif
+//* How to use subclasses: ((SubclassName*) robot)->function()
+//! You must downcast each time you use a special function
+
+// Robot Information from EEPROM/Preferences
+eBOT_TYPE robotType;
+eMOTOR_TYPE motorType;
+
+// Config
+ConfigManager config;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -66,58 +58,84 @@ void onDisconnect();
 
 */
 
+// runs once at the start of the program
 void setup() {
-    // put your setup code here, to run once:
-    Serial.begin(115200);
-    // Serial.print(F("\r\nStarting..."));
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
+  Serial.begin(115200);
 
-    // Set the motor type
-#if MOTOR_TYPE == 0    // Big Motor
-    DriveMotors.setMotorType(eMOTOR_TYPE::big);
-#elif MOTOR_TYPE == 1  // Small Motor
-    DriveMotors.setMotorType(eMOTOR_TYPE::small);
-#elif MOTOR_TYPE == 2             
-    DriveMotors.setMotorType(eMOTOR_TYPE::mecanum);
-#elif MOTOR_TYPE == 3
-    DriveMotors.setMotorType(eMOTOR_TYPE::falcon);
-#endif
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
 
-// Set the special bot type
-#if BOT_TYPE == 0 // Lineman
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-#elif BOT_TYPE == 1   // Receiver
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-#elif BOT_TYPE == 2  // Old Center
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-    centerBot.setServos(SPECBOT_PIN1, SPECBOT_PIN2);
-#elif BOT_TYPE == 3  // Mecanum Center
-    DriveMotors.setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
-    mcBot.setup();
-#elif BOT_TYPE == 4  // Quarterback
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-    qbBot.setup();
-#elif BOT_TYPE == 5  // Kicker
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-    kickerBot.setup(SPECBOT_PIN1);
-#elif BOT_TYPE == 6  // Runningback
-    DriveMotors.setServos(M1_PIN, M2_PIN);
-#endif
- 
-    // Set initial LED color state
-    #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
-    robotLED.setupLEDS();
-    // robotLED.setLEDStatus(Lights::PAIRING);
-    robotLED.setLEDStatus(Lights::PAIRING);
-    activatePairing();
-    robotLED.setLEDStatus(Lights::PAIRED);
-    #endif
+  // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
+  config.read();
+  Serial.println(config.toString());
+  robotType = config.getBotType();
+  motorType = config.getMotorType();
 
-    // Serial.print(F("\r\nConnected"));
 
-    ps5.attachOnConnect(onConnection);
-    ps5.attachOnDisconnect(onDisconnect);
+  // TODO: Work with Quantum to see where lights should go -MP
+  // work backwards from highest ordinal enum since lineman should be default case
+  switch (robotType) {
+    //* Each case should have the following:
+    // An initialization of `robot` as a new Robot subclass
+    // An initialization of `drive` as a new Drive subclass
+    // A call to drive->setServos (or downcast and call to override)
+    // An initialization of `lights` if needed depending on the bot type
+    case kicker:
+      robot = new Kicker();
+      drive = new Drive(motorType);
+      drive->setServos(M1_PIN, M2_PIN);
+      // TODO: lights?
+      //! TODO: compensate for Kicker.setup()
+      break;
+    case quarterback:
+      robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+      drive = new Drive(motorType);
+      drive->setServos(M1_PIN, M2_PIN);
+      //! TODO: compensate for Quarterback.setup()
+      // TODO: no lights?
+      break;
+    case mecanum_center:
+      robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
+      //! TODO: compensate for MecanumCenter.setup()
+      drive = new DriveMecanum();
+      ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+      // TODO: no lights?
+      break;
+    case center:
+      robot = new Center();
+      drive = new Drive(motorType);
+      // TODO: no lights?
+      drive->setServos(M1_PIN, M2_PIN);
+      break;
+    case runningback:
+      robot = new Lineman();
+      drive = new DriveQuick();
+      lights = new Lights();
+      drive->setServos(M1_PIN, M2_PIN);
+      break;
+    case receiver:
+    case lineman:
+    default: // Assume lineman
+      robot = new Lineman();
+      drive = new Drive(motorType);
+      lights = new Lights();
+      drive->setServos(M1_PIN, M2_PIN);
+  }
+
+  if (lights != nullptr) {
+    lights->setupLEDS();
+    lights->setLEDStatus(Lights::PAIRING);
+  }
+
+  //! Activate Pairing Process: this code is BLOCKING, not instantaneous
+  activatePairing();
+
+  if (lights != nullptr) {
+    lights -> setLEDStatus(Lights::PAIRED);
+  }
+
+  ps5.attachOnConnect(onConnection);
+  ps5.attachOnDisconnect(onDisconnect);
 }
 
 /*
@@ -128,136 +146,64 @@ void setup() {
   |_|  |_| /_/   \_\ |___| |_| \_|   |_____|  \___/   \___/  |_|
 
 */
+
+// runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
-    // The main looping code, controls driving and any actions during a game
+  if (ps5.isConnected()) {
+    // Serial.print(F("\r\nConnected"));
+    // ps5.setLed(255, 0, 0);   // set LED red
 
-    if (ps5.isConnected()) {
-        // Serial.print(F("\r\nConnected"));
-        // ps5.setLed(255, 0, 0);   // set LED red
-
-    #if BOT_TYPE == 3 // temporary solution
-        DriveMotors.setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-    #else //if BOT_TYPE != 3
-        DriveMotors.setStickPwr(ps5.LStickY(), ps5.RStickX());
-    #endif
-
-
-        // determine BSN percentage (boost, slow, or normal)
-        if (ps5.Touchpad()){
-            DriveMotors.emergencyStop();
-            DriveMotors.setBSN(Drive::brake);
-        } else if (ps5.R1()) {
-            DriveMotors.setBSN(Drive::boost);
-            // ps5.setLed(0, 255, 0);   // set LED red
-        } else if (ps5.L1()) {
-            DriveMotors.setBSN(Drive::slow);
-        } else {
-            DriveMotors.setBSN(Drive::normal);
-        }
-
-        // Manual LED State Toggle (Defense/Offense)
-        #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3
-        if(ps5.Options()){
-            robotLED.togglePosition();
-        }
-
-        #if BOT_TYPE != 0 // if the bot is not a linemen
-        // Update the LEDs based on tackle (tPin input) for offensive robot
-        if(robotLED.returnStatus() == robotLED.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-            // robotLED.setLEDStatus(Lights::DEFAULTL);
-            robotLED.setLEDStatus(Lights::TACKLED);
-            tackleTime = millis();
-            tackled = true;
-        } 
-        // Switch the LED state back to offense after being tackled a certain amount of time
-        else if((millis() - tackleTime) >= switchTime && tackled == true){
-            robotLED.setLEDStatus(Lights::OFFENSE);
-            tackled = false;
-        }
-        #endif
-        #endif
-        
-        // Update the motors based on the inputs from the controller
-
-        DriveMotors.update();
-            
-        DriveMotors.printDebugInfo(); // comment this line out to reduce compile time and memory usage
-        
-        
-
-    // Special Bot Actions
-    #if BOT_TYPE == 0    // Lineman
-    #elif BOT_TYPE == 1  // Receiver
-    #elif BOT_TYPE == 2  // Old Center
-        // Control the arm of the center
-        if (ps5.Triangle()) {
-            centerBot.armControl(armStatus::Higher);
-        } else if (ps5.Cross()) {
-            centerBot.armControl(armStatus::Lower);
-        } else if (ps5.Circle()) {
-            centerBot.armControl(armStatus::Hold);
-        } else {
-            centerBot.armControl(armStatus::Stop);
-        }
-
-        // Control the Claw of the center
-        if (ps5.Up()) {
-            centerBot.clawControl(clawStatus::Open);
-        } else if (ps5.Down()) {
-            centerBot.clawControl(clawStatus::Close);
-        } else {
-            centerBot.clawControl(clawStatus::clawStop);
-        }
-    #elif BOT_TYPE == 3  // Mecanum Center
-        // Toggle the Conveyor and Flywheels
-        if (ps5.Square())
-            mcBot.toggleConveyor();
-        else if (ps5.Circle())
-            mcBot.toggleFlywheels();
-        
-        // Change the flywheel speed
-        if(ps5.Triangle())
-            mcBot.changeFWSpeed(speedStatus::increase);
-        else if (ps5.Cross())
-            mcBot.changeFWSpeed(speedStatus::decrease);
-    #elif BOT_TYPE == 4  // Quarterback
-        // Update the bools within the class to see if the user wants to go up or down
-        if (ps5.Up())
-            qbBot.aim(qbAim::aimUp);
-        else if (ps5.Down())
-            qbBot.aim(qbAim::aimDown);
-        
-        // Toogle the Conveyor and Flywheels
-        if (ps5.Square())
-            qbBot.toggleConveyor();
-        else if (ps5.Circle())
-            qbBot.toggleFlywheels();
-        
-        // Change the flywheel speed
-        if(ps5.Triangle())
-            qbBot.changeFWSpeed(speedStatus::increase);
-        else if (ps5.Cross())
-            qbBot.changeFWSpeed(speedStatus::decrease);
-        
-
-        // Update the aim and flywheels on quarterback to see if we need to stop or not
-        qbBot.update();
-    #elif BOT_TYPE == 5  // Kicker
-        // Control the motor on the kicker
-        if (ps5.Triangle())
-            kickerBot.turnfwd();
-        else if (ps5.Cross())
-            kickerBot.turnrev();
-        else
-            kickerBot.stop();
-    #endif
-        
-    } else { // no response from PS5 controller within last 300 ms, so stop
-        // Emergency stop if the controller disconnects
-        DriveMotors.emergencyStop();
-        robotLED.setLEDStatus(Lights::NOTPAIRED);
+    if (robotType == mecanum_center) {
+      ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
+    } else {
+      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
     }
-    // robotLED.updateLEDS();
+
+    // determine BSN percentage (boost, slow, or normal)
+    if (ps5.Touchpad()){
+      drive->emergencyStop();
+      drive->setBSN(Drive::brake);
+    } else if (ps5.R1()) {
+      drive->setBSN(Drive::boost);
+      // ps5.setLed(0, 255, 0);   // set LED red
+    } else if (ps5.L1()) {
+      drive->setBSN(Drive::slow);
+    } else {
+      drive->setBSN(Drive::normal);
+    }
+
+    // Manual LED State Toggle (Defense/Offense)
+    // #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3 // TODO: this should be ok to remove, but check w/ Quantum -MP
+    if (ps5.Options()) {
+      if (lights != nullptr) lights->togglePosition();
+    }
+
+    // TODO: Are all these checks really necessary? I think we can just check if lights == nullptr
+    if (!robotType != lineman) {
+      if (lights != nullptr) {
+        if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+          lights->setLEDStatus(Lights::TACKLED);
+          tackleTime = millis();
+          tackled = true;
+        } else if ((millis() - tackleTime) >= switchTime && tackled == true) {
+          lights->setLEDStatus(Lights::OFFENSE);
+          tackled = false;
+        }
+      }
+    }
+
+    // Update the motors based on the inputs from the controller
+
+    drive->update();
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+
+    robot->action();
+      
+  } else { // no response from PS5 controller within last 300 ms, so stop
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
+      if (lights != nullptr) lights->setLEDStatus(Lights::NOTPAIRED);
+  }
 }
 
 /**
@@ -267,7 +213,7 @@ void onConnection() {
     if(ps5.isConnected()) {
         Serial.println(F("Controller Connected."));
         // ps5.setLed(0, 255, 0);   // set LED green
-        robotLED.setLEDStatus(Lights::PAIRED);
+        if (lights != nullptr) lights->setLEDStatus(Lights::PAIRED);
     }
 }
 
@@ -277,11 +223,11 @@ void onConnection() {
  */
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
-    DriveMotors.emergencyStop();
+    drive->emergencyStop();
 }
 
 /// @brief Allows accessing LED state from other files like `pairing.cpp`
 /// Used to avoid circular dependencies
 extern void extUpdateLEDs() {
-  robotLED.updateLEDS();
+  if (lights != nullptr) lights->updateLEDS();
 }

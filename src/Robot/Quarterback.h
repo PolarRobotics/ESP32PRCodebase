@@ -29,11 +29,7 @@
 // Debounce Vars
 #define DEBOUNCE_WAIT 250
 
-// Enum for Increasing or Decreasing Flywheel Speed
-enum speedStatus {
-  increase, decrease
-};
-
+// TODO: standardize enum names
 // Enum for whether to aim up or aim down
 enum qbAim {
   aimUp, aimDown
@@ -48,9 +44,9 @@ enum ELEVATION {
  * @brief Quarterback Subclass Header
  * @authors Rhys Davies
  */
-class Quarterback { //: public Robot
+class Quarterback : public Robot {
   private: 
-    uint8_t m_FlywheelPin;
+    uint8_t m_FlywheelPin; // TODO: rename `m_` variables
     uint8_t m_conveyorPin;
     uint8_t m_ElevationPin;
     int arrayPos = 0;
@@ -68,11 +64,15 @@ class Quarterback { //: public Robot
     float currentFWPower;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0;
     float flywheelSpeedFactor = 0;
-    const float speedFac[4] = {0.0, 0.3, 0.5, 0.8};
+    const float speedFac[4] = {0.0, 0.3, 0.5, 0.8}; // TODO: this should not be magic numbers
   public:
-    Quarterback(uint8_t fwpin, 
-        uint8_t conveyorpin, uint8_t elevationpin);
+    Quarterback(
+      uint8_t fwpin, 
+      uint8_t conveyorpin, 
+      uint8_t elevationpin
+    );
     void setup();
+    void action() override; //! robot subclass must override action
     void toggleFlywheels();
     float rampFW(float requestedpwr);
     void aim(qbAim dir);
@@ -81,8 +81,11 @@ class Quarterback { //: public Robot
     void update();
 };
 
-Quarterback::Quarterback(uint8_t fwpin, 
-        uint8_t conveyorpin, uint8_t elevationpin) {
+Quarterback::Quarterback(
+  uint8_t fwpin, 
+  uint8_t conveyorpin, 
+  uint8_t elevationpin
+) {
     // Declare that the flywheels are off
     flywheelsOn = false;
 
@@ -113,6 +116,30 @@ void Quarterback::setup() {
     // through the updateAim() function
     setupMotors = true;
     lastElevationTime = millis();
+}
+
+void Quarterback::action() {
+  // Update the bools within the class to see if the user wants to go up or down
+  if (ps5.Up())
+      aim(qbAim::aimUp);
+  else if (ps5.Down())
+      aim(qbAim::aimDown);
+  
+  // Toogle the Conveyor and Flywheels
+  if (ps5.Square())
+      toggleConveyor();
+  else if (ps5.Circle())
+      toggleFlywheels();
+  
+  // Change the flywheel speed
+  if(ps5.Triangle())
+      changeFWSpeed(speedStatus::increase);
+  else if (ps5.Cross())
+      changeFWSpeed(speedStatus::decrease);
+  
+
+  // Update the aim and flywheels on quarterback to see if we need to stop or not
+  update();
 }
 
 

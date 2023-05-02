@@ -108,6 +108,7 @@ public:
         brake
     };
     Drive();
+    Drive(eMOTOR_TYPE motorType);
     void setServos(uint8_t lpin, uint8_t rpin);
     void setMotorType(eMOTOR_TYPE motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
