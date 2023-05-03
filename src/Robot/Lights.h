@@ -1,7 +1,7 @@
 // void updateLEDS(BOT_STATE status); //private
 // void setRobotState(BOT_STATE state);
-#pragma once
-#include <Arduino.h>
+#ifndef LIGHTS_H_
+#define LIGHTS_H_
 #include <FastLED.h>
 #include <PolarRobotics.h>
 
@@ -130,3 +130,5 @@ int Lights::returnStatus() {
     status = currState;
     return status;
 }
+
+#endif // Lights.h

@@ -14,8 +14,12 @@
 // Custom Polar Robotics Libraries:
 #include "PolarRobotics.h"
 #include "Pairing/pairing.h"
-#include <Robot/builtinLED.h>
+#include <Robot/builtInLED.h>
 
+// Fix linker errors with build environments not including main.cpp
+#ifndef LIGHTS_H_
+void extUpdateLEDs() {}
+#endif
 
 // Lights robotLED;
 
