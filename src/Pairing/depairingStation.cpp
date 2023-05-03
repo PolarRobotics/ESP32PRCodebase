@@ -8,13 +8,13 @@
  * to avoid two controllers being paired to an active robot.
  */
 
-// #include <Arduino.h>
+#include <Arduino.h>
 #include <ps5Controller.h> // new esp ps5 library
 
 // Custom Polar Robotics Libraries:
 #include "PolarRobotics.h"
 #include "Pairing/pairing.h"
-#include <Robot/builtinLED.h>
+#include <Robot/builtInLED.h>
 
 
 // Lights robotLED;
