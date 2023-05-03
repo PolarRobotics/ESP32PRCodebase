@@ -9,6 +9,7 @@
 #define TIME_BETWEEN_TOGGLES 500
 
 // TODO: rename `m_` variables
+// TODO: refactor to singleton paradigm instead of using extern function for instance of LEDs https://refactoring.guru/design-patterns/singleton/cpp/example#example-0
 
 // LED Variables
 bool tackled = false;
