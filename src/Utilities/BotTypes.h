@@ -62,19 +62,19 @@ typedef struct BotConfig {
 // PRESET BOT CONFIGURATIONS
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
 // idx  bot_name    bot_type     motors
-  { 0,  "i++",      lineman,     small },  // 0:  i++
-  { 1,  "sqrt(-1)", lineman,     small },  // 1:  sqrt(-1)
-  { 2,  "pi",       lineman,     small },  // 2:  pi
-  { 3,  "rho",      lineman,     small },  // 3:  ρ
-  { 4,  "2.72",     lineman,     big   },  // 4:  2.72
-  { 5,  ":)",       lineman,     small },  // 5:  :)
-  { 6,  ">=",       lineman,     big   },  // 6:  >=
-  { 7,  "32.2",     receiver,    big   },  // 7:  32.2
-  { 8,  "9.8",      receiver,    small },  // 8:  9.8
-  { 9,  "c",        runningback, small },  // 9:  c    // TODO: should this be `falcon` motor type?
-  { 10, "phi",      center,      small },  // 10: Φ
-  { 11, "inf",      quarterback, small },  // 11: ∞
-  { 12, "theta",    kicker,      small }   // 12: Θ
+  { 0,  "i++",      lineman,     small  },  // 0:  i++
+  { 1,  "sqrt(-1)", lineman,     small  },  // 1:  sqrt(-1)
+  { 2,  "pi",       lineman,     small  },  // 2:  pi
+  { 3,  "rho",      lineman,     small  },  // 3:  ρ
+  { 4,  "2.72",     lineman,     big    },  // 4:  2.72
+  { 5,  ":)",       lineman,     small  },  // 5:  :)
+  { 6,  ">=",       lineman,     big    },  // 6:  >=
+  { 7,  "32.2",     receiver,    big    },  // 7:  32.2
+  { 8,  "9.8",      receiver,    small  },  // 8:  9.8
+  { 9,  "c",        runningback, falcon },  // 9:  c
+  { 10, "phi",      center,      small  },  // 10: Φ
+  { 11, "inf",      quarterback, small  },  // 11: ∞
+  { 12, "theta",    kicker,      small  }   // 12: Θ
 };
 
 const char * getBotTypeString(eBOT_TYPE type);

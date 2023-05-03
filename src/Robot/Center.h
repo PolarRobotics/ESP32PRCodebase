@@ -20,7 +20,7 @@ enum clawStatus {
 
 class Center : public Robot {
   private:
-    uint8_t motorPins[2]; // TODO: convert '2' to named define
+    uint8_t motorPins[2]; // TODO: just use two separate variables for the pins named `armPin` and `clawPin`. set in constructor with `this.armPin` etc.
     MotorControl clawMotor, armMotor;
 
   public:

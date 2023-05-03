@@ -29,6 +29,8 @@
 // Debounce Vars
 #define DEBOUNCE_WAIT 250
 
+// TODO: Move function definitions to Quarterback.cpp
+
 // TODO: standardize enum names
 // Enum for whether to aim up or aim down
 enum qbAim {
