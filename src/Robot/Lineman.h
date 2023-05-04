@@ -1,3 +1,6 @@
+#ifndef LINEMAN_H
+#define LINEMAN_H
+
 #include <Robot/Robot.h>
 
 /**
@@ -17,3 +20,5 @@ class Lineman : public Robot {
 Lineman::Lineman() {} // empty constructor (must be defined)
 
 void Lineman::action() {} // empty action function (must be defined)
+
+#endif // LINEMAN_H

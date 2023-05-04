@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef DRIVE_MECANUM_H_
-#define DRIVE_MECANUM_H_
+#ifndef DRIVE_MECANUM_H
+#define DRIVE_MECANUM_H
 
 #include <Arduino.h>
 
@@ -43,4 +43,4 @@ public:
     void printDebugInfo();
 };
 
-#endif
+#endif // DRIVE_MECANUM_H

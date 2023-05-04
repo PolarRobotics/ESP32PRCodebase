@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __OLDCENTER_H__
-#define __OLDCENTER_H__
+#ifndef OLD_CENTER_H
+#define OLD_CENTER_H
 
 #include <Arduino.h>
 #include "Robot/MotorControl.h"
@@ -115,4 +115,4 @@ void Center::armControl(armStatus reqstatus) {
   }
 }
 
-#endif
+#endif // OLD_CENTER_H

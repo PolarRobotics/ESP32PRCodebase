@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _BOT_TYPES_H_
-#define _BOT_TYPES_H_
+#ifndef BOT_TYPES_H
+#define BOT_TYPES_H
 
 #include <Arduino.h>
 #include <Utilities/Pair.h>
@@ -80,4 +80,4 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
 const char * getBotTypeString(eBOT_TYPE type);
 const char * getBotName(uint8_t index);
 
-#endif /* _BOT_TYPES_H_ */
+#endif // BOT_TYPES_H
