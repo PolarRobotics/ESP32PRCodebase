@@ -17,7 +17,7 @@
 #include <Robot/builtInLED.h>
 
 // Fix linker errors with build environments not including main.cpp
-#ifndef LIGHTS_H_
+#ifndef LIGHTS_H
 void extUpdateLEDs() {}
 #endif
 

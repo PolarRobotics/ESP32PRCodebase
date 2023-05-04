@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _MECANUM_CENTER_H_
-#define _MECANUM_CENTER_H_
+#ifndef MECANUM_CENTER_H
+#define MECANUM_CENTER_H
 
 #include <Robot/Robot.h>
 #include <Robot/MotorControl.h>
@@ -119,4 +119,4 @@ void MecanumCenter::changeFWSpeed(speedStatus speed) {
   }
 }
 
-#endif
+#endif // MECANUM_CENTER_H

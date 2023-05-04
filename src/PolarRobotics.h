@@ -5,8 +5,8 @@
  * and other structures that are useful in a global scope.
  **/
 
-#ifndef POLAR_ROBOTICS_H_
-#define POLAR_ROBOTICS_H_
+#ifndef POLAR_ROBOTICS_H
+#define POLAR_ROBOTICS_H
 
 #include <Arduino.h>
 #include <Utilities/BotTypes.h>
@@ -48,4 +48,4 @@ enum BOT_STATE {
 // like `pairing.cpp`, that would otherwise cause circular dependencies
 extern void extUpdateLEDs(); 
 
-#endif
+#endif // POLAR_ROBOTICS_H

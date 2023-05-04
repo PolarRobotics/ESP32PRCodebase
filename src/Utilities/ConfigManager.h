@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _CFG_MGR_H_
-#define _CFG_MGR_H_
+#ifndef CFG_MGR_H
+#define CFG_MGR_H
 
 #include <Arduino.h>
 #include <Preferences.h>
@@ -44,4 +44,4 @@ class ConfigManager {
     bool setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype);
 };
 
-#endif
+#endif // CFG_MGR_H

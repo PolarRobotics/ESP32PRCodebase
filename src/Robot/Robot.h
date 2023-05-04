@@ -1,7 +1,5 @@
-#pragma once
-
-#ifndef ROBOT_H_
-#define ROBOT_H_
+#ifndef ROBOT_H
+#define ROBOT_H
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
@@ -43,4 +41,4 @@ class Robot {
     virtual void action() = 0;
 };
 
-#endif /* ROBOT_H_ */
+#endif // ROBOT_H
