@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef KICKER_H_
-#define KICKER_H_
+#ifndef KICKER_H
+#define KICKER_H
 
 #include <Arduino.h>
 #include <Robot/MotorControl.h>
@@ -51,4 +51,4 @@ class Kicker { //: public Robot
     }
 };
 
-#endif /* KICKER_H_ */
+#endif // KICKER_H

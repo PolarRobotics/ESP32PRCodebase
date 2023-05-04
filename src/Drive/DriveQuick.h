@@ -1,4 +1,5 @@
-#include <Arduino.h>
+#ifndef DRIVE_QUICK_H
+#define DRIVE_QUICK_H
 // the minimum power that can be written to the motor, prevents stalling
 #define MOTOR_ZERO_OFFST 0
 #define RB_ACCELERATION_RATE 0.03f
@@ -12,3 +13,5 @@ class DriveQuick : public Drive {
         // void generateMotionValues();
         void update();
 };
+
+#endif // DRIVE_QUICK_H

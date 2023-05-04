@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _QUARTERBACK_H_
-#define _QUARTERBACK_H_
+#ifndef QUARTERBACK_H
+#define QUARTERBACK_H
 
 #include <Robot/Robot.h>
 #include <Robot/MotorControl.h>
@@ -250,4 +250,4 @@ void Quarterback::changeFWSpeed(speedStatus speed) {
   }
 }
 
-#endif
+#endif // QUARTERBACK_H

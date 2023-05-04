@@ -1,3 +1,6 @@
+#ifndef LINEMAN_H
+#define LINEMAN_H
+
 #include <Robot/Robot.h>
 
 /**
@@ -13,3 +16,5 @@ class Lineman : public Robot {
         void initialize(); // Override virtual functions
         void action();
 };
+
+#endif // LINEMAN_H
