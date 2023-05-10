@@ -24,9 +24,9 @@
  */
 class MecanumCenter : public Robot {
   private: 
-    uint8_t m_FlywheelPin;
-    uint8_t m_conveyorPin;
-    MotorControl FWMotor;
+    uint8_t flywheelPin;
+    uint8_t conveyorPin;
+    MotorControl flywheelMotor;
     MotorControl conveyorMotor;
     bool flywheelsOn, conveyorOn;
     uint8_t currentElevation, targetElevation;
@@ -39,7 +39,7 @@ class MecanumCenter : public Robot {
     void setup(); // TODO: merge with constructor
     void toggleFlywheels();
     void toggleConveyor();
-    void changeFWSpeed(speedStatus speed);
+    void changeFWSpeed(SPEED_STATUS speed);
 };
 
 MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
@@ -50,14 +50,14 @@ MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
   conveyorOn = false;
 
   // Label the pins inside the class
-  this->m_FlywheelPin = fwpin;
-  this->m_conveyorPin = conveyorpin;
+  this->flywheelPin = fwpin;
+  this->conveyorPin = conveyorpin;
 }
 
 void MecanumCenter::setup() {
   // Attach the motors inside the class to their respective pins
-  FWMotor.attach(m_FlywheelPin);
-  conveyorMotor.attach(m_conveyorPin);
+  flywheelMotor.attach(flywheelPin);
+  conveyorMotor.attach(conveyorPin);
 
   // Set the motor to zero so it doesnt spin on startup
   conveyorMotor.write(MC_CONVEYOR_OFF);
@@ -72,9 +72,9 @@ void MecanumCenter::action() {
   
   // Change the flywheel speed
   if(ps5.Triangle())
-    changeFWSpeed(speedStatus::increase);
+    changeFWSpeed(SPEED_STATUS::increase);
   else if (ps5.Cross())
-    changeFWSpeed(speedStatus::decrease);
+    changeFWSpeed(SPEED_STATUS::decrease);
 }
 
 
@@ -82,9 +82,9 @@ void MecanumCenter::toggleFlywheels() {
   if (millis() - lastDBFW >= MC_DEBOUNCE_WAIT) {
     // Toggle the flywheels and use the speed factor to know what speed
     if (!flywheelsOn){
-      FWMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
+      flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
     } else {
-      FWMotor.write(MC_FLYWHEEL_STOP_SPEED);
+      flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
     }
     // Toggle the bool so we know if its on or not
     flywheelsOn = !flywheelsOn;
@@ -108,7 +108,7 @@ void MecanumCenter::toggleConveyor() {
   }
 }
 
-void MecanumCenter::changeFWSpeed(speedStatus speed) {
+void MecanumCenter::changeFWSpeed(SPEED_STATUS speed) {
   // Debounce for button press
   if (millis() - lastDBFWChange >= MC_DEBOUNCE_WAIT) {
     // Change the speed factor based on whether the user wants to increase or decrease
@@ -121,9 +121,9 @@ void MecanumCenter::changeFWSpeed(speedStatus speed) {
 
     // Update the motors if they are spinning for the new speed
     if (flywheelsOn){
-      FWMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
+      flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
     } else {
-      FWMotor.write(MC_FLYWHEEL_STOP_SPEED);
+      flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
     }
 
     lastDBFWChange = millis();
