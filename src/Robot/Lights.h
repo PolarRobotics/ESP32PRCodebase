@@ -24,7 +24,7 @@ private:
   uint8_t currState; // LEDState currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
-  bool m_isOffense;
+  bool isOffense;
   // int i, updateCount;
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM
@@ -52,7 +52,7 @@ public:
 
 Lights::Lights() {
   currState = PAIRING;
-  m_isOffense = false;
+  isOffense = false;
 }
 
 void Lights::setupLEDS() {
@@ -114,17 +114,16 @@ void Lights::updateLEDS() {
 
 
 void Lights::togglePosition() {
-  // TODO: verify these comments -MP 2023-05-01
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-    if (m_isOffense) {
+    if (isOffense) {
       setLEDStatus(OFFENSE);
     }
     else {
       setLEDStatus(DEFENSE);
     }
-    m_isOffense = !m_isOffense;
+    isOffense = !isOffense;
     lastToggleTime = millis();
   }
 }
