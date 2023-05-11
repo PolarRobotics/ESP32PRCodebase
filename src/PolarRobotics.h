@@ -44,8 +44,4 @@ enum BOT_STATE {
   TACKLED
 };
 
-// external function implemented in main to allow accessing LED state from other files,
-// like `pairing.cpp`, that would otherwise cause circular dependencies
-extern void extUpdateLEDs(); 
-
 #endif // POLAR_ROBOTICS_H

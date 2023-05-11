@@ -1,5 +1,5 @@
-// void updateLEDS(BOT_STATE status); //private
-// void setRobotState(BOT_STATE state);
+//! How to instantiate: Lights& lights = Lights::getInstance();
+
 #ifndef LIGHTS_H
 #define LIGHTS_H
 #include <FastLED.h>
@@ -8,30 +8,31 @@
 #define NUM_LEDS 100
 #define TIME_BETWEEN_TOGGLES 500
 
-// TODO: refactor to singleton paradigm instead of using extern function for instance of LEDs https://refactoring.guru/design-patterns/singleton/cpp/example#example-0
-
-
-
 class Lights {
 private:
   unsigned long lastToggleTime;
-  uint8_t currState; // LEDState currState;
+  uint8_t currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
   bool isOffense;
-  // int i, updateCount;
+  Lights();
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM
   enum LEDState {
-      PAIRING,     // yellow
-      PAIRED,      // green then fade out
-      UNPAIRED,
-      OFFENSE,     // blue and green
-      DEFENSE,     // green
-      TACKLED,     // turn red when tackled
-      OFF
+    PAIRING,     // yellow
+    PAIRED,      // green then fade out
+    UNPAIRED,
+    OFFENSE,     // blue and green
+    DEFENSE,     // green
+    TACKLED,     // turn red when tackled
+    OFF
   };
-  Lights();
+  static Lights& getInstance() {
+    static Lights instance;
+    return instance;
+  }
+  Lights(const Lights& obj) = delete; // delete copy constructor
+  void operator=(Lights const&)  = delete; // delete set operator
   void setupLEDS();
   void setLEDStatus(LEDState status);
   void updateLEDS();

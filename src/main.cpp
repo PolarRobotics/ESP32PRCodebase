@@ -32,7 +32,7 @@
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
-Lights* lights = new Lights();
+Lights& lights = Lights::getInstance();
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -71,8 +71,6 @@ void setup() {
   robotType = config.getBotType();
   motorType = config.getMotorType();
 
-
-  // TODO: Work with Quantum to see where lights should go -MP
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
     //* Each case should have the following:
@@ -114,13 +112,13 @@ void setup() {
       drive->setServos(M1_PIN, M2_PIN);
   }
 
-  lights->setupLEDS();
-  lights->setLEDStatus(Lights::PAIRING);
+  lights.setupLEDS();
+  lights.setLEDStatus(Lights::PAIRING);
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
-  lights -> setLEDStatus(Lights::PAIRED);
+  lights.setLEDStatus(Lights::PAIRED);
   
 
   if (robotType == kicker) {
@@ -167,17 +165,17 @@ void loop() {
 
     // Manual LED State Toggle (Defense/Offense)
     if (ps5.Options()) {
-      lights->togglePosition();
+      lights.togglePosition();
     }
 
     if (robotType != lineman) {
-      if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-        lights->setLEDStatus(Lights::TACKLED);
-        lights->tackleTime = millis();
-        lights->tackled = true;
-      } else if ((millis() - lights->tackleTime) >= lights->switchTime && lights->tackled == true) {
-        lights->setLEDStatus(Lights::OFFENSE);
-        lights->tackled = false;
+      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+        lights.setLEDStatus(Lights::TACKLED);
+        lights.tackleTime = millis();
+        lights.tackled = true;
+      } else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+        lights.setLEDStatus(Lights::OFFENSE);
+        lights.tackled = false;
       }
     }
 
@@ -192,7 +190,7 @@ void loop() {
   } else { // no response from PS5 controller within last 300 ms, so stop
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
-      lights->setLEDStatus(Lights::UNPAIRED);
+      lights.setLEDStatus(Lights::UNPAIRED);
   }
 }
 
@@ -203,7 +201,7 @@ void onConnection() {
     if(ps5.isConnected()) {
         Serial.println(F("Controller Connected."));
         // ps5.setLed(0, 255, 0);   // set LED green
-        lights->setLEDStatus(Lights::PAIRED);
+        lights.setLEDStatus(Lights::PAIRED);
     }
 }
 
@@ -214,10 +212,4 @@ void onConnection() {
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
     drive->emergencyStop();
-}
-
-/// @brief Allows accessing LED state from other files like `pairing.cpp`
-/// Used to avoid circular dependencies
-extern void extUpdateLEDs() {
-  lights->updateLEDS();
 }
