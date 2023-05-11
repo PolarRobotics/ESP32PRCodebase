@@ -81,7 +81,7 @@ void setup() {
     // A call to drive->setServos (or downcast and call to override)
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
-      robot = new Kicker();
+      robot = new Kicker(SPECBOT_PIN1);
       drive = new Drive(motorType);
       drive->setServos(M1_PIN, M2_PIN);
       // TODO: lights?
@@ -132,6 +132,10 @@ void setup() {
 
   if (lights != nullptr) {
     lights -> setLEDStatus(Lights::PAIRED);
+  }
+
+  if (robotType == kicker) {
+    ((Kicker*) robot)->enable();
   }
 
   ps5.attachOnConnect(onConnection);
