@@ -179,7 +179,7 @@ void loop() {
     }
 
     // TODO: Are all these checks really necessary? I think we can just check if lights == nullptr
-    if (!robotType != lineman) {
+    if (robotType != lineman) {
       if (lights != nullptr) {
         if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
           lights->setLEDStatus(Lights::TACKLED);

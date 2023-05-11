@@ -24,7 +24,7 @@ private:
   uint8_t currState; // LEDState currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
-  bool m_isOffense;
+  bool isOffense;
   // int i, updateCount;
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM
