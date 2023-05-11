@@ -1,9 +1,9 @@
 #include "Kicker.h"
 
-Kicker::Kicker(uint8_t kicker_pin) {
+Kicker::Kicker(uint8_t kickerPin) {
   enabled = false;
-  kickerPin = kicker_pin;
-  windupMotor.attach(kicker_pin);
+  this->kickerPin = kickerPin;
+  windupMotor.attach(kickerPin);
 }
 
 void Kicker::action() {
