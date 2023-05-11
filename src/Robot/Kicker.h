@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <Robot/MotorControl.h>
+#include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 /**
  * @brief Kicker header file
@@ -16,55 +17,17 @@
 
 class Kicker : public Robot {
   private:
-    bool m_enabled; // safety feature
-    uint8_t m_kickerpin;
-    MotorControl m_windupMotor;
+    bool enabled; // safety feature
+    uint8_t kickerPin;
+    MotorControl windupMotor;
   public:
-    Kicker() {
-      m_enabled = false;
-    }
+    Kicker(uint8_t kicker_pin);
     void action() override; //! robot subclass must override action
-    void setup(uint8_t kicker_pin) {
-      m_enabled = true;
-      // TODO: move kicker pin arg, assignment, and attachment to constructor
-      // TODO: rename setup() to enable(), have it only change `enabled`, and call it in main *after* pairing completes if the bot type is kicker
-      m_kickerpin = kicker_pin;
-      m_windupMotor.attach(kicker_pin);
-    }
-    void Test() {
-      if (m_enabled) {
-        m_windupMotor.write(-1); //clockwise
-        delay(3000);
-        m_windupMotor.write(0); //stop
-        delay(1000);
-        m_windupMotor.write(1); //counter-clockwise
-        delay(3000);
-        m_windupMotor.write(0); //stop
-      }
-    }
-    void turnfwd() {
-      if (m_enabled)
-        m_windupMotor.write(-0.5);
-    }
-    void turnrev() {
-      if (m_enabled)
-        m_windupMotor.write(0.5);
-    }
-
-    void stop() {
-      if (m_enabled)
-        m_windupMotor.write(0);
-    }
+    void enable();
+    void test(); 
+    void turnfwd(); 
+    void turnrev(); 
+    void stop(); 
 };
-
-void Kicker::action() {
-  // Control the motor on the kicker
-  if (ps5.Triangle())
-      turnfwd();
-  else if (ps5.Cross())
-      turnrev();
-  else
-      stop();
-}
 
 #endif // KICKER_H
