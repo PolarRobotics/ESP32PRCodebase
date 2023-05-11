@@ -18,8 +18,6 @@ void Kicker::action() {
 
 void Kicker::enable() {
   enabled = true;
-      // TODO: move kicker pin arg, assignment, and attachment to constructor
-      // TODO: rename setup() to enable(), have it only change `enabled`, and call it in main *after* pairing completes if the bot type is kicker
 }
 
 void Kicker::test() {
