@@ -4,7 +4,7 @@
 
 Lights::Lights() {
   currState = PAIRING;
-  m_isOffense = false;
+  isOffense = false;
 }
 
 void Lights::setupLEDS() {
@@ -34,7 +34,7 @@ void Lights::updateLEDS() {
       leds = CRGB::Purple;
       break;
     }
-    case NOTPAIRED: {
+    case UNPAIRED: {
       for (int i = 0; i < NUM_LEDS; i ++){
         if (i % 2 == 0) { leds[i] = CRGB::Black; }
         else { leds[i] = CRGB::White; }
@@ -70,13 +70,13 @@ void Lights::togglePosition() {
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-    if (m_isOffense) {
+    if (isOffense) {
       setLEDStatus(OFFENSE);
     }
     else {
       setLEDStatus(DEFENSE);
     }
-    m_isOffense = !m_isOffense;
+    isOffense = !isOffense;
     lastToggleTime = millis();
   }
 }

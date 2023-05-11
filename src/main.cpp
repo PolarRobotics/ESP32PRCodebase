@@ -32,7 +32,7 @@
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
-Lights* lights = nullptr;
+Lights* lights = new Lights();
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -84,7 +84,6 @@ void setup() {
       robot = new Kicker();
       drive = new Drive(motorType);
       drive->setServos(M1_PIN, M2_PIN);
-      // TODO: lights?
       //! TODO: compensate for Kicker.setup()
       break;
     case quarterback:
@@ -92,25 +91,21 @@ void setup() {
       drive = new Drive(motorType);
       drive->setServos(M1_PIN, M2_PIN);
       //! TODO: compensate for Quarterback.setup()
-      // TODO: no lights?
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
       //! TODO: compensate for MecanumCenter.setup()
       drive = new DriveMecanum();
       ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
-      // TODO: no lights?
       break;
     case center:
       robot = new Center();
       drive = new Drive(motorType);
-      // TODO: no lights?
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case runningback:
       robot = new Lineman();
       drive = new DriveQuick();
-      lights = new Lights();
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case receiver:
@@ -118,21 +113,17 @@ void setup() {
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(motorType);
-      lights = new Lights();
       drive->setServos(M1_PIN, M2_PIN);
   }
 
-  if (lights != nullptr) {
-    lights->setupLEDS();
-    lights->setLEDStatus(Lights::PAIRING);
-  }
+  lights->setupLEDS();
+  lights->setLEDStatus(Lights::PAIRING);
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
-  if (lights != nullptr) {
-    lights -> setLEDStatus(Lights::PAIRED);
-  }
+  lights -> setLEDStatus(Lights::PAIRED);
+  
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -173,22 +164,18 @@ void loop() {
     }
 
     // Manual LED State Toggle (Defense/Offense)
-    // #if BOT_TYPE != 4 | BOT_TYPE != 2 | BOT_TYPE != 3 // TODO: this should be ok to remove, but check w/ Quantum -MP
     if (ps5.Options()) {
-      if (lights != nullptr) lights->togglePosition();
+      lights->togglePosition();
     }
 
-    // TODO: Are all these checks really necessary? I think we can just check if lights == nullptr
     if (robotType != lineman) {
-      if (lights != nullptr) {
-        if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-          lights->setLEDStatus(Lights::TACKLED);
-          tackleTime = millis();
-          tackled = true;
-        } else if ((millis() - tackleTime) >= switchTime && tackled == true) {
-          lights->setLEDStatus(Lights::OFFENSE);
-          tackled = false;
-        }
+      if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+        lights->setLEDStatus(Lights::TACKLED);
+        tackleTime = millis();
+        tackled = true;
+      } else if ((millis() - tackleTime) >= switchTime && tackled == true) {
+        lights->setLEDStatus(Lights::OFFENSE);
+        tackled = false;
       }
     }
 
@@ -203,7 +190,7 @@ void loop() {
   } else { // no response from PS5 controller within last 300 ms, so stop
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
-      if (lights != nullptr) lights->setLEDStatus(Lights::NOTPAIRED);
+      lights->setLEDStatus(Lights::UNPAIRED);
   }
 }
 
@@ -214,7 +201,7 @@ void onConnection() {
     if(ps5.isConnected()) {
         Serial.println(F("Controller Connected."));
         // ps5.setLed(0, 255, 0);   // set LED green
-        if (lights != nullptr) lights->setLEDStatus(Lights::PAIRED);
+        lights->setLEDStatus(Lights::PAIRED);
     }
 }
 
@@ -230,5 +217,5 @@ void onDisconnect() {
 /// @brief Allows accessing LED state from other files like `pairing.cpp`
 /// Used to avoid circular dependencies
 extern void extUpdateLEDs() {
-  if (lights != nullptr) lights->updateLEDS();
+  lights->updateLEDS();
 }

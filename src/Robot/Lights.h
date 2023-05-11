@@ -31,7 +31,7 @@ public:
   enum LEDState {
       PAIRING,     // yellow
       PAIRED,      // green then fade out
-      NOTPAIRED,
+      UNPAIRED,
       OFFENSE,     // blue and green
       DEFENSE,     // green
       TACKLED,     // turn red when tackled
