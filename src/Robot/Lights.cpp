@@ -43,8 +43,8 @@ void Lights::updateLEDS() {
     }
     case OFFENSE: {
       for(int i = 0; i < NUM_LEDS; i ++){
-        if(i % 2 == 0){leds[i] = CRGB::Blue;}
-        else{leds[i] = CRGB::Green;}
+        if (i % 2 == 0) { leds[i] = CRGB::Blue; }
+        else { leds[i] = CRGB::Green; }
       }
       break;
     }
@@ -66,7 +66,6 @@ void Lights::updateLEDS() {
 
 
 void Lights::togglePosition() {
-  // TODO: verify these comments -MP 2023-05-01
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
