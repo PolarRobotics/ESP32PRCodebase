@@ -33,13 +33,13 @@
 #define NUM_SPEED_INCREMENTS 4
 
 // Enum for whether to aim up or aim down
-enum QB_AIM {
-  aimUp, aimDown
+enum QBAim {
+  AIM_UP, AIM_DOWN
 };
 
-enum ELEVATION {
-  low,
-  high
+enum QBElevation {
+  LOW_ELEVATION,
+  HIGH_ELEVATION
 };
 
 /**
@@ -77,9 +77,9 @@ class Quarterback : public Robot {
     void action() override; //! robot subclass must override action
     void toggleFlywheels();
     float rampFW(float requestedpwr);
-    void aim(QB_AIM dir);
+    void aim(QBAim dir);
     void toggleConveyor();
-    void changeFWSpeed(SPEED_STATUS speed);
+    void changeFWSpeed(SpeedStatus speed);
     void update();
 };
 

@@ -19,8 +19,8 @@ void setup() {
   uint8_t index = 0; // also handles bot name index
   
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
-  eBOT_TYPE bot_type = lineman; 
-  eMOTOR_TYPE motor_type = big;
+  BotType bot_type = lineman; 
+  MotorType motor_type = big;
 
   //* Write standard bot configuration from BotTypes.botConfigArray
   if (config.setConfig(index))

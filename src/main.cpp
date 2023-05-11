@@ -38,8 +38,8 @@ Lights* lights = new Lights();
 //! You must downcast each time you use a special function
 
 // Robot Information from EEPROM/Preferences
-eBOT_TYPE robotType;
-eMOTOR_TYPE motorType;
+BotType robotType;
+MotorType motorType;
 
 // Config
 ConfigManager config;
@@ -82,15 +82,13 @@ void setup() {
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
-      drive = new Drive(motorType);
+      drive = new Drive(kicker, motorType);
       drive->setServos(M1_PIN, M2_PIN);
-      //! TODO: compensate for Kicker.setup()
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(motorType);
+      drive = new Drive(quarterback, motorType);
       drive->setServos(M1_PIN, M2_PIN);
-      //! TODO: compensate for Quarterback.setup()
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
@@ -99,8 +97,8 @@ void setup() {
       ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
     case center:
-      robot = new Center();
-      drive = new Drive(motorType);
+      robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
+      drive = new Drive(center, motorType);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case runningback:
@@ -112,7 +110,7 @@ void setup() {
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      drive = new Drive(motorType);
+      drive = new Drive(lineman, motorType);
       drive->setServos(M1_PIN, M2_PIN);
   }
 
@@ -157,14 +155,14 @@ void loop() {
     // determine BSN percentage (boost, slow, or normal)
     if (ps5.Touchpad()){
       drive->emergencyStop();
-      drive->setBSN(Drive::brake);
+      drive->setBSN(Drive::BRAKE);
     } else if (ps5.R1()) {
-      drive->setBSN(Drive::boost);
+      drive->setBSN(Drive::BOOST);
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
-      drive->setBSN(Drive::slow);
+      drive->setBSN(Drive::SLOW);
     } else {
-      drive->setBSN(Drive::normal);
+      drive->setBSN(Drive::NORMAL);
     }
 
     // Manual LED State Toggle (Defense/Offense)

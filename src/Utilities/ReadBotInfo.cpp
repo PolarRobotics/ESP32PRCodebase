@@ -14,7 +14,7 @@ void setup() {
 
   config.read(); //! In setup(), read config
 
-  //! Use getBotType() and getMotorType() to retrieve the appropriate eBOT_TYPE and eMOTOR_TYPE
+  //! Use getBotType() and getMotorType() to retrieve the appropriate BotType and MotorType
   //! Then decide in your code (ex. main.cpp) how to handle this (ex. instantiating Robot subclass))
   // config.getBotType();
   // config.getMotorType();

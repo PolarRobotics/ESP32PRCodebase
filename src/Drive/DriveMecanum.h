@@ -16,10 +16,8 @@
 
 #include <Drive/Drive.h>
 
-
-
 class DriveMecanum : public Drive {
-private:
+  private:
     MotorControl LF, RF, LR, RR;
     float mmotorpwr[MC_NUM_MOTORS];
     float scaledLeftX;
@@ -32,7 +30,7 @@ private:
     //unsigned long lastRampTime; //only needs to be one value
     // float motorPwr[MC_NUM_MOTORS]; // declared in parent class, use accessors
     void generateMotorValues();
-public:
+  public:
     DriveMecanum();
     void setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin);
     void setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX);

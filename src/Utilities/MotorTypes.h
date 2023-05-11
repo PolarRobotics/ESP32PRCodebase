@@ -10,8 +10,8 @@ typedef enum {
   small,    // MOTOR_TYPE value of 1 for 24v AmpFlow motor E30-150
   mecanum,  // MOTOR_TYPE value of 2 for small 12v mecanum motors
   falcon    // MOTOR_TYPE value of 3 for the falcon motors on the runningback
-} eMOTOR_TYPE;
+} MotorType;
 
-const char* getMotorTypeString(eMOTOR_TYPE type);
+const char* getMotorTypeString(MotorType type);
 
 #endif // MOTOR_TYPES_H

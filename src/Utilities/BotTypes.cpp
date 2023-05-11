@@ -1,7 +1,7 @@
 #include "BotTypes.h"
 
 // constexpr to be evaluated at compile time
-constexpr Pair<eBOT_TYPE, const char*> 
+constexpr Pair<BotType, const char*> 
 botTypeStrings[NUM_POSITIONS] = {
   { lineman,         "lineman"         },
   { receiver,        "receiver"        },
@@ -12,7 +12,7 @@ botTypeStrings[NUM_POSITIONS] = {
   { kicker,          "kicker"          }
 };
 
-const char* getBotTypeString(eBOT_TYPE type) {
+const char* getBotTypeString(BotType type) {
   return botTypeStrings[static_cast<int>(type)].value;
 }
 

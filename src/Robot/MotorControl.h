@@ -23,8 +23,8 @@ const int PWM_MAXDUTY = (1 << PWM_RES) - 1;
 // class MotorControl;
 
 // Enum for Increasing or Decreasing Flywheel Speed
-enum SPEED_STATUS {
-  increase, decrease
+enum SpeedStatus {
+  INCREASE, DECREASE
 };
 
 typedef struct servo {
@@ -37,13 +37,13 @@ static servo_t servos[MAX_NUM_MOTORS];
 static uint8_t ServoCount = 0;
 
 class MotorControl {
-private:
+  private:
     uint8_t motorIndex;  // index into the channel data for this servo
     int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
     int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
     uint32_t tempTimeon;
     uint16_t power2Duty(float power);
-public:
+  public:
     MotorControl();
     uint8_t attach(int pin);           
     uint8_t attach(int pin, int min, int max); // as above but also sets min and max values for writes. 

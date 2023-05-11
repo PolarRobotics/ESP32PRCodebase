@@ -13,7 +13,6 @@ class Lineman : public Robot {
   //   int test;
   public:
     Lineman();
-    // void initialize(); // Override virtual functions
     void action() override;
 };
 

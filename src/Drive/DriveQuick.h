@@ -6,12 +6,12 @@
 #include <Drive/Drive.h>
 
 class DriveQuick : public Drive {
-    private:
-        float falcon_motor_pwr[NUM_MOTORS];
-        float r, falconTurnPwr, max;
-    public:
-        // void generateMotionValues();
-        void update();
+  private:
+    float falcon_motor_pwr[NUM_MOTORS];
+    float r, falconTurnPwr, max;
+  public:
+    // void generateMotionValues();
+    void update();
 };
 
 #endif // DRIVE_QUICK_H

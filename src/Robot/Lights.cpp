@@ -4,7 +4,7 @@
 
 Lights::Lights() {
   currState = PAIRING;
-  isOffense = false;
+  this->isOffense = false;
 }
 
 void Lights::setupLEDS() {
@@ -69,20 +69,17 @@ void Lights::togglePosition() {
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-    if (isOffense) {
+    if (this->isOffense) {
       setLEDStatus(OFFENSE);
     }
     else {
       setLEDStatus(DEFENSE);
     }
-    isOffense = !isOffense;
+    this->isOffense = !this->isOffense;
     lastToggleTime = millis();
   }
 }
 
 int Lights::returnStatus() {
-  // TODO: should be able to refactor this to `return (int) status` or failing that `static_cast<int>(status)`
-  int status = 0;
-  status = currState;
-  return status;
+  return static_cast<int>(this->currState);
 }

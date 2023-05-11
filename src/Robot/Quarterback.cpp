@@ -36,9 +36,9 @@ Quarterback::Quarterback(
 void Quarterback::action() {
   // Update the bools within the class to see if the user wants to go up or down
   if (ps5.Up())
-    aim(QB_AIM::aimUp);
+    aim(QBAim::AIM_UP);
   else if (ps5.Down())
-    aim(QB_AIM::aimDown);
+    aim(QBAim::AIM_DOWN);
   
   // Toogle the Conveyor and Flywheels
   if (ps5.Square())
@@ -48,9 +48,9 @@ void Quarterback::action() {
   
   // Change the flywheel speed
   if(ps5.Triangle())
-    changeFWSpeed(SPEED_STATUS::increase);
+    changeFWSpeed(SpeedStatus::INCREASE);
   else if (ps5.Cross())
-    changeFWSpeed(SPEED_STATUS::decrease);
+    changeFWSpeed(SpeedStatus::DECREASE);
   
   // Update the aim and flywheels on quarterback to see if we need to stop or not
   update();
@@ -98,13 +98,13 @@ float Quarterback::rampFW(float requestedPower) {
 }
 
 // Aiming related functions
-void Quarterback::aim(QB_AIM dir) {
+void Quarterback::aim(QBAim dir) {
   // Debounce for button press
   if (millis() - lastDBElev >= DEBOUNCE_WAIT) {
     // Check which direction the user wants and turn the other direction off
     switch(dir) {
-      case aimUp: aimingUp = true; aimingDown = false; break;
-      case aimDown: aimingDown = true; aimingUp = false; break;
+      case AIM_UP: aimingUp = true; aimingDown = false; break;
+      case AIM_DOWN: aimingDown = true; aimingUp = false; break;
     }
 
     lastDBElev = millis();
@@ -164,13 +164,13 @@ void Quarterback::toggleConveyor() {
   }
 }
 
-void Quarterback::changeFWSpeed(SPEED_STATUS speed) {
+void Quarterback::changeFWSpeed(SpeedStatus speed) {
   // Debounce for button press
   if (millis() - lastDBFWChange >= DEBOUNCE_WAIT) {
     // Change the speed factor based on whether the user wants to increase or decrease (HARD CODED)
     switch(speed) {
-      case increase: arrayPos++; break;
-      case decrease: arrayPos--; break;
+      case INCREASE: arrayPos++; break;
+      case DECREASE: arrayPos--; break;
     }
 
     // Cap the arrayPos so it doesn't go out of bounds

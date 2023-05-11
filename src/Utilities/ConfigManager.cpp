@@ -31,9 +31,9 @@ void ConfigManager::read() {
     // read the bot name index   
     this->config->index = preferences.getUChar("bot_name_idx");
     // read the bot type
-    this->config->bot_type = (eBOT_TYPE)preferences.getUChar("bot_type");
+    this->config->bot_type = (BotType)preferences.getUChar("bot_type");
     // read the motor type
-    this->config->mot_type = (eMOTOR_TYPE)preferences.getUChar("motor_type");
+    this->config->mot_type = (MotorType)preferences.getUChar("motor_type");
     // close the bot_config namespace
     preferences.end();
 }
@@ -49,17 +49,17 @@ int ConfigManager::botIndex() {
 
 /**
  * @brief getBotType gets the bot type (linemen, receiver, runningback, etc...) from the configuration
- * @return eBOT_TYPE the stored bot type enumeration
+ * @return BotType the stored bot type enumeration
  */
-eBOT_TYPE ConfigManager::getBotType() {
+BotType ConfigManager::getBotType() {
     return this->config->bot_type;
 }
 
 /**
  * @brief getMotorType gets the motor type (small, bit, mecaummotor) from the configuration
- * @return eMOTOR_TYPE the stored motor type enumeration
+ * @return MotorType the stored motor type enumeration
  */
-eMOTOR_TYPE ConfigManager::getMotorType() {
+MotorType ConfigManager::getMotorType() {
     return this->config->mot_type;
 }
 
@@ -148,7 +148,7 @@ bool ConfigManager::setConfig(uint8_t botindex) {
  * @return true configuration was successfully applied
  * @return false configuration check failed
  */
-bool ConfigManager::setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype) {
+bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype) {
   if (this->writable) {
     this->config->index = botindex;
     this->config->bot_type = bottype;
