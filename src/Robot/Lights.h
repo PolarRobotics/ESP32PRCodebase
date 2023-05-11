@@ -12,11 +12,7 @@
 // TODO: refactor to singleton paradigm instead of using extern function for instance of LEDs https://refactoring.guru/design-patterns/singleton/cpp/example#example-0
 
 // LED Variables
-bool tackled = false;
-static unsigned long tackleTime = 0;
-static const int switchTime = 1000; // KEEP THIS HERE!!!
-static unsigned long CURRENTTIME;
-static int ledStatus = 0;
+
 
 class Lights {
 private:
@@ -46,6 +42,12 @@ public:
   void togglePosition();
   int returnStatus();
   void pairState(bool state);
+
+  bool tackled = false;
+  unsigned long tackleTime = 0;
+  const int switchTime = 1000; // KEEP THIS HERE!!!
+  // unsigned long CURRENTTIME;
+  int ledStatus = 0;
 };
 
 #endif // LIGHTS_H

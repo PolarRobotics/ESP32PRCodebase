@@ -171,11 +171,11 @@ void loop() {
     if (robotType != lineman) {
       if (lights->returnStatus() == lights->OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights->setLEDStatus(Lights::TACKLED);
-        tackleTime = millis();
-        tackled = true;
-      } else if ((millis() - tackleTime) >= switchTime && tackled == true) {
+        lights->tackleTime = millis();
+        lights->tackled = true;
+      } else if ((millis() - lights->tackleTime) >= lights->switchTime && lights->tackled == true) {
         lights->setLEDStatus(Lights::OFFENSE);
-        tackled = false;
+        lights->tackled = false;
       }
     }
 
