@@ -9,11 +9,11 @@ Kicker::Kicker(uint8_t kickerPin) {
 void Kicker::action() {
   // Control the motor on the kicker
   if (ps5.Triangle())
-      turnForward();
+    turnForward();
   else if (ps5.Cross())
-      turnReverse();
+    turnReverse();
   else
-      stop();
+    stop();
 }
 
 void Kicker::enable() {
@@ -33,16 +33,19 @@ void Kicker::test() {
 }
 
 void Kicker::turnForward() {
-  if (enabled)
+  if (enabled) {
     windupMotor.write(-0.5);
+  }
 }
 
 void Kicker::turnReverse() {
-  if (enabled)
+  if (enabled) {
     windupMotor.write(0.5);
+  }
 }
 
 void Kicker::stop() {
-  if (enabled)
+  if (enabled) {
     windupMotor.write(0);
+  }
 }
