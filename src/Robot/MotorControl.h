@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MOTOR_CONTROL__
-#define __MOTOR_CONTROL__
+#ifndef MOTOR_CONTROL_H
+#define MOTOR_CONTROL_H
 
 #include <Arduino.h>
 
@@ -47,4 +47,4 @@ public:
     void writelow();
 };
 
-#endif // !__MOTOR_CONTROL__
+#endif // MOTOR_CONTROL_H

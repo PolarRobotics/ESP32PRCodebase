@@ -1,5 +1,5 @@
-#ifndef _MOTOR_TYPES_H_
-#define _MOTOR_TYPES_H_
+#ifndef MOTOR_TYPES_H
+#define MOTOR_TYPES_H
 
 #define NUM_MOTOR_TYPES 4
 
@@ -14,4 +14,4 @@ typedef enum {
 
 const char* getMotorTypeString(eMOTOR_TYPE type);
 
-#endif /* _MOTOR_TYPES_H_ */
+#endif // MOTOR_TYPES_H

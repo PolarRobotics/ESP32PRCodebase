@@ -1,7 +1,8 @@
 // void updateLEDS(BOT_STATE status); //private
 // void setRobotState(BOT_STATE state);
-#ifndef LIGHTS_H_
-#define LIGHTS_H_
+#ifndef LIGHTS_H
+#define LIGHTS_H
+
 #include <FastLED.h>
 #include <PolarRobotics.h>
 
@@ -131,4 +132,4 @@ int Lights::returnStatus() {
     return status;
 }
 
-#endif // Lights.h
+#endif // LIGHTS_H

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef DRIVE_H_
-#define DRIVE_H_
+#ifndef DRIVE_H
+#define DRIVE_H
 
 #include <Arduino.h>
 #include "PolarRobotics.h"
@@ -125,4 +125,4 @@ public:
     void printDebugInfo();
 };
 
-#endif /* DRIVE_H */
+#endif // DRIVE_H
