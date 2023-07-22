@@ -57,9 +57,10 @@ int enc_cntr = 0;
 // }
 
 #define NUM_ENCODER_EDGES 4
-// ENCODER_MOVEMENT_THRESHOLD must be larger than a reasonable maximum revolution period of the wheel in milliseconds
-#define ENCODER_MOVEMENT_THRESHOLD_MS 1000
-#define RESOLUTION_DIVISION_FACTOR 48
+// ENCODER_MOVEMENT_THRESHOLD must be larger than a reasonable maximum revolution period of the wheel in microseconds
+#define ENCODER_MOVEMENT_THRESHOLD_US 100000
+#define MICROSECONDS_PER_MINUTE 60000000
+#define ENCODER_PULSE_PER_REV 48
 
 volatile unsigned long left_enc_A_edges[NUM_ENCODER_EDGES];
 volatile unsigned long left_enc_B_edges[NUM_ENCODER_EDGES];
@@ -70,9 +71,18 @@ volatile unsigned long left_enc_B_last_updated = 0L;
 volatile int left_enc_A_cntr = 0;
 volatile int left_enc_B_cntr = 0;
 
-void update_period_arr(volatile unsigned long* edgeArr, volatile unsigned long* periodArr) {
+void update_period_arr(volatile unsigned long* edgeArr, 
+                       volatile unsigned long* periodArr, 
+                       volatile unsigned long lastUpdateTime) {
   for (int i = 0; i < NUM_ENCODER_EDGES - 1; i++) {
-    periodArr[i] = edgeArr[i + 1] - edgeArr[i];
+    if (lastUpdateTime > micros()) {
+      periodArr[i] = LONG_MAX - edgeArr[i] + edgeArr[i + 1];
+    } else if (micros() - lastUpdateTime > (2 * ENCODER_MOVEMENT_THRESHOLD_US)) {
+      // periodArr[i] = MICROSECONDS_PER_MINUTE / ENCODER_PULSE_PER_REV;
+      periodArr[i] = edgeArr[NUM_ENCODER_EDGES - 1] - edgeArr[NUM_ENCODER_EDGES - 2];
+    } else {
+      periodArr[i] = edgeArr[i + 1] - edgeArr[i];
+    }
   }
 }
 
@@ -82,11 +92,6 @@ unsigned long enc_avg_period(volatile unsigned long* periodArr) {
     total += periodArr[i];
   }
   return total / (NUM_ENCODER_EDGES - 1);
-}
-
-unsigned long enc_avg_period(volatile unsigned long* edgeArr, volatile unsigned long* periodArr) {
-  update_period_arr(edgeArr, periodArr);
-  return enc_avg_period(periodArr);
 }
 
 void update_edge_arr(volatile unsigned long* arr, unsigned long newVal) {
@@ -119,32 +124,22 @@ void print_period_arr(volatile unsigned long* arr) {
 }
 
 void left_enc_A_tick() {
-  if (left_enc_A_cntr == RESOLUTION_DIVISION_FACTOR) {
-    update_edge_arr(left_enc_A_edges, millis());
-    update_period_arr(left_enc_A_edges, left_enc_A_periods);
-    left_enc_A_last_updated = millis();
-    left_enc_A_cntr = 0;
-  } else {
-    left_enc_A_cntr++;
-  }
+  update_edge_arr(left_enc_A_edges, micros());
+  update_period_arr(left_enc_A_edges, left_enc_A_periods, left_enc_A_last_updated);
+  left_enc_A_last_updated = micros();
 }
 
 void left_enc_B_tick() {
-  if (left_enc_B_cntr == RESOLUTION_DIVISION_FACTOR) {
-    update_edge_arr(left_enc_B_edges, millis());
-    update_period_arr(left_enc_B_edges, left_enc_B_periods);
-    left_enc_B_last_updated = millis();
-    left_enc_B_cntr = 0;
-  } else {
-    left_enc_B_cntr++;
-  }
+  update_edge_arr(left_enc_B_edges, micros());
+  update_period_arr(left_enc_B_edges, left_enc_B_periods, left_enc_B_last_updated);
+  left_enc_B_last_updated = micros();
 }
 
 int get_left_rpm() {
-  if (millis() - left_enc_A_last_updated > ENCODER_MOVEMENT_THRESHOLD_MS) {
+  if (micros() - left_enc_A_last_updated > ENCODER_MOVEMENT_THRESHOLD_US) {
     return 0;
   } else {
-    return 60000 / enc_avg_period(left_enc_A_periods);
+    return (MICROSECONDS_PER_MINUTE / ENCODER_PULSE_PER_REV) / enc_avg_period(left_enc_A_periods);
   }
 }
 
@@ -275,14 +270,18 @@ void loop() {
     // print_edge_arr(left_enc_A_edges);
     // Serial.print(left_enc_A_cntr);
     // print_period_arr(left_enc_A_periods);
-    Serial.print(enc_avg_period(left_enc_A_edges, left_enc_A_periods));
+    Serial.print(enc_avg_period(left_enc_A_periods));
+    // Serial.print(left_enc_A_last_updated);
     Serial.print(F(" | enc_B: "));
     // Serial.print(left_enc_B_cntr);
     // print_edge_arr(left_enc_B_edges);
     // print_period_arr(left_enc_B_periods);
-    Serial.print(enc_avg_period(left_enc_B_edges, left_enc_B_periods));
+    Serial.print(enc_avg_period(left_enc_B_periods));
+    // Serial.print(left_enc_B_last_updated);
     Serial.print(F(" | rpm: "));
     Serial.print(get_left_rpm());
+    // Serial.print(F(" | micros: "));
+    // Serial.print(micros());
     Serial.println();
 //   if (enc_cntr = 20) {
     // Temp single encoder code
