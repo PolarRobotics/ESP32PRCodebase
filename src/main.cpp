@@ -44,6 +44,110 @@ MotorType motorType;
 // Config
 ConfigManager config;
 
+// Temp Single Encoder Code
+int enc_cntr = 0;
+
+// TaskHandle_t encoderTask;
+
+// void encoderLoop(void* pvParameters) {
+//   for (;;) {
+//     Serial.print(F("Core: "));
+//     Serial.println(xPortGetCoreID());
+//   }
+// }
+
+#define NUM_ENCODER_EDGES 4
+// ENCODER_MOVEMENT_THRESHOLD must be larger than a reasonable maximum revolution period of the wheel in milliseconds
+#define ENCODER_MOVEMENT_THRESHOLD_MS 1000
+#define RESOLUTION_DIVISION_FACTOR 48
+
+volatile unsigned long left_enc_A_edges[NUM_ENCODER_EDGES];
+volatile unsigned long left_enc_B_edges[NUM_ENCODER_EDGES];
+volatile unsigned long left_enc_A_periods[NUM_ENCODER_EDGES - 1];
+volatile unsigned long left_enc_B_periods[NUM_ENCODER_EDGES - 1];
+volatile unsigned long left_enc_A_last_updated = 0L;
+volatile unsigned long left_enc_B_last_updated = 0L;
+volatile int left_enc_A_cntr = 0;
+volatile int left_enc_B_cntr = 0;
+
+void update_period_arr(volatile unsigned long* edgeArr, volatile unsigned long* periodArr) {
+  for (int i = 0; i < NUM_ENCODER_EDGES - 1; i++) {
+    periodArr[i] = edgeArr[i + 1] - edgeArr[i];
+  }
+}
+
+unsigned long enc_avg_period(volatile unsigned long* periodArr) {
+  unsigned long total = 0L;
+  for(int i = 0; i < NUM_ENCODER_EDGES - 1; i++) {
+    total += periodArr[i];
+  }
+  return total / (NUM_ENCODER_EDGES - 1);
+}
+
+unsigned long enc_avg_period(volatile unsigned long* edgeArr, volatile unsigned long* periodArr) {
+  update_period_arr(edgeArr, periodArr);
+  return enc_avg_period(periodArr);
+}
+
+void update_edge_arr(volatile unsigned long* arr, unsigned long newVal) {
+  for(int i = 1; i < NUM_ENCODER_EDGES; i++) {
+    arr[i - 1] = arr[i];
+  }
+  arr[NUM_ENCODER_EDGES - 1] = newVal;
+}
+
+void print_edge_arr(volatile unsigned long* arr) {
+  Serial.print(F("[ "));
+  for(int i = 0; i < NUM_ENCODER_EDGES; i++) {
+    Serial.print(arr[i]);
+    if (i < NUM_ENCODER_EDGES - 1) {
+      Serial.print(F(", "));
+    }
+  }  
+  Serial.print(F(" ]"));
+}
+
+void print_period_arr(volatile unsigned long* arr) {
+  Serial.print(F("[ "));
+  for(int i = 0; i < NUM_ENCODER_EDGES - 1; i++) {
+    Serial.print(arr[i]);
+    if (i < NUM_ENCODER_EDGES - 2) {
+      Serial.print(F(", "));
+    }
+  }  
+  Serial.print(F(" ]"));
+}
+
+void left_enc_A_tick() {
+  if (left_enc_A_cntr == RESOLUTION_DIVISION_FACTOR) {
+    update_edge_arr(left_enc_A_edges, millis());
+    update_period_arr(left_enc_A_edges, left_enc_A_periods);
+    left_enc_A_last_updated = millis();
+    left_enc_A_cntr = 0;
+  } else {
+    left_enc_A_cntr++;
+  }
+}
+
+void left_enc_B_tick() {
+  if (left_enc_B_cntr == RESOLUTION_DIVISION_FACTOR) {
+    update_edge_arr(left_enc_B_edges, millis());
+    update_period_arr(left_enc_B_edges, left_enc_B_periods);
+    left_enc_B_last_updated = millis();
+    left_enc_B_cntr = 0;
+  } else {
+    left_enc_B_cntr++;
+  }
+}
+
+int get_left_rpm() {
+  if (millis() - left_enc_A_last_updated > ENCODER_MOVEMENT_THRESHOLD_MS) {
+    return 0;
+  } else {
+    return 60000 / enc_avg_period(left_enc_A_periods);
+  }
+}
+
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
 void onConnection();
@@ -127,6 +231,32 @@ void setup() {
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
+
+  // temp single encoder test code
+  // pins:
+  // 34: Ch A
+  // 35: Ch B
+  // 36/VP: Ch X
+  // Vin - 5V
+  // GND - GND
+  pinMode(34, INPUT);
+  pinMode(35, INPUT);
+//   pinMode(36, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(34), left_enc_A_tick, RISING);
+  attachInterrupt(digitalPinToInterrupt(35), left_enc_B_tick, RISING);
+
+
+  // Creates task from function `encoderLoop` with name "EncoderTask"
+  // Stack size 10000 memory words
+  // Paramter NULL
+  // Priority 0 (lowest)
+  // Task handle `&encoderTask`
+  // On core ~~0~~ 1
+//   xTaskCreatePinnedToCore(encoderLoop, "EncoderTask", 10000, NULL, 0, &encoderTask, 1);
+
+  //! To delete task:
+  // vTaskDelete(encoderTask);
 }
 
 /*
@@ -140,6 +270,37 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
+
+    Serial.print(F("enc_A: "));
+    // print_edge_arr(left_enc_A_edges);
+    // Serial.print(left_enc_A_cntr);
+    // print_period_arr(left_enc_A_periods);
+    Serial.print(enc_avg_period(left_enc_A_edges, left_enc_A_periods));
+    Serial.print(F(" | enc_B: "));
+    // Serial.print(left_enc_B_cntr);
+    // print_edge_arr(left_enc_B_edges);
+    // print_period_arr(left_enc_B_periods);
+    Serial.print(enc_avg_period(left_enc_B_edges, left_enc_B_periods));
+    Serial.print(F(" | rpm: "));
+    Serial.print(get_left_rpm());
+    Serial.println();
+//   if (enc_cntr = 20) {
+    // Temp single encoder code
+    // Serial.print(F("ENC_A: "));
+    // Serial.print(digitalRead(34));
+    // Serial.print(F(", ENC_B: "));
+    // Serial.print(digitalRead(35));
+    // Serial.print(F(", ENC_X: "));
+    // Serial.println(digitalRead(36));
+    // enc_cntr = 0;
+//   } else {
+//     enc_cntr++;
+//   }
+
+    // Serial.print(F("Core: "));
+    // Serial.println(xPortGetCoreID());
+
+
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
