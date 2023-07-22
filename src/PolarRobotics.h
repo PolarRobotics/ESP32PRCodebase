@@ -35,6 +35,13 @@
 // receiver, tackled, etc...
 #define TACKLE_PIN 12
 
+/** 
+ * @brief GLOBAL Timestep or tick, everytime a command is updated
+ * this will make things simpler for us when performing time-critical tasks
+ * @param GLOBAL_TIMESTEP time in ms
+*/
+#define GLOBAL_TIMESTEP 20
+
 enum BOT_STATE {
   PAIRING,
   CONNECTED,

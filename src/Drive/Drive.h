@@ -14,8 +14,7 @@
 
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
-// rate of change of power with respect to time when accelerating %power/10th of sec
-// #define ACCELERATION_RATE .0375f // probably lower for runningback
+// rate of change of power with respect to time when accelerating
 #define ACCELERATION_RATE 0.0375f // probably lower for runningback
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking

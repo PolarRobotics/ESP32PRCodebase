@@ -213,6 +213,19 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
 
 
 /**
+ * @brief 
+ * 
+ * Design breakdown of ramp, want to pass in an acceleration rate, in SI units [mot%/s^2] (can also ramp any #)
+ * Ideally we want ramp to change the velocity every clock cycle, 
+ * so the acceleration rate is going to need to be relatively small
+ * 
+ * 
+ * 
+ * 
+ * Mathematical model: 
+ */
+
+/**
  * @brief ramp slowly increases the motor power each iteration of the main loop,
  * the period and amount of increase is determined by the constants TIME_INCREMENT and ACCELERATION_RATE
  * this function is critical in ensuring the bot has proper traction with the floor,
@@ -227,7 +240,7 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
  * @authors Max Phillips, Grant Brautigam
  * Created: early 2022
  *
- * @param requestedPower
+ * @param requestedPower the value the function will increase to
  * @param mtr pass 0 for left and 1 for right, used to help ease with storing values for multiple motors
  * @return float
  */
@@ -245,29 +258,21 @@ float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
             //currentRampPower[mtr] = 0;
             lastRampTime[mtr] = millis();
         }
-        else if (abs(requestedPower - currentRampPower[mtr]) < accelRate) { // if the input is effectively at the current power
+        // if the input is effectively at the current power
+        else if (abs(requestedPower - currentRampPower[mtr]) < accelRate) {
+            
             return requestedPower;
         }
-        // if we need to increase speed and we are going forward
-        else if (requestedPower > currentRampPower[mtr] && requestedPower > 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] + accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to decrease speed and we are going forward
-        else if (requestedPower < currentRampPower[mtr] && requestedPower > 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] - accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to increase speed and we are going in reverse
-        else if (requestedPower < currentRampPower[mtr] && requestedPower < 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] - accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to decrease speed and we are going in reverse
-        else if (requestedPower > currentRampPower[mtr] && requestedPower < 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] + accelRate;
-            lastRampTime[mtr] = millis();
-        }
+        
+        // The direction variable is calculated by comparing requestedPower with currentRampPower[mtr]. 
+        // If requestedPower is greater, direction will be 1
+        // if requestedPower is smaller, direction will be -1 
+        // otherwise, direction will be 0 (this should never happen)
+        int8_t direction = (requestedPower > currentRampPower[mtr]) - (requestedPower < currentRampPower[mtr]);
+
+        // updates the current power with the new signed accel rate
+        currentRampPower[mtr] += direction * accelRate;
+        lastRampTime[mtr] = millis();
     }
 
     return currentRampPower[mtr];
