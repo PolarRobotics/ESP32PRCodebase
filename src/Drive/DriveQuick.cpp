@@ -18,6 +18,8 @@ Features:
  * @brief 
  * prototype turning model: https://www.desmos.com/calculator/pjyj3tjwym
  * 
+ * whitepaper: https://www.cs.columbia.edu/~allen/F17/NOTES/icckinematics.pdf
+ * 
  * some things to note: for this turning model, going full forward, r = 1, both motors get set to 0.707 (sqrt(2))
  * and when you are tank turning left or right, that motor gets set to 1, so turning would be faster than
  * going forward, this math model may need some tweaking, but this is something we can test for the future 
@@ -34,6 +36,14 @@ void DriveQuick::generateMotionValues() {
     // set both motor powers
     falcon_motor_pwr[0] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
     falcon_motor_pwr[1] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
+
+    // l: distance between wheels
+    // r: is the distance between center of bot and center of rotation
+    // omega: rate of rotation
+    
+    // V_r = omega(R + l/2) (1)
+    // V_l = omega(R − l/2) (2)
+
 }
 
 /**
