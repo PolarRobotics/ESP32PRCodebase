@@ -332,6 +332,11 @@ void Drive::emergencyStop() {
     // M1.write(0); M2.write(0);
 }
 
+void Drive::stepInput() {
+    requestedMotorPower[0] = 1;
+    requestedMotorPower[1] = 1;
+}
+
 /**
  * prints the internal variables to the serial monitor in a clean format,
  * this function exists out of pure laziness to not have to comment out all the print statments
@@ -381,16 +386,16 @@ void Drive::printDebugInfo() {
 */
 void Drive::update() {
     // Generate turning motion
-    generateMotionValues();
+    // generateMotionValues();
 
-    // get the ramp value
-    requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
-    requestedMotorPower[1] = ramp(requestedMotorPower[1], 1);
+    // // get the ramp value
+    // requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
+    // requestedMotorPower[1] = ramp(requestedMotorPower[1], 1);
 
-    // Set the ramp value to a function, needed for generateMotionValues
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
-    
+    // // Set the ramp value to a function, needed for generateMotionValues
+    // lastRampPower[0] = requestedMotorPower[0];
+    // lastRampPower[1] = requestedMotorPower[1];
+
     M1.write(requestedMotorPower[0]);
     M2.write(requestedMotorPower[1]);
 }

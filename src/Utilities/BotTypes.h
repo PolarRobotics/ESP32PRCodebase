@@ -67,7 +67,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 2,  "pi",       lineman,     small  },  // 2:  pi
   { 3,  "rho",      lineman,     small  },  // 3:  ρ
   { 4,  "2.72",     lineman,     big    },  // 4:  2.72
-  { 5,  ":)",       lineman,     small  },  // 5:  :)
+  { 5,  ":)",       lineman,     big  },  // 5:  :)
   { 6,  ">=",       lineman,     big    },  // 6:  >=
   { 7,  "32.2",     receiver,    big    },  // 7:  32.2
   { 8,  "9.8",      receiver,    small  },  // 8:  9.8

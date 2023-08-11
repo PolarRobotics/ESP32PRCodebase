@@ -266,6 +266,9 @@ void setup() {
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
 
+    Serial.print(F(" | micros: "));
+    Serial.print(micros());
+
     Serial.print(F("enc_A: "));
     // print_edge_arr(left_enc_A_edges);
     // Serial.print(left_enc_A_cntr);
@@ -280,8 +283,9 @@ void loop() {
     // Serial.print(left_enc_B_last_updated);
     Serial.print(F(" | rpm: "));
     Serial.print(get_left_rpm());
-    // Serial.print(F(" | micros: "));
-    // Serial.print(micros());
+    
+    Serial.print(F(" | leftmpwr: "));
+    Serial.print(drive->getReqMotorPwr(0));
     Serial.println();
 //   if (enc_cntr = 20) {
     // Temp single encoder code
@@ -327,6 +331,9 @@ void loop() {
     if (ps5.Options()) {
       lights.togglePosition();
     }
+
+    if (ps5.Circle())
+      drive->stepInput();
 
     if (robotType != lineman) {
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {

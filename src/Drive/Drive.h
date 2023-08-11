@@ -122,6 +122,7 @@ class Drive {
     float getReqMotorPwr(uint8_t mtr);
     void setReqMotorPwr(float power, uint8_t mtr);
     void setLastRampPwr(float power, uint8_t mtr);
+    void stepInput();
     void emergencyStop();
     float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();

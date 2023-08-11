@@ -16,11 +16,11 @@ void setup() {
   Serial.println(F("Writing Bot Type\n"));
 
   //! If you want to use a predefined robot from BotTypes.h, declare the index here:
-  uint8_t index = 0; // also handles bot name index
+  uint8_t index = 5; // also handles bot name index
   
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
-  BotType bot_type = lineman; 
-  MotorType motor_type = big;
+  // BotType bot_type = receiver; 
+  // MotorType motor_type = big;
 
   //* Write standard bot configuration from BotTypes.botConfigArray
   if (config.setConfig(index))
