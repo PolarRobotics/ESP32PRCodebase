@@ -4,9 +4,8 @@
 #define DRIVE_H_
 
 #include <Arduino.h>
+#include <MotorControl.h>
 #include "PolarRobotics.h"
-#include "Robot/MotorControl.h"
-
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -78,8 +77,8 @@
 #define MECANUM_SLOW_PCT   0.3
 
 // BSN for the falcon motors used on the runningback
-#define FALCON_BOOST_PCT  0.5 // 0.8
-#define FALCON_NORMAL_PCT 0.3 // 0.5
+#define FALCON_BOOST_PCT  1 // 0.8
+#define FALCON_NORMAL_PCT 0.5 // 0.5
 #define FALCON_SLOW_PCT   0.1 // 0.3
 
 #define BRAKE_BUTTON_PCT 0

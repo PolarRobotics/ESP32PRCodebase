@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Drive/Drive.h>
+#include <MotorControl.h>
 #include "DriveQuick.h"
 
 /*
@@ -35,6 +36,15 @@ Features:
 //     falcon_motor_pwr[0] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
 //     falcon_motor_pwr[1] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
 // }
+
+/**
+ * @brief needed to calibrate the falcon motors, we need to send a 100% pwm signal to 
+ * be able to calibrate the max speed
+ * 
+ */
+void DriveQuick::setMaxPWR() {
+
+}
 
 /**
  * @brief updates the motors after calling all the functions to generate
