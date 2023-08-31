@@ -33,7 +33,7 @@
 #include <ps5Controller.h>
 #include <Preferences.h> // to store address of controller on flash
 #include "pairing.h" // also includes PolarRobotics.h
-#include <Robot/builtinLED.h> // pairing routine flashes LED to signify stages of pairing
+#include <Robot/builtInLED.h> // pairing routine flashes LED to signify stages of pairing
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
