@@ -38,6 +38,11 @@
 #define TACKLE_PIN 13
 #endif
 
+// pairing jumper pin
+// jump HIGH to activate pairing discovery
+// otherwise robot will only connect to last controller
+#define PAIRING_PIN 23
+
 
 // TODO: Some of our enums are capitalized, some are not. We should probably standardize this.
 
