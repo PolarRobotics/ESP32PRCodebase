@@ -78,7 +78,7 @@ float Drive::getFwdRev() {
 }
 
 float Drive::getTurn() {
-    return -stickTurn;
+    return stickTurn;
 }
 
 /**

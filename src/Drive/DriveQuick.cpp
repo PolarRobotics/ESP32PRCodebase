@@ -24,27 +24,27 @@ Features:
  * going forward, this math model may need some tweaking, but this is something we can test for the future 
  *  
  */
-// void DriveQuick::generateMotionValues() {
-//     // generate the motion vector in polar form
-//     this->r = hypot(getFwdRev(), getTurn());
-//     this->falconTurnPwr = atan2(getFwdRev(), getTurn());
+void DriveQuick::generateMotionValues() {
+    // generate the motion vector in polar form
+    this->r = hypot(getFwdRev(), getTurn());
+    this->falconTurnPwr = atan2(getFwdRev(), getTurn());
 
-//     // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
-//     this->r = constrain(this->r, 0, 1) * getBSN(); 
+    // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
+    this->r = constrain(this->r, 0, 1) * getBSN(); 
     
-//     // set both motor powers
-//     falcon_motor_pwr[0] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
-//     falcon_motor_pwr[1] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
-// }
-
-/**
- * @brief needed to calibrate the falcon motors, we need to send a 100% pwm signal to 
- * be able to calibrate the max speed
- * 
- */
-void DriveQuick::setMaxPWR() {
-
+    // set both motor powers
+    falcon_motor_pwr[0] = r * cos(this->falconTurnPwr - (PI/4)); // calculate turning for left wheel
+    falcon_motor_pwr[1] = r * sin(this->falconTurnPwr - (PI/4)); // calculate turning for right wheel
 }
+
+// /**
+//  * @brief needed to calibrate the falcon motors, we need to send a 100% pwm signal to 
+//  * be able to calibrate the max speed
+//  * 
+//  */
+// void DriveQuick::setMaxPWR() {
+
+// }
 
 /**
  * @brief updates the motors after calling all the functions to generate
@@ -63,8 +63,10 @@ void DriveQuick::update() {
     // calculate the ramped power
     // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
     // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
-    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0, RB_ACCELERATION_RATE);
-    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1, RB_ACCELERATION_RATE);
+    // falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0, RB_ACCELERATION_RATE);
+    // falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1, RB_ACCELERATION_RATE);
 
     // set the last ramp power, used in ramp
     setLastRampPwr(falcon_motor_pwr[0], 0);
@@ -78,5 +80,27 @@ void DriveQuick::update() {
     // note: adding a negative, because we cant change the motor direction in hardware
     M1.write(falcon_motor_pwr[0]);
     M2.write(-falcon_motor_pwr[1]); 
+}
+
+/**
+ * prints the internal variables to the serial monitor in a clean format,
+ * this function exists out of pure laziness to not have to comment out all the print statments
+ * @author
+ * Updated:
+*/
+void DriveQuick::printDebugInfo() {
+    Serial.print(F("L_Hat_Y: "));
+    Serial.print(stickForwardRev);
+    Serial.print(F("  R_HAT_X: "));
+    Serial.print(stickTurn);
+
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
+
+    Serial.print(F("  L_MotPwr: "));
+    Serial.print(falcon_motor_pwr[0]);
+    Serial.print(F("  R_MotPwr: "));
+    Serial.print(falcon_motor_pwr[1]);
+    Serial.print(F("\n"));
 }
 
