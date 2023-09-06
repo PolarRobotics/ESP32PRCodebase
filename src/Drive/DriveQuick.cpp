@@ -33,8 +33,8 @@ void DriveQuick::generateMotionValues() {
     this->r = constrain(this->r, 0, 1) * getBSN(); 
     
     // set both motor powers
-    falcon_motor_pwr[0] = r * cos(this->falconTurnPwr - (PI/4)); // calculate turning for left wheel
-    falcon_motor_pwr[1] = r * sin(this->falconTurnPwr - (PI/4)); // calculate turning for right wheel
+    falcon_motor_pwr[0] = r * cos(this->falconTurnPwr + (PI/4)); // calculate turning for left wheel
+    falcon_motor_pwr[1] = r * sin(this->falconTurnPwr + (PI/4)); // calculate turning for right wheel
 }
 
 // /**
