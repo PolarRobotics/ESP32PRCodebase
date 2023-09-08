@@ -16,6 +16,13 @@
 #include "Pairing/pairing.h"
 #include <Robot/builtInLED.h>
 
+// Fix linker errors with build environments not including main.cpp
+#ifndef LIGHTS_H
+void extUpdateLEDs() {}
+#endif
+
+// Lights robotLED;
+
 /**
  * @brief onConnection: Function to be called on controller connect
  */
