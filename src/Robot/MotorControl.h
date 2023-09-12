@@ -50,6 +50,24 @@ class MotorControl {
     void write(float pwr);
     void displayPinInfo();
     void writelow();
+    void readEncoder();
+    void printSpeed();
+    int calcSpeed(int current_count);
+    int addInt(int x, int y);
+
+    // for use in void readEncoder()
+    int a_channel = 35;
+    int b_channel = 34;
+    int encoderACount = 0;
+    int b_channel_state = 0;
+    int rollerover = 2048;
+  
+    // For use in int calcSpeed()
+    int prev_current_count = 0;
+    int rolleroverthreshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+    unsigned long current_time = 0;
+    unsigned long prev_current_time = 0; 
+    float omega = 0;
 };
 
 #endif // MOTOR_CONTROL_H

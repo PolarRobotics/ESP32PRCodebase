@@ -1,5 +1,19 @@
 #include <Arduino.h>
-#include "Robot/MotorControl.h"
+#include <ps5Controller.h> // ESP PS5 library
+
+#include <Robot/Lights.h>
+#include <Pairing/pairing.h>
+#include <Drive/Drive.h> // not 100% necessary 
+
+Drive DriveMotors;
+
+Lights robotLED;
+
+extern void extUpdateLEDs();
+// Prototypes for Controller Callbacks
+// Implementations will be located at the bottom of this file
+void onConnection();
+void onDisconnect();
 
 /**
  * @brief 
@@ -130,6 +144,97 @@ void MotorControl::writelow() {
 }
 
 
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+ * 
+ * 
+*/
+void MotorControl::readEncoder() {
+
+  b_channel_state = digitalRead(b_channel);
+
+  if (b_channel_state == 1) {
+    if (encoderACount >= rollerover) {
+      encoderACount = 0;
+    } else {
+      encoderACount = encoderACount + 1;
+    }
+      
+  } else {
+    if (encoderACount == 0) {
+      encoderACount = rollerover;
+    } else {
+      encoderACount = encoderACount - 1;
+    }
+      
+  }
+}
+
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+ * 
+ * 
+*/
+int MotorControl::calcSpeed(int current_count) {
+  
+  current_time = millis();
+  
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_count) >= rolleroverthreshold) {
+    if ((current_count-rolleroverthreshold)>0) {
+      omega = float ((current_count-rollerover)-prev_current_count)/(current_time-prev_current_time);
+    } else {
+      omega = float ((current_count+rollerover)-prev_current_count)/(current_time-prev_current_time);
+    }
+  } else {
+    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+  }
+
+  prev_current_count = current_count;
+  prev_current_time = current_time;
+
+  return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+
+}
+
+/**
+ * @brief Adds.. integers..
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * @param int x an integer
+ * @param int y another integer
+*/
+int MotorControl::addInt(int x, int y) {
+  return x + y;
+}
+
+/**
+ * @brief Prints the speed that is calculated from int MotorControl::calcSpee(int current_count)
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+*/
+void MotorControl::printSpeed(){
+  Serial.begin(115200);
+
+  int result = addInt(2, 3);
+
+  ps5.attachOnConnect(onConnection);
+  ps5.attachOnDisconnect(onDisconnect);
+
+  pinMode(a_channel, INPUT_PULLUP);
+  pinMode(b_channel, INPUT);
+
+  attachInterrupt(a_channel, readEncoder, RISING);
+}
+
+
 // Old code:
 
 // /**
@@ -164,3 +269,5 @@ void MotorControl::writelow() {
 //     // digitalWrite(motorPins[1], LOW);
 //     // delayMicroseconds(2000 - Convert2PWMVal(requestedMotorPower[1]) - 40); //-170
 // }
+
+
