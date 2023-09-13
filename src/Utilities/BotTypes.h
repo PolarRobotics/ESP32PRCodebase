@@ -9,7 +9,6 @@
 
 #define NUM_POSITIONS 7 // number of members of eBOT_TYPE
 
-// TODO: Merge this into Robot.h (and rename?)
 /** BotType
  * enum for the possible positions a robot can have on the field
  * NOTE: when this list is updated, make sure to update the botTypeStrings array with a corresponding string
@@ -69,8 +68,8 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 4,  "2.72",     lineman,     big    },  // 4:  2.72
   { 5,  ":)",       lineman,     small  },  // 5:  :)
   { 6,  ">=",       lineman,     big    },  // 6:  >=
-  { 7,  "32.2",     receiver,    big    },  // 7:  32.2
-  { 8,  "9.8",      receiver,    small  },  // 8:  9.8
+  { 7,  "32.2",     receiver,    small  },  // 7:  32.2
+  { 8,  "9.8",      receiver,    big    },  // 8:  9.8
   { 9,  "c",        runningback, falcon },  // 9:  c
   { 10, "phi",      center,      small  },  // 10: Φ
   { 11, "inf",      quarterback, small  },  // 11: ∞

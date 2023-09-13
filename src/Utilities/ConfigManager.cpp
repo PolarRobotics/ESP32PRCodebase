@@ -122,17 +122,18 @@ bool ConfigManager::write(bot_config_t *cfg) {
  * @brief sets the preset configuration from botConfigArray 
  * to be stored to the configuration and writes it to EEPROM 
  * 
- * @param botindex index of the preset configuration array to set to the bot
+ * @param botIndex index of the preset configuration array to set to the bot
  * @return true if configuration was successfully applied;
  * @return false if configuration check failed or index out of range of array
  */
-bool ConfigManager::setConfig(uint8_t botindex) {
+bool ConfigManager::setConfig(uint8_t botIndex) {
     // validate bot index
-    if (botindex < 0 || botindex > (NUM_BOTS - 1) || !this->writable) return false;
+    if (botIndex < 0 || botIndex > (NUM_BOTS - 1) || !this->writable) return false;
     
-    this->config->index = botConfigArray[botindex].index;
-    this->config->bot_type = botConfigArray[botindex].bot_type;
-    this->config->mot_type = botConfigArray[botindex].mot_type;
+    this->config->index = botConfigArray[botIndex].index;
+    this->config->bot_type = botConfigArray[botIndex].bot_type;
+    this->config->mot_type = botConfigArray[botIndex].mot_type;
+    this->config->bot_name = botConfigArray[botIndex].bot_name;
 
     // write index to predefined configuration from the array defined in the header file
     return write(this->config);
@@ -142,17 +143,17 @@ bool ConfigManager::setConfig(uint8_t botindex) {
  * @brief setConfig writes a custom configuration to the bot's EEPROM,
  * overriding previous preset configurations
  * 
- * @param botindex not entirely relevant, but the index of the bot in the array
- * @param bottype the type of bot you wish to configure
- * @param motortype the motor type you wish to assign to the bot
+ * @param botIndex not entirely relevant, but the index of the bot in the array
+ * @param botType the type of bot you wish to configure
+ * @param motorType the motor type you wish to assign to the bot
  * @return true configuration was successfully applied
  * @return false configuration check failed
  */
-bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype) {
+bool ConfigManager::setConfig(uint8_t botIndex, BotType botType, MotorType motorType) {
   if (this->writable) {
-    this->config->index = botindex;
-    this->config->bot_type = bottype;
-    this->config->mot_type = motor_type; 
+    this->config->index = botIndex;
+    this->config->bot_type = botType;
+    this->config->mot_type = motorType; 
     
     return write(this->config);
   } else return false;
