@@ -356,7 +356,7 @@ void Drive::update() {
     lastRampPower[1] = motorPower[1];
     
     M1.write(motorPower[0]);
-    M2.write(motorPower[1]);
+    M2.write(-motorPower[1]);
 }
 
 /**
