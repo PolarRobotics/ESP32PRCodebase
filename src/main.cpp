@@ -168,7 +168,7 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman) {
+    if (robotType != lineman && robotType != runningback) {
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
