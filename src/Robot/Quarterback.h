@@ -60,10 +60,10 @@ class Quarterback : public Robot {
     bool raise, lower;
     bool setupMotors;
     uint8_t currentElevation, targetElevation;
-    unsigned long lastElevationTime;
-    unsigned long lastFlywheelToggleTime;
-    unsigned long lastFlywheelRampTime;
-    float currentFlywheelPower;
+    unsigned long lastElevationTime = 0;
+    unsigned long lastFlywheelToggleTime = 0;
+    unsigned long lastFlywheelRampTime = 0;
+    float currentFlywheelPower = 0;
     float flywheelSpeedFactor = 0;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0; // DB is for debounce
     const float speedFac[NUM_SPEED_INCREMENTS] = { 0.0, 0.3, 0.5, 0.8 };
