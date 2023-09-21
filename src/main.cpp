@@ -154,7 +154,6 @@ void loop() {
     if (ps5.Touchpad()){
       drive->emergencyStop();
       drive->setBSN(Drive::BRAKE);
-      Serial.println(F("BRAKING!!!"));
     } else if (ps5.R1()) {
       drive->setBSN(Drive::BOOST);
       // ps5.setLed(0, 255, 0);   // set LED red
@@ -183,7 +182,7 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();

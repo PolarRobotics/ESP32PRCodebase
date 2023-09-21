@@ -50,12 +50,6 @@ void DriveQuick::update() {
     // Generate turning motion
     generateMotionValues();
 
-    Serial.print(F("reqMtrPwrs: "));
-    Serial.print(getReqMotorPwr(0));
-    Serial.print(F(", "));
-    Serial.print(getReqMotorPwr(1));
-    Serial.print(F(" | "));
-
     // calculate the ramped power
     // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
     // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
@@ -74,12 +68,6 @@ void DriveQuick::update() {
     // note: adding a negative, because we cant change the motor direction in hardware
     M1.write(falcon_motor_pwr[0]);
     M2.write(-falcon_motor_pwr[1]);
-
-    Serial.print(F("falcMtrPwrs: "));
-    Serial.print(falcon_motor_pwr[0]);
-    Serial.print(F(", "));
-    Serial.print(falcon_motor_pwr[1]);
-    Serial.print(F("\n"));
 }
 
 void DriveQuick::printDebugInfo() {

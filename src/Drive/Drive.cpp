@@ -146,20 +146,12 @@ void Drive::setBSN(Speed bsn) {
             break;
         }
         case NORMAL: {
-            if (motorType == falcon) {
-              Serial.println(F("FALCON MOTORS DETECTED"));
-            }
-
             switch (motorType) {
                 case MotorType::big: { BSNscalar = BIG_NORMAL_PCT; break; }
                 case MotorType::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_NORMAL_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_NORMAL_PCT; break; }
             }
-            Serial.print(F("BSN SETTING TO NORMAL, "));
-            Serial.print(FALCON_NORMAL_PCT);
-            Serial.print(F(" ?= "));
-            Serial.println(BSNscalar);
             break;
         }
         case SLOW: {
@@ -230,24 +222,6 @@ void Drive::generateMotionValues() {
             }
         }
     }
-
-    Serial.print(F("fwd, turn sticks IN GMV: "));
-    Serial.print(stickForwardRev);
-    Serial.print(F(", "));
-    Serial.print(stickTurn);
-    Serial.print(F(" | "));
-    Serial.print(F("BSN IN GMV: "));
-    Serial.print(BSNscalar);
-    Serial.print(F(" | "));
-    Serial.print(F("reqMtrPwrs IN GMV: "));
-    Serial.print(requestedMotorPower[0]);
-    Serial.print(F(", "));
-    Serial.print(requestedMotorPower[1]);
-    Serial.print(F(" | "));
-    Serial.print(F("turnMtrVals IN GMV: "));
-    Serial.print(turnMotorValues[0]);
-    Serial.print(F(", "));
-    Serial.println(turnMotorValues[1]);
 }
 
 
