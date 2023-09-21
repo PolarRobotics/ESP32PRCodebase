@@ -154,6 +154,7 @@ void loop() {
     if (ps5.Touchpad()){
       drive->emergencyStop();
       drive->setBSN(Drive::BRAKE);
+      Serial.println(F("BRAKING!!!"));
     } else if (ps5.R1()) {
       drive->setBSN(Drive::BOOST);
       // ps5.setLed(0, 255, 0);   // set LED red

@@ -10,6 +10,8 @@ class DriveQuick : public Drive {
     float falcon_motor_pwr[NUM_MOTORS];
     float r, falconTurnPwr, max;
   public:
+    //! Must call base class constructor with appropriate arguments
+    DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {}
     // void generateMotionValues();
     void update() override;
     void printDebugInfo() override;
