@@ -214,6 +214,11 @@ void Drive::generateMotionValues() {
             }
         }
     }
+
+    Serial.print(F("reqMtrPwrs IN GMV: "));
+    Serial.print(requestedMotorPower[0]);
+    Serial.print(F(", "));
+    Serial.println(requestedMotorPower[1]);
 }
 
 

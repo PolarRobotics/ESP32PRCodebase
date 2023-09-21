@@ -79,8 +79,8 @@
 
 // BSN for the falcon motors used on the runningback
 #define FALCON_BOOST_PCT  1.0
-#define FALCON_NORMAL_PCT 0.4
-#define FALCON_SLOW_PCT   0.3
+#define FALCON_NORMAL_PCT 0.5
+#define FALCON_SLOW_PCT   0.1
 
 #define BRAKE_BUTTON_PCT 0
 
@@ -125,8 +125,8 @@ class Drive {
     void emergencyStop();
     float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();
-    void update();
-    void printDebugInfo();
+    virtual void update();
+    virtual void printDebugInfo();
 
     //* The following variables are initialized in the constructor
     // the max allowable turning when the bot is traveling at lowest speed
