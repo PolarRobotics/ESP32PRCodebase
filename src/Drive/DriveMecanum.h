@@ -19,7 +19,7 @@
 class DriveMecanum : public Drive {
   private:
     MotorControl LF, RF, LR, RR;
-    float mmotorpwr[MC_NUM_MOTORS];
+    float mc_motor_pwr[MC_NUM_MOTORS];
     float scaledLeftX;
     float scaledLeftY;
     float scaledRightX;
@@ -27,11 +27,12 @@ class DriveMecanum : public Drive {
     float theta; // the angle of travel
     float turnPwr; // used to turn the bot
     float x_comp, y_comp, max;
-    //unsigned long lastRampTime; //only needs to be one value
+    // unsigned long lastRampTime; // only needs to be one value
     // float motorPwr[MC_NUM_MOTORS]; // declared in parent class, use accessors
     void generateMotorValues();
   public:
-    DriveMecanum();
+    //! Must call base class constructor with appropriate arguments
+    DriveMecanum(); // This is the prototype, see DriveMecanum.cpp for implementation
     void setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin);
     void setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX);
     // float getReqMotorPwr(uint8_t mtr);

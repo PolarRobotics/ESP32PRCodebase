@@ -14,6 +14,14 @@ Features:
     1x omniwheel
 */
 
+//! Must call base class constructor with appropriate arguments
+DriveQuick::DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {
+  // initialize array
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    falcon_motor_pwr[i] = 0.0f;
+  }
+}
+
 /**
  * @brief 
  * prototype turning model: https://www.desmos.com/calculator/pjyj3tjwym

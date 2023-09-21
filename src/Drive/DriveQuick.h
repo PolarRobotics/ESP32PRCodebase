@@ -11,7 +11,7 @@ class DriveQuick : public Drive {
     float r, falconTurnPwr, max;
   public:
     //! Must call base class constructor with appropriate arguments
-    DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {}
+    DriveQuick(); // This is the prototype, see DriveQuick.cpp for implementation
     // void generateMotionValues();
     void update() override;
     void printDebugInfo() override;
