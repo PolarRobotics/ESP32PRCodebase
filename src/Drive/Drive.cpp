@@ -70,6 +70,14 @@ Drive::Drive(BotType botType, MotorType motorType) {
     this->BIG_NORMAL_PCT = 0.6; 
     this->BIG_SLOW_PCT = 0.3;
   }
+
+  // initialize arrays
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    requestedMotorPower[i] = 0.0f;
+    currentRampPower[i] = 0.0f;
+    lastRampPower[i] = 0.0f;
+    turnMotorValues[i] = 0.0f;
+  }
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
