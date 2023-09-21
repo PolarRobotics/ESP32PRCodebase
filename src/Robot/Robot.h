@@ -22,22 +22,17 @@
 class Robot {
   private:
     // ! Drive should be completely decoupled from Robot
-    eBOT_TYPE type; // `eBOT_TYPE` enum declared in `BotTypes.h`
+    BotType type; // `BotType` enum declared in `BotTypes.h`
   protected:
     // ! setType methods should only be called in the constructor of the derived class!
-    void setType(eBOT_TYPE t) { type = t; };
-    void setType(uint8_t t) { type = static_cast<eBOT_TYPE>(t); };
+    void setType(BotType t) { type = t; };
+    void setType(uint8_t t) { type = static_cast<BotType>(t); };
   public:
     // Robot() {};
-    eBOT_TYPE getType() { return type; };
-
-
-    // TODO: we should be able to avoid using this eventually, and instead use the constructor properly
-    // Virtual function that effectively acts like a constructor
-    // "virtual" keyword required to enable runtime polymorphism (i.e. actually use overrides)
-    virtual void initialize() = 0;
+    BotType getType() { return type; };
 
     // Virtual function to perform any loop actions for special robots
+    // `virtual` keyword required to enable runtime polymorphism (i.e. actually use overrides)
     virtual void action() = 0;
 };
 

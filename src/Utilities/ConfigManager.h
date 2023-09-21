@@ -23,8 +23,8 @@ class ConfigManager {
     
     // Members of Config
     uint8_t bot_name_index;
-    eBOT_TYPE bot_type;
-    eMOTOR_TYPE motor_type;
+    BotType bot_type;
+    MotorType motor_type;
 
     // Write Function
     bool write(bot_config_t *cfg);
@@ -36,12 +36,12 @@ class ConfigManager {
     ~ConfigManager();
     void read();
     int botIndex();
-    eBOT_TYPE getBotType();
-    eMOTOR_TYPE getMotorType();
+    BotType getBotType();
+    MotorType getMotorType();
     // int GearRatio()
     const char * toString();
     bool setConfig(uint8_t botindex);
-    bool setConfig(uint8_t botindex, eBOT_TYPE bottype, eMOTOR_TYPE motortype);
+    bool setConfig(uint8_t botindex, BotType bottype, MotorType motortype);
 };
 
 #endif // CFG_MGR_H

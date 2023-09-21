@@ -14,6 +14,14 @@ Features:
     1x omniwheel
 */
 
+//! Must call base class constructor with appropriate arguments
+DriveQuick::DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {
+  // initialize array
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    falcon_motor_pwr[i] = 0.0f;
+  }
+}
+
 /**
  * @brief 
  * prototype turning model: https://www.desmos.com/calculator/pjyj3tjwym
@@ -67,6 +75,22 @@ void DriveQuick::update() {
     // write calculated powers to the motors 
     // note: adding a negative, because we cant change the motor direction in hardware
     M1.write(falcon_motor_pwr[0]);
-    M2.write(-falcon_motor_pwr[1]); 
+    M2.write(-falcon_motor_pwr[1]);
 }
 
+void DriveQuick::printDebugInfo() {
+    Serial.print(F("DQ | "));
+    Serial.print(F("L_Hat_Y: "));
+    Serial.print(stickForwardRev);
+    Serial.print(F("  R_HAT_X: "));
+    Serial.print(stickTurn);
+
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
+
+    Serial.print(F("  L_MotPwr: "));
+    Serial.print(falcon_motor_pwr[0]);
+    Serial.print(F("  R_MotPwr: "));
+    Serial.print(falcon_motor_pwr[1]);
+    Serial.print(F("\n"));
+}

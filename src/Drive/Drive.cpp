@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
-#include "Drive.h"
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -33,7 +32,52 @@
 */
 
 Drive::Drive() {
-    this->motorType = eMOTOR_TYPE::big; // default to long motors
+  Drive(lineman, big);
+}
+
+Drive::Drive(BotType botType, MotorType motorType) {
+  this->botType = botType;
+  this->motorType = motorType;
+
+  switch (botType) {
+    case receiver:
+      this->turnMax = 0.8;
+      this->turnMin = 0.8;
+      break;
+    case center:
+      this->turnMax = 0.2;
+      this->turnMin = 0.2;
+      break;
+    case quarterback:
+      this->turnMax = 0.4;
+      this->turnMin = 0.4;
+      break;
+    case runningback:
+      this->turnMax = 0.5;
+      this->turnMin = 0.2;
+      break;
+    default:
+      this->turnMax = 0.65;
+      this->turnMin = 0.65;
+  }
+
+  if (botType == quarterback) {
+    this->BIG_BOOST_PCT = 0.8; 
+    this->BIG_NORMAL_PCT = 0.4; 
+    this->BIG_SLOW_PCT = 0.3;
+  } else {
+    this->BIG_BOOST_PCT = 0.7;  
+    this->BIG_NORMAL_PCT = 0.6; 
+    this->BIG_SLOW_PCT = 0.3;
+  }
+
+  // initialize arrays
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    requestedMotorPower[i] = 0.0f;
+    currentRampPower[i] = 0.0f;
+    lastRampPower[i] = 0.0f;
+    turnMotorValues[i] = 0.0f;
+  }
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
@@ -41,7 +85,7 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     M1.attach(lpin), M2.attach(rpin);
 }
 
-void Drive::setMotorType(eMOTOR_TYPE motorType) {
+void Drive::setMotorType(MotorType motorType) {
     this->motorType = motorType;
 }
 
@@ -89,37 +133,37 @@ float Drive::getTurnPower() {
  *
  * @param bsn input speed choice Drive::Boost, Drive::Slow, Drive::Normal
 */
-void Drive::setBSN(SPEED bsn) {
+void Drive::setBSN(Speed bsn) {
     // set the scalar to zero if the requested value is greater than 1, this is not entirely necessary, but is a safety
     switch (bsn) {
-        case boost: {
+        case BOOST: {
             switch (motorType) {
-                case eMOTOR_TYPE::big: { BSNscalar = BIG_BOOST_PCT; break; }
-                case eMOTOR_TYPE::small: { BSNscalar = SMALL_BOOST_PCT; break; }
-                case eMOTOR_TYPE::mecanum: { BSNscalar = MECANUM_BOOST_PCT; break; }
-                case eMOTOR_TYPE::falcon: { BSNscalar = FALCON_BOOST_PCT; break; }
+                case MotorType::big: { BSNscalar = BIG_BOOST_PCT; break; }
+                case MotorType::small: { BSNscalar = SMALL_BOOST_PCT; break; }
+                case MotorType::mecanum: { BSNscalar = MECANUM_BOOST_PCT; break; }
+                case MotorType::falcon: { BSNscalar = FALCON_BOOST_PCT; break; }
             }
             break;
         }
-        case normal: {
+        case NORMAL: {
             switch (motorType) {
-                case eMOTOR_TYPE::big: { BSNscalar = BIG_NORMAL_PCT; break; }
-                case eMOTOR_TYPE::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
-                case eMOTOR_TYPE::mecanum: { BSNscalar = MECANUM_NORMAL_PCT; break; }
-                case eMOTOR_TYPE::falcon: { BSNscalar = FALCON_NORMAL_PCT; break; }
+                case MotorType::big: { BSNscalar = BIG_NORMAL_PCT; break; }
+                case MotorType::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
+                case MotorType::mecanum: { BSNscalar = MECANUM_NORMAL_PCT; break; }
+                case MotorType::falcon: { BSNscalar = FALCON_NORMAL_PCT; break; }
             }
             break;
         }
-        case slow: {
+        case SLOW: {
             switch (motorType) {
-                case eMOTOR_TYPE::big: { BSNscalar = BIG_SLOW_PCT; break; }
-                case eMOTOR_TYPE::small: { BSNscalar = SMALL_SLOW_PCT; break; }
-                case eMOTOR_TYPE::mecanum: { BSNscalar = MECANUM_SLOW_PCT; break; }
-                case eMOTOR_TYPE::falcon: { BSNscalar = FALCON_SLOW_PCT; break; }
+                case MotorType::big: { BSNscalar = BIG_SLOW_PCT; break; }
+                case MotorType::small: { BSNscalar = SMALL_SLOW_PCT; break; }
+                case MotorType::mecanum: { BSNscalar = MECANUM_SLOW_PCT; break; }
+                case MotorType::falcon: { BSNscalar = FALCON_SLOW_PCT; break; }
             }
             break;
         }
-        case brake: {
+        case BRAKE: {
             BSNscalar = BRAKE_BUTTON_PCT;
             break;
         }

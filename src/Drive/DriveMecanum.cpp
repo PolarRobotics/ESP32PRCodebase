@@ -23,9 +23,12 @@
  * 
  */
 
-
-DriveMecanum::DriveMecanum() {
-    setMotorType(eMOTOR_TYPE::mecanum);
+//! Must call base class constructor with appropriate arguments
+DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum) {
+  // initialize array
+  for (int i = 0; i < MC_NUM_MOTORS; i++) {
+    mc_motor_pwr[i] = 0.0f;
+  }
 }
 
 void DriveMecanum::setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin) {
@@ -84,10 +87,10 @@ void DriveMecanum::generateMotorValues() {
     // setReqMotorPwr(r * x_comp - turnPwr, 3);
 
     
-    mmotorpwr[0] = r * x_comp + turnPwr;
-    mmotorpwr[1] = r * y_comp - turnPwr;
-    mmotorpwr[2] = r * y_comp + turnPwr;
-    mmotorpwr[3] = r * x_comp - turnPwr;
+    mc_motor_pwr[0] = r * x_comp + turnPwr;
+    mc_motor_pwr[1] = r * y_comp - turnPwr;
+    mc_motor_pwr[2] = r * y_comp + turnPwr;
+    mc_motor_pwr[3] = r * x_comp - turnPwr;
 
 
 
@@ -124,10 +127,10 @@ void DriveMecanum::update() {
     // setReqMotorPwr(ramp(getReqMotorPwr(2), 2), 2);
     // setReqMotorPwr(ramp(getReqMotorPwr(3), 3), 3);
 
-    this->LF.write(mmotorpwr[0]); // getReqMotorPwr(0)
-    this->RF.write(mmotorpwr[1]); // getReqMotorPwr(1)
-    this->LR.write(mmotorpwr[2]); // getReqMotorPwr(2)
-    this->RR.write(mmotorpwr[3]); // getReqMotorPwr(3)
+    this->LF.write(mc_motor_pwr[0]); // getReqMotorPwr(0)
+    this->RF.write(mc_motor_pwr[1]); // getReqMotorPwr(1)
+    this->LR.write(mc_motor_pwr[2]); // getReqMotorPwr(2)
+    this->RR.write(mc_motor_pwr[3]); // getReqMotorPwr(3)
 }
 
 void DriveMecanum::drift() {
