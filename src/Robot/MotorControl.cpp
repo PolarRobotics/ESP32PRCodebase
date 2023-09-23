@@ -1,19 +1,18 @@
 #include <Arduino.h>
+
 #include <ps5Controller.h> // ESP PS5 library
+
+#include <PolarRobotics.h>
 
 #include <Robot/Lights.h>
 #include <Pairing/pairing.h>
 #include <Drive/Drive.h> // not 100% necessary 
 
-Drive DriveMotors;
+MotorControl* GlobalClassPointer;
 
-Lights robotLED;
-
-extern void extUpdateLEDs();
-// Prototypes for Controller Callbacks
-// Implementations will be located at the bottom of this file
-void onConnection();
-void onDisconnect();
+void ext_read_encoder() {
+  GlobalClassPointer->readEncoder();
+}
 
 /**
  * @brief 
@@ -44,11 +43,23 @@ void onDisconnect();
  * @author Rhys Davies 
  */
 MotorControl::MotorControl() {
-    if(ServoCount < MAX_NUM_MOTORS)
-        this->motorIndex = ServoCount++;  // assign a servo index to this instance
-    else
-        this->motorIndex = 255;
-    // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+  if(ServoCount < MAX_NUM_MOTORS)
+      this->motorIndex = ServoCount++;  // assign a servo index to this instance
+  else
+      this->motorIndex = 255;
+  // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+
+  encoderACount = 0;
+  b_channel_state = 0;
+  rollerover = 2048;
+
+  // or use in int calcSpeed()
+  prev_current_count = 0;
+  rolleroverthreshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+  current_time = 0;
+  prev_current_time = 0; 
+  omega = 0;
+
 }
 
 /**
@@ -60,6 +71,12 @@ MotorControl::MotorControl() {
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
 uint8_t MotorControl::attach(int pin) {
+    pinMode(ENC_L_A_CHAN, INPUT_PULLUP);
+    pinMode(ENC_L_B_CHAN, INPUT);
+
+    GlobalClassPointer = this;
+
+    attachInterrupt(ENC_L_A_CHAN, ext_read_encoder, RISING);
     return attach(pin, MIN_PWM_US, MAX_PWM_US);
 }
 
@@ -154,7 +171,7 @@ void MotorControl::writelow() {
 */
 void MotorControl::readEncoder() {
 
-  b_channel_state = digitalRead(b_channel);
+  b_channel_state = digitalRead(ENC_L_B_CHAN);
 
   if (b_channel_state == 1) {
     if (encoderACount >= rollerover) {
@@ -181,8 +198,7 @@ void MotorControl::readEncoder() {
  * 
  * 
 */
-int MotorControl::calcSpeed(int current_count) {
-  
+int MotorControl::calcSpeed(int current_count) {  
   current_time = millis();
   
   //first check if the curret count has rolled over
@@ -200,38 +216,6 @@ int MotorControl::calcSpeed(int current_count) {
   prev_current_time = current_time;
 
   return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
-
-}
-
-/**
- * @brief Adds.. integers..
- * @author Grant Brautigam
- * Updated 9-11-2023
- * @param int x an integer
- * @param int y another integer
-*/
-int MotorControl::addInt(int x, int y) {
-  return x + y;
-}
-
-/**
- * @brief Prints the speed that is calculated from int MotorControl::calcSpee(int current_count)
- * @author Grant Brautigam
- * Updated 9-11-2023
- * 
-*/
-void MotorControl::printSpeed(){
-  Serial.begin(115200);
-
-  int result = addInt(2, 3);
-
-  ps5.attachOnConnect(onConnection);
-  ps5.attachOnDisconnect(onDisconnect);
-
-  pinMode(a_channel, INPUT_PULLUP);
-  pinMode(b_channel, INPUT);
-
-  attachInterrupt(a_channel, readEncoder, RISING);
 }
 
 
