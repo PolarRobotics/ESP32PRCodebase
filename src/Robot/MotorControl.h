@@ -45,8 +45,8 @@ class MotorControl {
     uint16_t power2Duty(float power);
   public:
     MotorControl();
-    uint8_t attach(int pin);           
-    uint8_t attach(int pin, int min, int max); // as above but also sets min and max values for writes. 
+    uint8_t attach(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins         
+    uint8_t attach_us(int mot_pin, int min, int max); // as above but also sets min and max values for writes. 
     void write(float pwr);
     void displayPinInfo();
     void writelow();
@@ -57,11 +57,11 @@ class MotorControl {
     // for use in void readEncoder()
     int encoderACount;
     int b_channel_state;
-    int rollerover;
+    int rollover;
   
     // For use in int calcSpeed()
     int prev_current_count;
-    int rolleroverthreshold;
+    int rollover_threshold;
     unsigned long current_time;
     unsigned long prev_current_time;
     float omega;

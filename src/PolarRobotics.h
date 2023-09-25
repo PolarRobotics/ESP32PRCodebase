@@ -33,9 +33,10 @@
 #define SPECBOT_PIN4 22
 
 // ENCODER PIN DEFINITIONS
-#define ENC_L_A_CHAN 35
-#define ENC_L_B_CHAN 34
-
+#define ENC1_CHA 35
+#define ENC1_CHB 34
+#define ENC2_CHA VP
+#define ENC2_CHB VN
 
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
