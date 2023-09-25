@@ -75,13 +75,15 @@ MotorControl::MotorControl() {
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
 uint8_t MotorControl::attach(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
-  if (enc_a_chan_pin != -1 && enc_b_chan_pin != -1) {
-    pinMode(enc_a_chan_pin, INPUT_PULLUP);
-    pinMode(enc_b_chan_pin, INPUT);
+  this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
+  
+  if (this->enc_a_pin != -1 && this->enc_b_pin != -1) {
+    pinMode(this->enc_a_pin, INPUT_PULLUP);
+    pinMode(this->enc_b_pin, INPUT);
 
     GlobalClassPointer = this;
 
-    attachInterrupt(enc_a_chan_pin, ext_read_encoder, RISING);
+    attachInterrupt(this->enc_a_pin, ext_read_encoder, RISING);
   }
 
   return attach_us(mot_pin, MIN_PWM_US, MAX_PWM_US);
@@ -98,19 +100,19 @@ uint8_t MotorControl::attach(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
 uint8_t MotorControl::attach_us(int pin, int min, int max) {
-    if(this->motorIndex < MAX_NUM_MOTORS - 1) {
-        // pinMode(pin, OUTPUT);                             // set servo pin to output
-        // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
-        servos[this->motorIndex].pin = pin;                  // assign this servo a pin
-        // servos[this->motorIndex].isactive = true;         // set the servo to active
-        servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
-        this->min = min; 
-        this->max = max;
-        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);      // activate the timer channel to be used
-        ledcAttachPin(pin, this->motorIndex);                // attach the pin to the timer channel
-        ledcWrite(this->motorIndex, 0);                      // write a duty cycle of zero to activate the timer
-    }
-    return this->motorIndex;
+  if(this->motorIndex < MAX_NUM_MOTORS - 1) {
+    // pinMode(pin, OUTPUT);                             // set servo pin to output
+    // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
+    servos[this->motorIndex].pin = pin;                  // assign this servo a pin
+    // servos[this->motorIndex].isactive = true;         // set the servo to active
+    servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
+    this->min = min; 
+    this->max = max;
+    ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);      // activate the timer channel to be used
+    ledcAttachPin(pin, this->motorIndex);                // attach the pin to the timer channel
+    ledcWrite(this->motorIndex, 0);                      // write a duty cycle of zero to activate the timer
+  }
+  return this->motorIndex;
 }
 
 /**
@@ -174,12 +176,15 @@ void MotorControl::writelow() {
  * @author Grant Brautigam
  * Updated 9-11-2023
  * 
+ * called on an interrupt
  * 
+ * when the encoder interrupt is called, read the b pin to see what state it is in
+ * this eliminates the need for two seperate interrupts
  * 
 */
 void MotorControl::readEncoder() {
 
-  b_channel_state = digitalRead(ENC_L_B_CHAN);
+  b_channel_state = digitalRead(this->enc_b_pin);
 
   if (b_channel_state == 1) {
     if (encoderACount >= rollover) {

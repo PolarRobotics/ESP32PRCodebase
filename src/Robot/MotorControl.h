@@ -39,6 +39,7 @@ static uint8_t ServoCount = 0;
 class MotorControl {
   private:
     uint8_t motorIndex;  // index into the channel data for this servo
+    uint8_t enc_a_pin, enc_b_pin;
     int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
     int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
     uint32_t tempTimeon;

@@ -80,6 +80,18 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
   M2.write(0);
 }
 
+/**
+ * setServos
+ * @brief to be called when setting up a motor with an encoder
+ * 
+ * 
+*/
+void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
+    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    M1.attach(lpin, left_enc_a_pin, left_enc_b_pin);
+    M2.attach(rpin, right_enc_a_pin, right_enc_b_pin);
+}
+
 void Drive::setMotorType(MotorType motorType) {
     this->motorType = motorType;
 }
