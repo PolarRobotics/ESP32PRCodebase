@@ -40,6 +40,9 @@ void ext_read_encoder() {
  * 
  * where -1, 0 and 1 correspond to the throttles in the reverse, stop and forward directions
  * 
+ * !TODO:
+ * allow for us values outside the 1000us to 2000us, allow user to input the min and max values and pwr2Duty will account for that range
+ * 
  * @author Rhys Davies 
  */
 MotorControl::MotorControl() {
@@ -51,11 +54,11 @@ MotorControl::MotorControl() {
 
   encoderACount = 0;
   b_channel_state = 0;
-  rollerover = 2048;
+  rollover = 2048;
 
   // or use in int calcSpeed()
   prev_current_count = 0;
-  rolleroverthreshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+  rollover_threshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
   current_time = 0;
   prev_current_time = 0; 
   omega = 0;
@@ -67,41 +70,45 @@ MotorControl::MotorControl() {
  * @author Rhys Davies
  * Updated 2-26-2023
  * 
- * @param pin the pin the motor is connected to
+ * @param mot_pin the pin the motor is connected to
+ * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::attach(int pin) {
-    pinMode(ENC_L_A_CHAN, INPUT_PULLUP);
-    pinMode(ENC_L_B_CHAN, INPUT);
+uint8_t MotorControl::attach(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
+  if (enc_a_chan_pin != -1 && enc_b_chan_pin != -1) {
+    pinMode(enc_a_chan_pin, INPUT_PULLUP);
+    pinMode(enc_b_chan_pin, INPUT);
 
     GlobalClassPointer = this;
 
-    attachInterrupt(ENC_L_A_CHAN, ext_read_encoder, RISING);
-    return attach(pin, MIN_PWM_US, MAX_PWM_US);
+    attachInterrupt(enc_a_chan_pin, ext_read_encoder, RISING);
+  }
+
+  return attach_us(mot_pin, MIN_PWM_US, MAX_PWM_US);
 }
 
 /**
- * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
+ * @brief attach_us the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
- * Updated 2-26-2023
+ * Updated 9-24-2023
  * 
  * @param pin the pin the motor is connected to
  * @param min min on time in us
  * @param max max on time in us
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::attach(int pin, int min, int max) {
+uint8_t MotorControl::attach_us(int pin, int min, int max) {
     if(this->motorIndex < MAX_NUM_MOTORS - 1) {
         // pinMode(pin, OUTPUT);                             // set servo pin to output
         // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
         servos[this->motorIndex].pin = pin;                  // assign this servo a pin
-        // servos[this->motorIndex].isactive = true;            // set the servo to active
+        // servos[this->motorIndex].isactive = true;         // set the servo to active
         servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
         this->min = min; 
         this->max = max;
-        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
-        ledcAttachPin(pin, this->motorIndex);
-        ledcWrite(this->motorIndex, 0);
+        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);      // activate the timer channel to be used
+        ledcAttachPin(pin, this->motorIndex);                // attach the pin to the timer channel
+        ledcWrite(this->motorIndex, 0);                      // write a duty cycle of zero to activate the timer
     }
     return this->motorIndex;
 }
@@ -147,6 +154,7 @@ void MotorControl::displayPinInfo() {
 */
 uint16_t MotorControl::power2Duty(float power) {
     // this can be written in compiler code, but we are trying to save on flash memory
+    // linearly convert a [-1, 1] motor power to a microseconds value between 1000us and 2000us
     this->tempTimeon = (power + 1) * 500 + 1000;
     return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
 }
@@ -174,7 +182,7 @@ void MotorControl::readEncoder() {
   b_channel_state = digitalRead(ENC_L_B_CHAN);
 
   if (b_channel_state == 1) {
-    if (encoderACount >= rollerover) {
+    if (encoderACount >= rollover) {
       encoderACount = 0;
     } else {
       encoderACount = encoderACount + 1;
@@ -182,7 +190,7 @@ void MotorControl::readEncoder() {
       
   } else {
     if (encoderACount == 0) {
-      encoderACount = rollerover;
+      encoderACount = rollover;
     } else {
       encoderACount = encoderACount - 1;
     }
@@ -202,11 +210,11 @@ int MotorControl::calcSpeed(int current_count) {
   current_time = millis();
   
   //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_count) >= rolleroverthreshold) {
-    if ((current_count-rolleroverthreshold)>0) {
-      omega = float ((current_count-rollerover)-prev_current_count)/(current_time-prev_current_time);
+  if (abs(current_count - prev_current_count) >= rollover_threshold) {
+    if ((current_count-rollover_threshold)>0) {
+      omega = float ((current_count-rollover)-prev_current_count)/(current_time-prev_current_time);
     } else {
-      omega = float ((current_count+rollerover)-prev_current_count)/(current_time-prev_current_time);
+      omega = float ((current_count+rollover)-prev_current_count)/(current_time-prev_current_time);
     }
   } else {
     omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
