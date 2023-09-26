@@ -88,8 +88,8 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 */
 void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    M1.attach(lpin, left_enc_a_pin, left_enc_b_pin);
-    M2.attach(rpin, right_enc_a_pin, right_enc_b_pin);
+    M1.setup(lpin, left_enc_a_pin, left_enc_b_pin);
+    M2.setup(rpin, right_enc_a_pin, right_enc_b_pin);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -116,12 +116,12 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
-    if (fabs(stickForwardRev) < STICK_DEADZONE) {
+    if (fabs(stickForwardRev) < STICK_DEADZONE)
       stickForwardRev = 0;
-    }
-    if (fabs(stickTurn) < STICK_DEADZONE) {
+    
+    if (fabs(stickTurn) < STICK_DEADZONE)
       stickTurn = 0;
-    }
+    
 }
 
 float Drive::getForwardPower() {
