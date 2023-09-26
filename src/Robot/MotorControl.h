@@ -7,6 +7,8 @@
 
 #define MAX_NUM_MOTORS 16
 
+#define MAX_NUM_ENCODERS 4
+
 #define MAX_PWM_US 2000
 #define MIN_PWM_US 1000
 
@@ -36,36 +38,40 @@ typedef struct servo {
 static servo_t servos[MAX_NUM_MOTORS];
 static uint8_t ServoCount = 0;
 
-class MotorControl {
-  private:
-    uint8_t motorIndex;  // index into the channel data for this servo
-    uint8_t enc_a_pin, enc_b_pin;
-    int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
-    int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
-    uint32_t tempTimeon;
-    uint16_t power2Duty(float power);
-  public:
-    MotorControl();
-    uint8_t attach(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins         
-    uint8_t attach_us(int mot_pin, int min, int max); // as above but also sets min and max values for writes. 
-    void write(float pwr);
-    void displayPinInfo();
-    void writelow();
-    void readEncoder();
-    int calcSpeed(int current_count);
-    int addInt(int x, int y);
+MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
+static uint8_t EncoderCount = 0;
 
-    // for use in void readEncoder()
-    int encoderACount;
-    int b_channel_state;
-    int rollover;
-  
-    // For use in int calcSpeed()
-    int prev_current_count;
-    int rollover_threshold;
-    unsigned long current_time;
-    unsigned long prev_current_time;
-    float omega;
+class MotorControl {
+private:
+  uint8_t motorIndex;  // index into the channel data for this servo
+  uint8_t encoderIndex;
+  uint8_t enc_a_pin, enc_b_pin;
+  int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
+  int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
+  uint32_t tempTimeon;
+  uint16_t power2Duty(float power);
+public:
+  MotorControl();
+  uint8_t setup(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins         
+  uint8_t attach(int mot_pin, int min, int max); // as above but also sets min and max values for writes. 
+  void write(float pwr);
+  void displayPinInfo();
+  void writelow();
+  void readEncoder();
+  int calcSpeed(int current_count);
+  int addInt(int x, int y);
+
+  // for use in void readEncoder()
+  int encoderACount;
+  int b_channel_state;
+  int rollover;
+
+  // For use in int calcSpeed()
+  int prev_current_count;
+  int rollover_threshold;
+  unsigned long current_time;
+  unsigned long prev_current_time;
+  float omega;
 };
 
 #endif // MOTOR_CONTROL_H
