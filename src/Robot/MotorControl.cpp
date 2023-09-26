@@ -8,10 +8,14 @@
 #include <Pairing/pairing.h>
 #include <Drive/Drive.h> // not 100% necessary 
 
-MotorControl* GlobalClassPointer;
 
-void ext_read_encoder() {
-  GlobalClassPointer->readEncoder();
+
+void ext_read_encoder0() {
+  GlobalClassPointer[0]->readEncoder();
+}
+
+void ext_read_encoder1() {
+  GlobalClassPointer[1]->readEncoder();
 }
 
 /**
@@ -47,26 +51,26 @@ void ext_read_encoder() {
  */
 MotorControl::MotorControl() {
   if(ServoCount < MAX_NUM_MOTORS)
-      this->motorIndex = ServoCount++;  // assign a servo index to this instance
+    this->motorIndex = ServoCount++;  // assign a servo index to this instance
   else
-      this->motorIndex = 255;
+    this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
 
+  // for use in void readEncoder()
   encoderACount = 0;
   b_channel_state = 0;
   rollover = 2048;
 
-  // or use in int calcSpeed()
+  // for use in int calcSpeed()
   prev_current_count = 0;
   rollover_threshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
   current_time = 0;
   prev_current_time = 0; 
   omega = 0;
-
 }
 
 /**
- * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
+ * @brief setup the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
  * Updated 2-26-2023
  * 
@@ -74,19 +78,32 @@ MotorControl::MotorControl() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::attach(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
+uint8_t MotorControl::setup(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
   
   if (this->enc_a_pin != -1 && this->enc_b_pin != -1) {
     pinMode(this->enc_a_pin, INPUT_PULLUP);
     pinMode(this->enc_b_pin, INPUT);
 
-    GlobalClassPointer = this;
+    this->encoderIndex = EncoderCount;
+    GlobalClassPointer[EncoderCount++] = this;
 
-    attachInterrupt(this->enc_a_pin, ext_read_encoder, RISING);
+    switch(this->encoderIndex) {
+      case 0: {
+        attachInterrupt(this->enc_a_pin, ext_read_encoder0, RISING);
+        break;
+      }
+      case 1: {
+        attachInterrupt(this->enc_a_pin, ext_read_encoder1, RISING);
+        break;
+      }
+      default:
+        return 254;
+    }
   }
 
-  return attach_us(mot_pin, MIN_PWM_US, MAX_PWM_US);
+  // call the logic to attach the motor pin and setup, return 255 on an error
+  return attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
 }
 
 /**
@@ -99,7 +116,7 @@ uint8_t MotorControl::attach(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin
  * @param max max on time in us
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::attach_us(int pin, int min, int max) {
+uint8_t MotorControl::attach(int pin, int min, int max) {
   if(this->motorIndex < MAX_NUM_MOTORS - 1) {
     // pinMode(pin, OUTPUT);                             // set servo pin to output
     // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
@@ -125,22 +142,25 @@ uint8_t MotorControl::attach_us(int pin, int min, int max) {
  * @param pwr input power
 */
 void MotorControl::write(float pwr) {
-    ledcWrite(this->motorIndex, power2Duty(pwr));
+  ledcWrite(this->motorIndex, power2Duty(pwr));
 }
 
 void MotorControl::displayPinInfo() {
-    Serial.print(F("Motor: "));
-    Serial.print(this->motorIndex);
-    Serial.print(F(" on Pin #"));
-    Serial.print(servos[this->motorIndex].pin);
-    Serial.print(F(" Channel: "));
-    Serial.print(servos[this->motorIndex].channel);
-    Serial.print(F("\r\n"));
+  Serial.print(F("Motor: "));
+  Serial.print(this->motorIndex);
+  Serial.print(F(" on Pin #"));
+  Serial.print(servos[this->motorIndex].pin);
+  Serial.print(F(" Channel: "));
+  Serial.print(servos[this->motorIndex].channel);
+  Serial.print(F(" Enc Chan A Pin: "));
+  Serial.print(this->enc_a_pin);
+  Serial.print(F(" Enc Chan B Pin: "));
+  Serial.print(this->enc_b_pin);
+  Serial.print(F("\r\n"));
 
     // Serial.print(F("\r\nDuty Cycle: "));
     // Serial.print(power2Duty(pwr));
 }
-
 
 /**
  * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
@@ -198,8 +218,7 @@ void MotorControl::readEncoder() {
       encoderACount = rollover;
     } else {
       encoderACount = encoderACount - 1;
-    }
-      
+    }  
   }
 }
 
