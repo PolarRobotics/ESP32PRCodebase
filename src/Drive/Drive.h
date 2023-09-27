@@ -94,6 +94,13 @@ class Drive {
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
     void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
+    int wheelBase = 12;
+    int Omega_r = 0;
+    int Omega_rL = 0;
+    int Omega_rR = 0;
+    float R = 0;
+    int max_RPM = 4000;
+
 
   protected:
     MotorControl M1, M2;

@@ -241,18 +241,17 @@ void Drive::generateMotionValues() {
  */
 void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
     
-    float maxTurnDiff = (turnMin - turnMax) * (abs(prevPwr)) + turnMax;
-    float turnDifference = abs(stickTrn) * maxTurnDiff;
+    
+    Omega_r = prevPwr*max_RPM;
+    
+    Omega_rL = (float (Omega_r/R))*(R+(wheelBase/2));
+    Omega_rR = (float (Omega_r/R))*(R-(wheelBase/2));
 
-    if ((prevPwr - turnDifference) <= 0){
-        turnMotorValues[0] = prevPwr + abs(prevPwr - turnDifference);
-        turnMotorValues[1] = 0;
-    } else {
-        turnMotorValues[0] = prevPwr;
-        turnMotorValues[1] = prevPwr - turnDifference;
-    }
 
-    lastTurnPwr = turnDifference;
+    turnMotorValues[1] = float (Omega_rL/max_RPM);
+    turnMotorValues[0] = float (Omega_rR/max_RPM);
+
+    
 }
 
 
@@ -355,10 +354,10 @@ void Drive::printDebugInfo() {
     Serial.print(F("  |  Turn: "));
     Serial.print(lastTurnPwr);
 
-    // Serial.print(F("  |  Left ReqPwr: "));
-    // Serial.print(requestedMotorPower[0]);
-    // Serial.print(F("  Right ReqPwr: "));
-    // Serial.print(requestedMotorPower[1]);
+    Serial.print(F("  |  Left ReqPwr: "));
+    Serial.print(requestedMotorPower[0]);
+    Serial.print(F("  Right ReqPwr: "));
+    Serial.print(requestedMotorPower[1]);
     
     // Serial.print(F("  lastRampTime "));
     // Serial.print(lastRampTime[0]);
@@ -390,6 +389,7 @@ void Drive::printDebugInfo() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
+    printDebugInfo();
 
     // get the ramp value
     requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
