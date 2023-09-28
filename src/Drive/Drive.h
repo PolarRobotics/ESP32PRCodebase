@@ -94,15 +94,15 @@ class Drive {
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
     void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
-    int wheelBase = 12;
+    float wheelBase = 9.75;
     float Omega_r = 0;
     float Omega_rL = 0;
     float Omega_rR = 0;
     float R = 0;
     int R_Max = 24;
     int R_High_Min = 48;
-    int R_Min = wheelBase/2;
-    int max_RPM = 4000;
+    float R_Min = wheelBase/2;
+    float max_RPM = 4000;
 
 
   protected:
