@@ -242,16 +242,23 @@ void Drive::generateMotionValues() {
 void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
     
     
-    Omega_r = prevPwr*max_RPM;
+    //R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min); // start of turn scaling 
+
+    R = (1-abs(stickTrn))*(R_Max-R_Min) + R_Min;
     
-    Omega_rL = (float (Omega_r/R))*(R+(wheelBase/2));
-    Omega_rR = (float (Omega_r/R))*(R-(wheelBase/2));
-
-
-    turnMotorValues[1] = float (Omega_rL/max_RPM);
-    turnMotorValues[0] = float (Omega_rR/max_RPM);
-
+    Omega_r = abs(stickForwardRev)*BSNscalar*max_RPM;
     
+    Omega_rL = (Omega_r/R)*(R+(wheelBase/2));
+    Omega_rR = (Omega_r/R)*(R-(wheelBase/2));
+
+    if ((Omega_rL > max_RPM) || (Omega_rR > max_RPM)){
+        Omega_rL = max_RPM;
+        Omega_rR = (max_RPM/R)*(R-(wheelBase/2));
+    }
+
+    turnMotorValues[0] = Omega_rL/max_RPM;
+    turnMotorValues[1] = Omega_rR/max_RPM;
+
 }
 
 
@@ -358,6 +365,13 @@ void Drive::printDebugInfo() {
     Serial.print(requestedMotorPower[0]);
     Serial.print(F("  Right ReqPwr: "));
     Serial.print(requestedMotorPower[1]);
+
+    Serial.print(F("  |  Left: "));
+    Serial.print(Omega_rL);
+    Serial.print(F("  Right: "));
+    Serial.print(Omega_rR);
+
+
     
     // Serial.print(F("  lastRampTime "));
     // Serial.print(lastRampTime[0]);
