@@ -25,6 +25,7 @@ class ConfigManager {
     uint8_t bot_name_index;
     BotType bot_type;
     MotorType motor_type;
+    float gear_ratio;
 
     // Write Function
     bool write(bot_config_t *cfg);
@@ -38,10 +39,10 @@ class ConfigManager {
     int botIndex();
     BotType getBotType();
     MotorType getMotorType();
-    // int GearRatio()
+    float getGearRatio();
     const char * toString();
     bool setConfig(uint8_t botindex);
-    bool setConfig(uint8_t botindex, BotType bottype, MotorType motortype);
+    bool setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio);
 };
 
 #endif // CFG_MGR_H

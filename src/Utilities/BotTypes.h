@@ -47,7 +47,7 @@ typedef struct BotConfig {
   const char * bot_name;
   BotType bot_type; // primary robot position
   MotorType mot_type;
-  // placeholder: gear ratio index
+  float gear_ratio;
   // uint8_t GR_index;
   // LED STRIP:
   // bool has_leds;
@@ -58,22 +58,23 @@ typedef struct BotConfig {
 
 #define NUM_BOTS 13
 
-// PRESET BOT CONFIGURATIONS
+// PRESET BOT CONFIGURATIONS, MUST MATCH:
+// https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
-// idx  bot_name    bot_type     motors
-  { 0,  "i++",      lineman,     small  },  // 0:  i++
-  { 1,  "sqrt(-1)", lineman,     small  },  // 1:  sqrt(-1)
-  { 2,  "pi",       lineman,     small  },  // 2:  pi
-  { 3,  "rho",      lineman,     small  },  // 3:  ρ
-  { 4,  "2.72",     lineman,     big    },  // 4:  2.72
-  { 5,  ":)",       lineman,     small  },  // 5:  :)
-  { 6,  ">=",       lineman,     big    },  // 6:  >=
-  { 7,  "32.2",     receiver,    small  },  // 7:  32.2
-  { 8,  "9.8",      receiver,    big    },  // 8:  9.8
-  { 9,  "c",        runningback, falcon },  // 9:  c
-  { 10, "phi",      center,      small  },  // 10: Φ
-  { 11, "inf",      quarterback, small  },  // 11: ∞
-  { 12, "theta",    kicker,      small  }   // 12: Θ
+// idx  bot_name    bot_type     motor_type      gear_ratio
+  { 0,  "i++",      lineman,     small_ampflow,  0.6f     },  // 0:  i++
+  { 1,  "sqrt(-1)", lineman,     small_ampflow,  0.53333f },  // 1:  sqrt(-1)
+  { 2,  "pi",       lineman,     small_ampflow,  0.46667f },  // 2:  pi
+  { 3,  "rho",      lineman,     small_ampflow,  0.6f     },  // 3:  ρ
+  { 4,  "2.72",     lineman,     big_ampflow,    0.4f     },  // 4:  2.72
+  { 5,  ":)",       lineman,     small_ampflow,  1.0f     },  // 5:  :)
+  { 6,  ">=",       lineman,     big_ampflow,    1.0f     },  // 6:  >=
+  { 7,  "32.2",     receiver,    small_ampflow,  0.5f     },  // 7:  32.2
+  { 8,  "9.8",      receiver,    big_ampflow,    0.5f     },  // 8:  9.8
+  { 9,  "c",        runningback, falcon,         0.5f     },  // 9:  c
+  { 10, "phi",      center,      small_ampflow,  0.6f     },  // 10: Φ
+  { 11, "inf",      quarterback, small_ampflow,  0.5625f  },  // 11: ∞
+  { 12, "theta",    kicker,      small_ampflow,  0.34375f }   // 12: Θ
 };
 
 const char * getBotTypeString(BotType type);
