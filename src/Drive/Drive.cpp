@@ -392,12 +392,12 @@ void Drive::diffDriveCurve(float stickForwardRev, float stickTurn) {
       requestedMotorPower[1] = 0; 
     } else if (stickTurn > STICK_DEADZONE) { 
       // turn stick is positive: turn right *in-place*.
-      requestedMotorPower[0] =  BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
-      requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+      requestedMotorPower[0] =  BSNscalar * abs(stickTurn);
+      requestedMotorPower[1] = -BSNscalar * abs(stickTurn);
     } else if (stickTurn < -STICK_DEADZONE) { 
       // turn stick is negative: turn left *in-place*.
-      requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
-      requestedMotorPower[1] =  BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+      requestedMotorPower[0] = -BSNscalar * abs(stickTurn);
+      requestedMotorPower[1] =  BSNscalar * abs(stickTurn);
     }
 
   } else { 
@@ -516,8 +516,8 @@ void Drive::update() {
     printDebugInfo();
 
     // get the ramp value
-    requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
-    requestedMotorPower[1] = ramp(requestedMotorPower[1], 1);
+    requestedMotorPower[0] = ramp(requestedMotorPower[0], 0, ACCEL_RATE_TEST);
+    requestedMotorPower[1] = ramp(requestedMotorPower[1], 1, ACCEL_RATE_TEST);
 
     // Set the ramp value to a function, needed for generateMotionValues
     lastRampPower[0] = requestedMotorPower[0];
