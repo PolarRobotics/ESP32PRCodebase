@@ -38,28 +38,25 @@ typedef struct servo {
 static servo_t servos[MAX_NUM_MOTORS];
 static uint8_t ServoCount = 0;
 
-MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
-static uint8_t EncoderCount = 0;
-
 class MotorControl {
 private:
+  MotorType motor_type; // the type of motor to be assigned to this object
+  float gear_ratio;     // the input / output gear ratio
+  int max_rpm;          // the motor max rpm * the gear ratio 
+
+  // Servo:
   uint8_t motorIndex;  // index into the channel data for this servo
-  uint8_t encoderIndex;
-  uint8_t enc_a_pin, enc_b_pin;
-  int8_t min;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
-  int8_t max;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
+  
+  int8_t min_pwm;          // minimum is this value times 4 added to MIN_PULSE_WIDTH    
+  int8_t max_pwm;          // maximum is this value times 4 added to MAX_PULSE_WIDTH   
   uint32_t tempTimeon;
   uint16_t power2Duty(float power);
-public:
-  MotorControl();
-  uint8_t setup(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins         
-  uint8_t attach(int mot_pin, int min, int max); // as above but also sets min and max values for writes. 
-  void write(float pwr);
-  void displayPinInfo();
-  void writelow();
-  void readEncoder();
-  int calcSpeed(int current_count);
-  int addInt(int x, int y);
+
+  // Encoder
+  bool has_encoder;
+  uint8_t encoderIndex;
+  uint8_t enc_a_pin, enc_b_pin;
+  void init_encoder();
 
   // for use in void readEncoder()
   int encoderACount;
@@ -72,6 +69,27 @@ public:
   unsigned long current_time;
   unsigned long prev_current_time;
   float omega;
+
+public:
+  MotorControl(bool has_encoder = false, MotorType type = big_ampflow, float gearRatio = 1);
+  uint8_t setup(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
+
+  uint8_t attach(int mot_pin, int min = MIN_PWM_US, int max = MAX_PWM_US); // as above but also sets min and max values for writes. 
+  
+  void displayPinInfo();
+  
+  void write(float pwr);
+  void writelow();
+  
+  // Encoder Related Functions
+  void readEncoder();
+  int calcSpeed(int current_count);
+
+  int Percent2RPM(float pct);
+  float RPM2Percent(int rpm);
 };
+
+MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
+static uint8_t EncoderCount = 0;
 
 #endif // MOTOR_CONTROL_H
