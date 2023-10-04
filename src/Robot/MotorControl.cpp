@@ -7,6 +7,7 @@
 #include <Robot/Lights.h>
 #include <Pairing/pairing.h>
 #include <Drive/Drive.h> // not 100% necessary 
+#include "MotorControl.h"
 
 
 
@@ -49,24 +50,39 @@ void ext_read_encoder1() {
  * 
  * @author Rhys Davies 
  */
-MotorControl::MotorControl() {
+MotorControl::MotorControl(bool has_encoder, MotorType type, float gearRatio) {
+  this->has_encoder = has_encoder;
+  this->motor_type = type;
+  this->gear_ratio = gearRatio;
+  
   if(ServoCount < MAX_NUM_MOTORS)
     this->motorIndex = ServoCount++;  // assign a servo index to this instance
   else
     this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
 
+  if (has_encoder) {
+    this->encoderIndex = EncoderCount;
+    GlobalClassPointer[EncoderCount++] = this;
+    init_encoder();
+  }
+
+  // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
+  this->max_rpm = MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio;
+}
+
+void MotorControl::init_encoder() {
   // for use in void readEncoder()
-  encoderACount = 0;
-  b_channel_state = 0;
-  rollover = 2048;
+  this->encoderACount = 0;
+  this->b_channel_state = 0;
+  this->rollover = 2048;
 
   // for use in int calcSpeed()
-  prev_current_count = 0;
-  rollover_threshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
-  current_time = 0;
-  prev_current_time = 0; 
-  omega = 0;
+  this->prev_current_count = 0;
+  this->rollover_threshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+  this->current_time = 0;
+  this->prev_current_time = 0; 
+  this->omega = 0;
 }
 
 /**
@@ -81,12 +97,9 @@ MotorControl::MotorControl() {
 uint8_t MotorControl::setup(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
   
-  if (this->enc_a_pin != -1 && this->enc_b_pin != -1) {
+  if (this->enc_a_pin != -1 && this->enc_b_pin != -1 && has_encoder) {
     pinMode(this->enc_a_pin, INPUT_PULLUP);
     pinMode(this->enc_b_pin, INPUT);
-
-    this->encoderIndex = EncoderCount;
-    GlobalClassPointer[EncoderCount++] = this;
 
     switch(this->encoderIndex) {
       case 0: {
@@ -123,8 +136,8 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
     servos[this->motorIndex].pin = pin;                  // assign this servo a pin
     // servos[this->motorIndex].isactive = true;         // set the servo to active
     servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
-    this->min = min; 
-    this->max = max;
+    this->min_pwm = min; 
+    this->max_pwm = max;
     ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);      // activate the timer channel to be used
     ledcAttachPin(pin, this->motorIndex);                // attach the pin to the timer channel
     ledcWrite(this->motorIndex, 0);                      // write a duty cycle of zero to activate the timer
@@ -175,10 +188,10 @@ void MotorControl::displayPinInfo() {
  * @param power the input power
 */
 uint16_t MotorControl::power2Duty(float power) {
-    // this can be written in compiler code, but we are trying to save on flash memory
-    // linearly convert a [-1, 1] motor power to a microseconds value between 1000us and 2000us
-    this->tempTimeon = (power + 1) * 500 + 1000;
-    return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
+  // this can be written in compiler code, but we are trying to save on flash memory
+  // linearly convert a [-1, 1] motor power to a microseconds value between 1000us and 2000us
+  this->tempTimeon = (power + 1) * 500 + 1000;
+  return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
 }
 
 /**
@@ -250,6 +263,13 @@ int MotorControl::calcSpeed(int current_count) {
   return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
 }
 
+int MotorControl::Percent2RPM(float pct) {
+  return constrain(pct, -1, 1) * this->max_rpm;
+}
+
+float MotorControl::RPM2Percent(int rpm) {
+  return constrain(rpm, -this->max_rpm, this->max_rpm)/this->max_rpm;
+}
 
 // Old code:
 
