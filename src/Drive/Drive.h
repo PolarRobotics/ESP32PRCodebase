@@ -103,6 +103,9 @@ class Drive {
     int R_High_Min = 48;
     float R_Min = wheelBase/2;
     float max_RPM = 4000;
+    float angularPower = 0.0f;
+    float intermediateMotorPower[NUM_MOTORS];
+    float maxMagnitude = 0.0f;
 
 
   protected:
@@ -137,6 +140,9 @@ class Drive {
     void generateMotionValues();
     virtual void update();
     virtual void printDebugInfo();
+    float applyClamp(float value);
+    float applyDeadzone(float value, float deadzone);
+    void diffDriveCurve(float stickForwardRev, float stickTurn);
 
     //* The following variables are initialized in the constructor
     // the max allowable turning when the bot is traveling at lowest speed

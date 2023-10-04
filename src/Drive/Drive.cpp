@@ -323,6 +323,115 @@ float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
     return currentRampPower[mtr];
 }
 
+/**
+ * @brief Limit motor values to the -1.0 to +1.0 range.
+ * Stolen wholesale from WPILib.
+ */
+float Drive::applyClamp(float value) {
+  if (value > 1.0f) {
+    return 1.0f;
+  } else if (value < -1.0f) {
+    return -1.0f;
+  }
+  return value;
+}
+
+/**
+ * @brief Returns 0.0 if the given value is within the specified deadzone/range around zero. 
+ * The remaining range from the deadzone to +/-1.0 is scaled from 0.0 to +/-1.0.
+ * 
+ * Also (mostly) stolen wholesale from WPILib.
+ *
+ * @param value    value to adjust
+ * @param deadzone range around zero, represents [-deadzone, +deadzone]
+ */
+float Drive::applyDeadzone(float value, float deadzone) {
+  if (value > deadzone) { // value is positive
+    return (value - deadzone) / (1.0f - deadzone);
+  } else if (value < -deadzone) { // value is negative
+    return (value + deadzone) / (1.0f - deadzone);
+  } else { // value is within deadzone
+    return 0.0f;
+  }
+}
+
+/**
+ * @brief constant curvature hybrid drive based on WPILib: https://github.com/wpilibsuite/allwpilib/blob/96e9a6989ce1688f3edb2d9b9d21ef8cd3861579/wpilibc/src/main/native/cpp/Drive/DifferentialDrive.cpp#L117
+ * 
+ * Uses arcade-style constant curvature model, with override for
+ * in-place (tank) turning if stickForwardRev is in deadzone (is zero).
+ * 
+ * Replaces generateMotionValues() and by extension calcTurningMotorValues().
+ *
+ * @author Max Phillips
+ *
+ * @param stickForwardRev left stick Y, [-1, +1], forward is positive, reverse is negative.
+ * 
+ * @param stickTurn right stick X, [-1, +1], left is negative, right is positive.
+ * 
+ * Outputs (directly modified):
+ *   requestedMotorPower[0]
+ *   requestedMotorPower[1]
+ * 
+ */
+void Drive::diffDriveCurve(float stickForwardRev, float stickTurn) {
+  stickForwardRev = applyClamp(stickForwardRev);
+
+  stickTurn = applyClamp(stickTurn);
+
+  // "zero" is defined as "within [-deadzone, +deadzone]"
+  // this also helps dodge floating-point comparison problems
+
+  if (fabs(stickForwardRev) < STICK_DEADZONE) { 
+    // fwd stick is zero
+    
+    if (fabs(stickTurn) < STICK_DEADZONE) { 
+      // turn stick is zero
+      // both sticks are zero == no movement desired, so set motors to zero
+      requestedMotorPower[0] = 0, 
+      requestedMotorPower[1] = 0; 
+    } else if (stickTurn > STICK_DEADZONE) { 
+      // turn stick is positive: turn right *in-place*.
+      requestedMotorPower[0] =  BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+      requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+    } else if (stickTurn < -STICK_DEADZONE) { 
+      // turn stick is negative: turn left *in-place*.
+      requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+      requestedMotorPower[1] =  BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+    }
+
+  } else { 
+    // fwd stick is not zero
+
+    if (fabs(stickTurn) < STICK_DEADZONE) {
+      // turn stick is zero, just move forward
+      requestedMotorPower[0] = BSNscalar * stickForwardRev;
+      requestedMotorPower[1] = BSNscalar * stickForwardRev;
+    } else { 
+      // moving forward and turning
+
+      angularPower = fabs(stickForwardRev) * stickTurn;
+      
+      // calculate initial powers. these may be above 1. this is ok for now.
+      intermediateMotorPower[0] = stickForwardRev + angularPower;
+      intermediateMotorPower[1] = stickForwardRev - angularPower;
+
+      // normalize powers
+      maxMagnitude = max(fabs(intermediateMotorPower[0]), fabs(intermediateMotorPower[1]));
+
+      if (maxMagnitude > 1.0) {
+        intermediateMotorPower[0] /= maxMagnitude;
+        intermediateMotorPower[1] /= maxMagnitude;
+      }
+
+      // set final motor powers
+      requestedMotorPower[0] = intermediateMotorPower[0] * BSNscalar;
+      requestedMotorPower[1] = intermediateMotorPower[1] * BSNscalar;
+
+    }
+  }
+}
+
 
 /**
  * returns the stored motor value in the class
@@ -402,7 +511,8 @@ void Drive::printDebugInfo() {
 */
 void Drive::update() {
     // Generate turning motion
-    generateMotionValues();
+    // generateMotionValues();
+    diffDriveCurve(stickForwardRev, stickTurn);
     printDebugInfo();
 
     // get the ramp value
