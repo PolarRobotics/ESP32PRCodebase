@@ -9,6 +9,8 @@ motorTypeStrings[NUM_MOTOR_TYPES] = {
   { small_12v,     "small_12v"     }
 };
 
+
+
 /**
  * @brief getMotorTypeString returns a string correlating to the passed motor type enum
  * @example for MotorType `falcon` the function returns "falcon"

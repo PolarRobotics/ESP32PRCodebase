@@ -3,7 +3,7 @@
 Kicker::Kicker(uint8_t kickerPin) {
   enabled = false;
   this->kickerPin = kickerPin;
-  windupMotor.attach(kickerPin);
+  windupMotor.setup(kickerPin);
 }
 
 void Kicker::action() {
