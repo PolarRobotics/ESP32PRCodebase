@@ -34,6 +34,9 @@ void ConfigManager::read() {
     this->config->bot_type = (BotType)preferences.getUChar("bot_type");
     // read the motor type
     this->config->mot_type = (MotorType)preferences.getUChar("motor_type");
+    // read the gear ratio
+    this->config->gear_ratio = (float)preferences.getFloat("gear_ratio");
+
     // close the bot_config namespace
     preferences.end();
 }
@@ -64,6 +67,14 @@ MotorType ConfigManager::getMotorType() {
 }
 
 /**
+ * @brief getGearRatio returns the gear ratio (input tooth count / output tooth count)
+ * @return float the stored gear ratio decimal
+*/
+float ConfigManager::getGearRatio() {
+    return this->config->gear_ratio;
+}
+
+/**
  * @brief converts the stored configuration into an easy to read string, 
  * to be printed to the console or other means.
  * 
@@ -81,6 +92,8 @@ const char * ConfigManager::toString() {
     temp.append(getBotTypeString(config->bot_type));
     temp.append("\nmotor type: ");
     temp.append(getMotorTypeString(config->mot_type));
+    temp.append("\ngear ratio: ");
+    temp.append(to_string(config->gear_ratio));
     temp.append("\r\n");
     return temp.c_str();
 }
@@ -112,6 +125,9 @@ bool ConfigManager::write(bot_config_t *cfg) {
     // store the bot type to preferences
     preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->mot_type));
 
+    // store the robots drivetrain gear ratio
+    preferences.putFloat("gear_ratio", cfg->gear_ratio);
+
     // close the namespace
     preferences.end();
     return true;
@@ -134,6 +150,7 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
     this->config->bot_type = botConfigArray[botIndex].bot_type;
     this->config->mot_type = botConfigArray[botIndex].mot_type;
     this->config->bot_name = botConfigArray[botIndex].bot_name;
+    this->config->gear_ratio = botConfigArray[botIndex].gear_ratio;
 
     // write index to predefined configuration from the array defined in the header file
     return write(this->config);
@@ -143,17 +160,19 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
  * @brief setConfig writes a custom configuration to the bot's EEPROM,
  * overriding previous preset configurations
  * 
- * @param botIndex not entirely relevant, but the index of the bot in the array
- * @param botType the type of bot you wish to configure
- * @param motorType the motor type you wish to assign to the bot
+ * @param botindex not entirely relevant, but the index of the bot in the array to be assigned
+ * @param bottype the type of bot you wish to configure
+ * @param motortype the motor type you wish to assign to the bot
+ * @param gearratio the gear ratio you wish to assign to the bot
  * @return true configuration was successfully applied
  * @return false configuration check failed
  */
-bool ConfigManager::setConfig(uint8_t botIndex, BotType botType, MotorType motorType) {
+bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio) {
   if (this->writable) {
-    this->config->index = botIndex;
-    this->config->bot_type = botType;
-    this->config->mot_type = motorType; 
+    this->config->index = botindex;
+    this->config->bot_type = bottype;
+    this->config->mot_type = motortype;
+    this->config->gear_ratio = gearratio;
     
     return write(this->config);
   } else return false;

@@ -32,7 +32,7 @@
 */
 
 Drive::Drive() {
-  Drive(lineman, big);
+  Drive(lineman, big_ampflow);
 }
 
 Drive::Drive(BotType botType, MotorType motorType) {
@@ -150,8 +150,8 @@ void Drive::setBSN(Speed bsn) {
     switch (bsn) {
         case BOOST: {
             switch (motorType) {
-                case MotorType::big: { BSNscalar = BIG_BOOST_PCT; break; }
-                case MotorType::small: { BSNscalar = SMALL_BOOST_PCT; break; }
+                case MotorType::big_ampflow: { BSNscalar = BIG_BOOST_PCT; break; }
+                case MotorType::small_ampflow: { BSNscalar = SMALL_BOOST_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_BOOST_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_BOOST_PCT; break; }
             }
@@ -159,8 +159,8 @@ void Drive::setBSN(Speed bsn) {
         }
         case NORMAL: {
             switch (motorType) {
-                case MotorType::big: { BSNscalar = BIG_NORMAL_PCT; break; }
-                case MotorType::small: { BSNscalar = SMALL_NORMAL_PCT; break; }
+                case MotorType::big_ampflow: { BSNscalar = BIG_NORMAL_PCT; break; }
+                case MotorType::small_ampflow: { BSNscalar = SMALL_NORMAL_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_NORMAL_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_NORMAL_PCT; break; }
             }
@@ -168,8 +168,8 @@ void Drive::setBSN(Speed bsn) {
         }
         case SLOW: {
             switch (motorType) {
-                case MotorType::big: { BSNscalar = BIG_SLOW_PCT; break; }
-                case MotorType::small: { BSNscalar = SMALL_SLOW_PCT; break; }
+                case MotorType::big_ampflow: { BSNscalar = BIG_SLOW_PCT; break; }
+                case MotorType::small_ampflow: { BSNscalar = SMALL_SLOW_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_SLOW_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_SLOW_PCT; break; }
             }

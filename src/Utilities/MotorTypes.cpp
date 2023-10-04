@@ -2,10 +2,11 @@
 
 constexpr Pair<MotorType, const char*> 
 motorTypeStrings[NUM_MOTOR_TYPES] = {
-  {  big,     "big"      },
-  {  small,   "small"    },
-  {  mecanum, "mecanum"  },
-  {  falcon,  "falcon"   }
+  { big_ampflow,   "big_ampflow"   },
+  { small_ampflow, "small_ampflow" },
+  { mecanum,       "mecanum"       },
+  { falcon,        "falcon"        },
+  { small_12v,     "small_12v"     }
 };
 
 /**

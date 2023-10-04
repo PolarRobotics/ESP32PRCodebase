@@ -1,26 +1,25 @@
 #include <Arduino.h>
-// #include <Preferences.h>
 
 // #include <PolarRobotics.h>
 #include <Utilities/ConfigManager.h>
 
 // Preferences preferences;
-
 ConfigManager config;
 
-#define NUM_BOT_TYPES 7
-#define NUM_MOTORS 4
+bool done = false;
 
 void setup() {
   Serial.begin(115200);
   Serial.println(F("Writing Bot Type\n"));
 
   //! If you want to use a predefined robot from BotTypes.h, declare the index here:
+  // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
   uint8_t index = 0; // also handles bot name index
   
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
   BotType bot_type = lineman; 
-  MotorType motor_type = big;
+  MotorType motor_type = big_ampflow;
+  float gear_ratio = 1;
 
   //* Write standard bot configuration from BotTypes.botConfigArray
   if (config.setConfig(index))
@@ -29,12 +28,10 @@ void setup() {
     Serial.println(F("Error writing bot config"));
 
   //* Write custom bot configuration
-  // if(config.setConfig(index, bot_type, motor_type))
+  // if(config.setConfig(index, bot_type, motor_type, gear_ratio))
   //   Serial.println(F("Config write successful"));
   // else
   //   Serial.println(F("Error writing bot config"));  
-
-  Serial.println();
 
   //* Read back for verification
   Serial.println(F("Readback:"));
