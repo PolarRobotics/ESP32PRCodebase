@@ -467,18 +467,25 @@ void Drive::printDebugInfo() {
     Serial.print(F("  R_HAT_X: "));
     Serial.print(stickTurn);
 
-    Serial.print(F("  |  Turn: "));
-    Serial.print(lastTurnPwr);
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
+
+    Serial.print(F("  |  L iPwr: "));
+    Serial.print(intermediateMotorPower[0]);
+    Serial.print(F("  R iPwr: "));
+    Serial.print(intermediateMotorPower[1]);
 
     Serial.print(F("  |  Left ReqPwr: "));
     Serial.print(requestedMotorPower[0]);
     Serial.print(F("  Right ReqPwr: "));
     Serial.print(requestedMotorPower[1]);
 
-    Serial.print(F("  |  Left: "));
-    Serial.print(Omega_rL);
-    Serial.print(F("  Right: "));
-    Serial.print(Omega_rR);
+
+
+    // Serial.print(F("  |  L: "));
+    // Serial.print(Omega_rL);
+    // Serial.print(F("  R: "));
+    // Serial.print(Omega_rR);
 
 
     
@@ -491,10 +498,10 @@ void Drive::printDebugInfo() {
     // Serial.print(F("  requestedPower - currentRampPower "));
     // Serial.println(requestedPower - currentRampPower[mtr], 10);
 
-    Serial.print(F("  Left Motor: "));
-    Serial.print(requestedMotorPower[0]);
-    Serial.print(F("  Right: "));
-    Serial.print(requestedMotorPower[1]);
+    // Serial.print(F("  L Final: "));
+    // Serial.print(requestedMotorPower[0]);
+    // Serial.print(F("  R Final: "));
+    // Serial.print(requestedMotorPower[1]);
 
     Serial.print(F("\n"));
 }
