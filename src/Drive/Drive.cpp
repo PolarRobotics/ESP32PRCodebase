@@ -251,9 +251,12 @@ void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
     Omega_rL = (Omega_r/R)*(R+(wheelBase/2));
     Omega_rR = (Omega_r/R)*(R-(wheelBase/2));
 
-    if ((Omega_rL > max_RPM) || (Omega_rR > max_RPM)){
+    if (Omega_rL > max_RPM) {
         Omega_rL = max_RPM;
-        Omega_rR = (max_RPM/R)*(R-(wheelBase/2));
+    }
+
+    if (Omega_rR < min_RPM) {
+        Omega_rR = min_RPM;
     }
 
     turnMotorValues[0] = Omega_rL/max_RPM;
