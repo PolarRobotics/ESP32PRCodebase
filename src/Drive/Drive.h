@@ -103,6 +103,7 @@ class Drive {
     int R_High_Min = 48;
     float R_Min = wheelBase/2;
     float max_RPM = 4000;
+    float min_RPM = 200;
 
 
   protected:
