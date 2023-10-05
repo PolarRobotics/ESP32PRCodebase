@@ -410,7 +410,7 @@ void Drive::diffDriveCurve(float stickForwardRev, float stickTurn) {
     } else { 
       // moving forward and turning
 
-      angularPower = fabs(stickForwardRev) * stickTurn;
+      angularPower = fabs(stickForwardRev) * stickTurn * CURVE_DRIVE_TURN_SCALAR;
       
       // calculate initial powers. these may be above 1. this is ok for now.
       intermediateMotorPower[0] = stickForwardRev + angularPower;

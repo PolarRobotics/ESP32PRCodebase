@@ -33,6 +33,9 @@
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
 
+// this is multiplied into angular power, increases the effect of turning
+#define CURVE_DRIVE_TURN_SCALAR 1.25
+
 
 // #if BOT_TYPE == 1 //rx
 // #define turnMax 0.8 
