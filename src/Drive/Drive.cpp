@@ -66,9 +66,9 @@ Drive::Drive(BotType botType, MotorType motorType) {
     this->BIG_NORMAL_PCT = 0.4; 
     this->BIG_SLOW_PCT = 0.3;
   } else {
-    this->BIG_BOOST_PCT = 0.7;  
-    this->BIG_NORMAL_PCT = 0.6; 
-    this->BIG_SLOW_PCT = 0.3;
+    this->BIG_BOOST_PCT = 1.0;  
+    this->BIG_NORMAL_PCT = 0.8; 
+    this->BIG_SLOW_PCT = 0.4;
   }
 
   // initialize arrays
