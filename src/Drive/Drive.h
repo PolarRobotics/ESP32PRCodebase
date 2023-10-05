@@ -36,6 +36,9 @@
 // this is multiplied into angular power, increases the effect of turning
 #define CURVE_DRIVE_TURN_SCALAR 1.25
 
+// at this level of forward power, turn power will take priority over forward power
+#define TURN_OVERPOWER_THRESHOLD 0.2
+
 
 // #if BOT_TYPE == 1 //rx
 // #define turnMax 0.8 
@@ -110,6 +113,7 @@ class Drive {
     float angularPower = 0.0f;
     float intermediateMotorPower[NUM_MOTORS];
     float maxMagnitude = 0.0f;
+    float turnOverpowerMagnitude = 0.0f;
 
 
   protected:

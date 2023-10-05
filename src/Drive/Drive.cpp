@@ -382,28 +382,28 @@ void Drive::diffDriveCurve(float stickForwardRev, float stickTurn) {
   // "zero" is defined as "within [-deadzone, +deadzone]"
   // this also helps dodge floating-point comparison problems
 
-  if (fabs(stickForwardRev) < STICK_DEADZONE) { 
+  if (fabs(stickForwardRev) < STICK_DEADZONE && fabs(stickTurn) < STICK_DEADZONE) { 
     // fwd stick is zero
     
-    if (fabs(stickTurn) < STICK_DEADZONE) { 
+    // if () { 
       // turn stick is zero
       // both sticks are zero == no movement desired, so set motors to zero
       requestedMotorPower[0] = 0, 
       requestedMotorPower[1] = 0; 
-    } else if (stickTurn > STICK_DEADZONE) { 
-      // turn stick is positive: turn right *in-place*.
-      requestedMotorPower[0] =  BSNscalar * abs(stickTurn);
-      requestedMotorPower[1] = -BSNscalar * abs(stickTurn);
-    } else if (stickTurn < -STICK_DEADZONE) { 
-      // turn stick is negative: turn left *in-place*.
-      requestedMotorPower[0] = -BSNscalar * abs(stickTurn);
-      requestedMotorPower[1] =  BSNscalar * abs(stickTurn);
-    }
+    // } else if (stickTurn > STICK_DEADZONE) { 
+    //   // turn stick is positive: turn right *in-place*.
+    //   requestedMotorPower[0] =  BSNscalar * abs(stickTurn);
+    //   requestedMotorPower[1] = -BSNscalar * abs(stickTurn);
+    // } else if (stickTurn < -STICK_DEADZONE) { 
+    //   // turn stick is negative: turn left *in-place*.
+    //   requestedMotorPower[0] = -BSNscalar * abs(stickTurn);
+    //   requestedMotorPower[1] =  BSNscalar * abs(stickTurn);
+    // }
 
   } else { 
     // fwd stick is not zero
 
-    if (fabs(stickTurn) < STICK_DEADZONE) {
+    if (fabs(stickForwardRev) > STICK_DEADZONE && fabs(stickTurn) < STICK_DEADZONE) {
       // turn stick is zero, just move forward
       requestedMotorPower[0] = BSNscalar * stickForwardRev;
       requestedMotorPower[1] = BSNscalar * stickForwardRev;
@@ -411,10 +411,18 @@ void Drive::diffDriveCurve(float stickForwardRev, float stickTurn) {
       // moving forward and turning
 
       angularPower = fabs(stickForwardRev) * stickTurn * CURVE_DRIVE_TURN_SCALAR;
-      
+
       // calculate initial powers. these may be above 1. this is ok for now.
       intermediateMotorPower[0] = stickForwardRev + angularPower;
       intermediateMotorPower[1] = stickForwardRev - angularPower;
+      
+      
+      if ((fabs(stickTurn) * TURN_OVERPOWER_THRESHOLD) > fabs(stickForwardRev)) {
+        // turn power overpowers forward power (configurable with TURN_OVERPOWER_THRESHOLD)
+        turnOverpowerMagnitude = ((stickTurn * CURVE_DRIVE_TURN_SCALAR) - (angularPower / TURN_OVERPOWER_THRESHOLD));
+        intermediateMotorPower[0] +=  copysign(turnOverpowerMagnitude, stickTurn); // take sign of turn stick
+        intermediateMotorPower[1] += -copysign(turnOverpowerMagnitude, stickTurn); // above, but negate for right motor
+      }
 
       // normalize powers
       maxMagnitude = max(fabs(intermediateMotorPower[0]), fabs(intermediateMotorPower[1]));
@@ -469,6 +477,12 @@ void Drive::printDebugInfo() {
 
     // Serial.print(F("  |  Turn: "));
     // Serial.print(lastTurnPwr);
+
+    Serial.print(F("  |  AP: "));
+    Serial.print(angularPower);
+
+    Serial.print(F("  |  tOPM: "));
+    Serial.print(turnOverpowerMagnitude);
 
     Serial.print(F("  |  L iPwr: "));
     Serial.print(intermediateMotorPower[0]);
