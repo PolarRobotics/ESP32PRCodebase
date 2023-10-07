@@ -23,7 +23,6 @@
 // how often the ramp() function changes the motor power
 #define TIME_INCREMENT 5
 
-
 // drive param generation
 #define NORMAL_TURN_CONSTANT 0.05
 // Value for the tank mode speed reduction percentage
@@ -31,24 +30,6 @@
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
-
-
-// #if BOT_TYPE == 1 //rx
-// #define turnMax 0.8 
-// #define turnMin 0.8 
-// #elif BOT_TYPE == 2 //old center
-// #define turnMax 0.2 
-// #define turnMin 0.2 
-// #elif BOT_TYPE == 4 // qb
-// #define turnMax 0.4
-// #define turnMin 0.4
-// #elif BOT_TYPE == 6 //runningback
-// #define turnMax 0.5
-// #define turnMin 0.2
-// #else
-// #define turnMax 0.65 // the max allowable turning when the bot is traveling at lowest speed
-// #define turnMin 0.65 // the min allowable turning when the bot is traveling at full speed
-// #endif
 
 // Controller Defines
 #define STICK_DEADZONE 0.0390625F // 8.0 / 127.0
@@ -93,18 +74,13 @@ class Drive {
     float currentRampPower[NUM_MOTORS];
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
-    void calcTurningMotorValues(float stickTrn, float prevPwr, int dir);
-    float wheelBase = 9.75;
-    float Omega_r = 0;
-    float Omega_rL = 0;
-    float Omega_rR = 0;
-    float R = 0;
-    int R_Max = 24;
-    int R_High_Min = 48;
-    float R_Min = wheelBase/2;
-    float max_RPM = 4000;
-    float min_RPM = 200;
+    float wheelBase;
+    float omega;
+    float omega_L, omega_R;
+    float R, R_Max, R_Min;
+    float max_RPM, min_RPM;
 
+    void calcTurning(float stickTrn, float fwdLinPwr);
 
   protected:
     MotorControl M1, M2;
@@ -140,12 +116,6 @@ class Drive {
     virtual void printDebugInfo();
 
     //* The following variables are initialized in the constructor
-    // the max allowable turning when the bot is traveling at lowest speed
-    float turnMax; 
-
-    // the min allowable turning when the bot is traveling at full speed
-    float turnMin; 
-    
     // maximum speed for these is 1.0
     // percentage of power used when boosting for big motors
     float BIG_BOOST_PCT;
