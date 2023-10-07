@@ -39,28 +39,6 @@ Drive::Drive(BotType botType, MotorType motorType) {
   this->botType = botType;
   this->motorType = motorType;
 
-  switch (botType) {
-    case receiver:
-      this->turnMax = 0.8;
-      this->turnMin = 0.8;
-      break;
-    case center:
-      this->turnMax = 0.2;
-      this->turnMin = 0.2;
-      break;
-    case quarterback:
-      this->turnMax = 0.4;
-      this->turnMin = 0.4;
-      break;
-    case runningback:
-      this->turnMax = 0.5;
-      this->turnMin = 0.2;
-      break;
-    default:
-      this->turnMax = 0.65;
-      this->turnMin = 0.65;
-  }
-
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
     this->BIG_NORMAL_PCT = 0.4; 
@@ -78,6 +56,19 @@ Drive::Drive(BotType botType, MotorType motorType) {
     lastRampPower[i] = 0.0f;
     turnMotorValues[i] = 0.0f;
   }
+
+  if (botType != mecanum_center) {
+    // initialize parameters for turning model
+    wheelBase = 9.75;
+    omega = 0;
+    omega_L = 0;
+    omega_R = 0;
+    R = 0;
+    R_Max = 24;
+    R_Min = wheelBase/2;
+    max_RPM = 4000;
+    min_RPM = 200;
+  } 
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
@@ -207,65 +198,76 @@ void Drive::generateMotionValues() {
             to turn right. The left motor should get set to 1 and the right motor should get set to
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
-            if(stickTurn > STICK_DEADZONE) { // turn Right
-                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
-                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[0]), 1); break;
-                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 1); break;
-                }
-                //calcTurningMotorValues(stickTurn, lastRampPower[0], 1);
-                requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
-                requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
-            } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
-                    case true: calcTurningMotorValues(stickTurn, abs(lastRampPower[1]), 0); break;
-                    case false: calcTurningMotorValues(stickTurn, abs(BSNscalar * stickForwardRev), 0); break;
-                }
-                //calcTurningMotorValues(stickTurn, lastRampPower[1], 0);
-                requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
-                requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
-            }
+            // if(stickTurn > STICK_DEADZONE) { // turn Right
+            //     switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+            //         case true: calcTurning(stickTurn, abs(lastRampPower[0]), 1); break;
+            //         case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev), 1); break;
+            //     }
+            //     //calcTurning(stickTurn, lastRampPower[0], 1);
+            //     requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
+            //     requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
+            // } else if(stickTurn < -STICK_DEADZONE) { // turn Left
+            //     switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+            //         case true: calcTurning(stickTurn, abs(lastRampPower[1]), 0); break;
+            //         case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev), 0); break;
+            //     }
+            //     //calcTurning(stickTurn, lastRampPower[1], 0);
+            //     requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
+            //     requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
+            // }
+
+            calcTurning(stickTurn, fabs(BSNscalar * stickForwardRev));
+
+            requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
+            requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
         }
     }
 }
 
 
 /**
- * @brief Work in progress! as of 11/27 stuffs changin' calcTurningMotorValue generates a value to be set to the turning motor, the motor that corresponds to the direction of travel
+ * @brief calcTurning generates power values for each motor to achieve a given turn
  * @authors Grant Brautigam, Rhys Davies
  * Created: 9-12-2022
- * updated: 11-27-22
+ * updated: 10-6-2023
  * Mathematical model:
- *  NOT REALLY TRUE ANYMORE
- *  TurningMotor = TurnStickNumber(1-offset)(CurrentPwrFwd)^2+(1-TurnStickNumber)*CurrentPwrFwd
- *   *Note: CurrentPwrFwd is the current power, not the power from the stick
+ * Whitepaper: https://www.cs.columbia.edu/~allen/F17/NOTES/icckinematics.pdf
+ * 
+ * Differential drive turning model
+ * 
+ * omega_R = (omega/R)*(R + l/2)
+ * omega_L = (omega/R)*(R - l/2)
  *
+ * omega_R: right wheel angular velocity
+ * omega_R: left wheel angular velocity
+ * omega: the rate of rotation around the ICC (Instantaneous Center of Curvature)
+ * l: distance between each wheel (wheelbase) 
+ * R: distance the ICC from the center of the wheelbase (l/2)
+ * 
  * @param stickTrn the absoulte value of the current turning stick input
- * @param prevPwr the non-turning motor value from the previous loop, which was actually sent to the motor
- * @return float - the value to get set to the turning motor (the result of the function mention above)
+ * @param fwdLinPwr the non-turning motor value from the previous loop, which was actually sent to the motor
  */
-void Drive::calcTurningMotorValues(float stickTrn, float prevPwr, int dir) {
-    
-    
+void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     //R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min); // start of turn scaling 
 
+    // Calculate the R value from the stick turn input
     R = (1-abs(stickTrn))*(R_Max-R_Min) + R_Min;
     
-    Omega_r = abs(stickForwardRev)*BSNscalar*max_RPM;
+    // calculate the requested angular velocity for the robot 
+    omega = fwdLinPwr*max_RPM;
     
-    Omega_rL = (Omega_r/R)*(R+(wheelBase/2));
-    Omega_rR = (Omega_r/R)*(R-(wheelBase/2));
+    // calculate the rpm for the left wheel
+    omega_L = (omega/R)*(R+(wheelBase/2));
+    // calculate the rpm for the right wheel
+    omega_R = (omega/R)*(R-(wheelBase/2));
 
-    if (Omega_rL > max_RPM) {
-        Omega_rL = max_RPM;
-    }
+    // ensure the left wheel RPM doesnt go above the min or the max RPM
+    omega_L = constrain(omega_L, min_RPM, max_RPM);
+    // ensure the left wheel RPM doesnt go above the min or the max RPM
+    omega_R = constrain(omega_R, min_RPM, max_RPM);
 
-    if (Omega_rR < min_RPM) {
-        Omega_rR = min_RPM;
-    }
-
-    turnMotorValues[0] = Omega_rL/max_RPM;
-    turnMotorValues[1] = Omega_rR/max_RPM;
-
+    turnMotorValues[0] = omega_L/max_RPM;
+    turnMotorValues[1] = omega_R/max_RPM;
 }
 
 
@@ -374,9 +376,9 @@ void Drive::printDebugInfo() {
     Serial.print(requestedMotorPower[1]);
 
     Serial.print(F("  |  Left: "));
-    Serial.print(Omega_rL);
+    Serial.print(omega_L);
     Serial.print(F("  Right: "));
-    Serial.print(Omega_rR);
+    Serial.print(omega_R);
 
 
     
