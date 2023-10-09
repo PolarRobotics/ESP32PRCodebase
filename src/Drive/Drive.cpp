@@ -35,31 +35,9 @@ Drive::Drive() {
   Drive(lineman, big_ampflow);
 }
 
-Drive::Drive(BotType botType, MotorType motorType) {
+Drive::Drive(BotType botType, MotorType motorType, float gearRatio) {
   this->botType = botType;
   this->motorType = motorType;
-
-  switch (botType) {
-    case receiver:
-      this->turnMax = 0.8;
-      this->turnMin = 0.8;
-      break;
-    case center:
-      this->turnMax = 0.2;
-      this->turnMin = 0.2;
-      break;
-    case quarterback:
-      this->turnMax = 0.4;
-      this->turnMin = 0.4;
-      break;
-    case runningback:
-      this->turnMax = 0.5;
-      this->turnMin = 0.2;
-      break;
-    default:
-      this->turnMax = 0.65;
-      this->turnMin = 0.65;
-  }
 
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
@@ -82,7 +60,10 @@ Drive::Drive(BotType botType, MotorType motorType) {
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    M1.setup(lpin), M2.setup(rpin);
+    this->M1 = new MotorControl(motorType, false, this->gearRatio);
+    this->M2 = new MotorControl(motorType, false, this->gearRatio);
+
+    M1->setup(lpin), M2->setup(rpin);
 }
 
 /**
@@ -93,8 +74,11 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 */
 void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    M1.setup(lpin, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, right_enc_a_pin, right_enc_b_pin);
+    this->M1 = new MotorControl(motorType, true, this->gearRatio);
+    this->M2 = new MotorControl(motorType, true, this->gearRatio);
+    
+    M1->setup(lpin, left_enc_a_pin, left_enc_b_pin);
+    M2->setup(rpin, right_enc_a_pin, right_enc_b_pin);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -348,7 +332,7 @@ void Drive::setLastRampPwr(float power, uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    M1.writelow(), M2.writelow();
+    M1->writelow(), M2->writelow();
     // M1.write(0); M2.write(0);
 }
 
@@ -411,7 +395,7 @@ void Drive::update() {
     lastRampPower[0] = requestedMotorPower[0];
     lastRampPower[1] = requestedMotorPower[1];
     
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+    M1->write(requestedMotorPower[0]);
+    M2->write(requestedMotorPower[1]);
 }
 
