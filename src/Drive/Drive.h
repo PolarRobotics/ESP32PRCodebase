@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef DRIVE_H
-#define DRIVE_H
-
 #include <Arduino.h>
 #include <Robot/MotorControl.h>
 #include "PolarRobotics.h"
@@ -88,7 +85,7 @@ class Drive {
     MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
     BotType botType; // TODO: I added this to private only because motorType was private.
     float gearRatio;
-    
+
     float BSNscalar;
     float requestedMotorPower[NUM_MOTORS];
     float currentRampPower[NUM_MOTORS];
@@ -148,5 +145,3 @@ class Drive {
     // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
     float BIG_SLOW_PCT;
 };
-
-#endif // DRIVE_H

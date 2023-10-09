@@ -1,14 +1,7 @@
 #pragma once
 
-#ifndef MOTOR_CONTROL_H
-#define MOTOR_CONTROL_H
-
 #include <Arduino.h>
 #include <PolarRobotics.h>
-
-// #include <Drive/Drive.h> // not 100% necessary 
-
-
 
 #define MAX_NUM_MOTORS 16
 
@@ -94,5 +87,3 @@ public:
 
 MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
 static uint8_t EncoderCount = 0;
-
-#endif // MOTOR_CONTROL_H
