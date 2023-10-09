@@ -35,7 +35,7 @@ Drive::Drive() {
   Drive(lineman, big_ampflow);
 }
 
-Drive::Drive(BotType botType, MotorType motorType) {
+Drive::Drive(BotType botType, MotorType motorType, float gearRatio) {
   this->botType = botType;
   this->motorType = motorType;
 
@@ -72,12 +72,11 @@ Drive::Drive(BotType botType, MotorType motorType) {
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
-  //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-  M1.attach(lpin), M2.attach(rpin);
+    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    this->M1 = new MotorControl(motorType, false, this->gearRatio);
+    this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
-  // stop motors immediately upon initialization
-  M1.write(0);
-  M2.write(0);
+    M1->setup(lpin), M2->setup(rpin);
 }
 
 /**
@@ -88,8 +87,11 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 */
 void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    M1.setup(lpin, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, right_enc_a_pin, right_enc_b_pin);
+    this->M1 = new MotorControl(motorType, true, this->gearRatio);
+    this->M2 = new MotorControl(motorType, true, this->gearRatio);
+    
+    M1->setup(lpin, left_enc_a_pin, left_enc_b_pin);
+    M2->setup(rpin, right_enc_a_pin, right_enc_b_pin);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -363,8 +365,8 @@ void Drive::setLastRampPwr(float power, uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    // M1.writelow(), M2.writelow();
-    M1.write(0); M2.write(0);
+    M1->writelow(), M2->writelow();
+    // M1.write(0); M2.write(0);
 }
 
 /**
@@ -434,7 +436,7 @@ void Drive::update() {
     lastRampPower[0] = requestedMotorPower[0];
     lastRampPower[1] = requestedMotorPower[1];
     
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+    M1->write(requestedMotorPower[0]);
+    M2->write(requestedMotorPower[1]);
 }
 

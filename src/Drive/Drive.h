@@ -4,9 +4,8 @@
 #define DRIVE_H
 
 #include <Arduino.h>
+#include <Robot/MotorControl.h>
 #include "PolarRobotics.h"
-#include "Robot/MotorControl.h"
-
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -69,6 +68,8 @@ class Drive {
   private:
     MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
     BotType botType; // TODO: I added this to private only because motorType was private.
+    float gearRatio;
+    
     float BSNscalar;
     float requestedMotorPower[NUM_MOTORS];
     float currentRampPower[NUM_MOTORS];
@@ -83,7 +84,8 @@ class Drive {
     void calcTurning(float stickTrn, float fwdLinPwr);
 
   protected:
-    MotorControl M1, M2;
+    MotorControl* M1;
+    MotorControl* M2;
     float stickForwardRev, stickTurn;
     float lastTurnPwr;
     float turnPower;
@@ -98,7 +100,7 @@ class Drive {
     };
 
     Drive();
-    Drive(BotType botType, MotorType motorType);
+    Drive(BotType botType, MotorType motorType, float gearRatio = 1);
     void setServos(uint8_t lpin, uint8_t rpin);
     void setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
