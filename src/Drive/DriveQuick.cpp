@@ -74,8 +74,8 @@ void DriveQuick::update() {
     
     // write calculated powers to the motors 
     // note: adding a negative, because we cant change the motor direction in hardware
-    M1.write(falcon_motor_pwr[0]);
-    M2.write(-falcon_motor_pwr[1]);
+    M1->write(falcon_motor_pwr[0]);
+    M2->write(-falcon_motor_pwr[1]);
 }
 
 void DriveQuick::printDebugInfo() {

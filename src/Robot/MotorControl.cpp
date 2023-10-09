@@ -1,15 +1,6 @@
 #include <Arduino.h>
 
-#include <ps5Controller.h> // ESP PS5 library
-
-#include <PolarRobotics.h>
-
-#include <Robot/Lights.h>
-#include <Pairing/pairing.h>
-#include <Drive/Drive.h> // not 100% necessary 
 #include "MotorControl.h"
-
-
 
 void ext_read_encoder0() {
   GlobalClassPointer[0]->readEncoder();
@@ -50,7 +41,7 @@ void ext_read_encoder1() {
  * 
  * @author Rhys Davies 
  */
-MotorControl::MotorControl(bool has_encoder, MotorType type, float gearRatio) {
+MotorControl::MotorControl(MotorType type, bool has_encoder, float gearRatio) {
   this->has_encoder = has_encoder;
   this->motor_type = type;
   this->gear_ratio = gearRatio;
@@ -268,7 +259,7 @@ int MotorControl::Percent2RPM(float pct) {
 }
 
 float MotorControl::RPM2Percent(int rpm) {
-  return constrain(rpm, -this->max_rpm, this->max_rpm)/this->max_rpm;
+  return constrain(rpm, -this->max_rpm, this->max_rpm) / this->max_rpm;
 }
 
 // Old code:

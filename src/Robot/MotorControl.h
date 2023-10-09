@@ -4,6 +4,11 @@
 #define MOTOR_CONTROL_H
 
 #include <Arduino.h>
+#include <PolarRobotics.h>
+
+// #include <Drive/Drive.h> // not 100% necessary 
+
+
 
 #define MAX_NUM_MOTORS 16
 
@@ -71,11 +76,9 @@ private:
   float omega;
 
 public:
-  MotorControl(bool has_encoder = false, MotorType type = big_ampflow, float gearRatio = 1);
+  MotorControl(MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1);
   uint8_t setup(int mot_pin, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
-
   uint8_t attach(int mot_pin, int min = MIN_PWM_US, int max = MAX_PWM_US); // as above but also sets min and max values for writes. 
-  
   void displayPinInfo();
   
   void write(float pwr);
