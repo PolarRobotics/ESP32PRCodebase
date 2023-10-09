@@ -48,6 +48,7 @@ typedef struct BotConfig {
   BotType bot_type; // primary robot position
   MotorType mot_type;
   float gear_ratio;
+  float wheelbase;
   // uint8_t GR_index;
   // LED STRIP:
   // bool has_leds;
