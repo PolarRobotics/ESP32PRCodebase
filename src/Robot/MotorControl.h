@@ -85,5 +85,5 @@ public:
   float RPM2Percent(int rpm);
 };
 
-MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
-static uint8_t EncoderCount = 0;
+// MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
+// static uint8_t EncoderCount = 0;

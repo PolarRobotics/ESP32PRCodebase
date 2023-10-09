@@ -185,7 +185,7 @@ void loop() {
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
     // drive->printDebugInfo(); // prints info to serial monitor in a human readable format
-    drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) forma   drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
