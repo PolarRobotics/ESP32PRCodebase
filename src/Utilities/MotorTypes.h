@@ -19,7 +19,7 @@ typedef enum {
   small_12v        // index 5 for the small 12v motors on the old robots
 } MotorType;
 
-int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
+const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
   5700, // 24v AmpFlow motor E30-400-24
   5600, // 24v AmpFlow motor E30-150-24
   3500, // 24v AmpFlow motor P40-350-24

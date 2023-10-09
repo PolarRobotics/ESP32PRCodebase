@@ -2,13 +2,13 @@
 
 #include "MotorControl.h"
 
-void ext_read_encoder0() {
-  GlobalClassPointer[0]->readEncoder();
-}
+// void ext_read_encoder0() {
+//   GlobalClassPointer[0]->readEncoder();
+// }
 
-void ext_read_encoder1() {
-  GlobalClassPointer[1]->readEncoder();
-}
+// void ext_read_encoder1() {
+//   GlobalClassPointer[1]->readEncoder();
+// }
 
 /**
  * @brief 
@@ -52,11 +52,11 @@ MotorControl::MotorControl(MotorType type, bool has_encoder, float gearRatio) {
     this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
 
-  if (has_encoder) {
-    this->encoderIndex = EncoderCount;
-    GlobalClassPointer[EncoderCount++] = this;
-    init_encoder();
-  }
+  // if (has_encoder) {
+  //   this->encoderIndex = EncoderCount;
+  //   GlobalClassPointer[EncoderCount++] = this;
+  //   init_encoder();
+  // }
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio;
@@ -88,23 +88,23 @@ void MotorControl::init_encoder() {
 uint8_t MotorControl::setup(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
   
-  if (this->enc_a_pin != -1 && this->enc_b_pin != -1 && has_encoder) {
-    pinMode(this->enc_a_pin, INPUT_PULLUP);
-    pinMode(this->enc_b_pin, INPUT);
+  // if (this->enc_a_pin != -1 && this->enc_b_pin != -1 && has_encoder) {
+  //   pinMode(this->enc_a_pin, INPUT_PULLUP);
+  //   pinMode(this->enc_b_pin, INPUT);
 
-    switch(this->encoderIndex) {
-      case 0: {
-        attachInterrupt(this->enc_a_pin, ext_read_encoder0, RISING);
-        break;
-      }
-      case 1: {
-        attachInterrupt(this->enc_a_pin, ext_read_encoder1, RISING);
-        break;
-      }
-      default:
-        return 254;
-    }
-  }
+  //   switch(this->encoderIndex) {
+  //     case 0: {
+  //       attachInterrupt(this->enc_a_pin, ext_read_encoder0, RISING);
+  //       break;
+  //     }
+  //     case 1: {
+  //       attachInterrupt(this->enc_a_pin, ext_read_encoder1, RISING);
+  //       break;
+  //     }
+  //     default:
+  //       return 254;
+  //   }
+  // }
 
   // call the logic to attach the motor pin and setup, return 255 on an error
   return attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
