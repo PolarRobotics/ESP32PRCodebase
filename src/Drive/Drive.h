@@ -76,7 +76,7 @@ class Drive {
     float omega;
     float omega_L, omega_R;
     float R, R_Max, R_Min;
-    float max_RPM, min_RPM;
+    int max_RPM, min_RPM;
 
     void calcTurning(float stickTrn, float fwdLinPwr);
 
@@ -113,6 +113,7 @@ class Drive {
     float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();
     virtual void update();
+    void printSetup();
     virtual void printDebugInfo();
 
     //* The following variables are initialized in the constructor

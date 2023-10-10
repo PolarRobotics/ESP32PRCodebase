@@ -61,13 +61,12 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio) {
     // initialize parameters for turning model
     wheelBase = 9.75;
     omega = 0;
-    omega_L = 0;
-    omega_R = 0;
+    omega_L = 0, omega_R = 0;
     R = 0;
     R_Max = 24;
     R_Min = wheelBase/2;
-    max_RPM = 4000;
     min_RPM = 200;
+    max_RPM = 0;
   } 
 }
 
@@ -77,6 +76,8 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
     M1->setup(lpin), M2->setup(rpin);
+
+    max_RPM = M1->Percent2RPM(1);
 }
 
 /**
@@ -92,6 +93,8 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_
     
     M1->setup(lpin, left_enc_a_pin, left_enc_b_pin);
     M2->setup(rpin, right_enc_a_pin, right_enc_b_pin);
+
+    max_RPM = M1->Percent2RPM(1);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -212,28 +215,22 @@ void Drive::generateMotionValues() {
             to turn right. The left motor should get set to 1 and the right motor should get set to
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
-            // if(stickTurn > STICK_DEADZONE) { // turn Right
-            //     switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
-            //         case true: calcTurning(stickTurn, abs(lastRampPower[0]), 1); break;
-            //         case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev), 1); break;
-            //     }
-            //     //calcTurning(stickTurn, lastRampPower[0], 1);
-            //     requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
-            //     requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
-            // } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-            //     switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
-            //         case true: calcTurning(stickTurn, abs(lastRampPower[1]), 0); break;
-            //         case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev), 0); break;
-            //     }
-            //     //calcTurning(stickTurn, lastRampPower[1], 0);
-            //     requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
-            //     requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
-            // }
-
-            calcTurning(stickTurn, fabs(BSNscalar * stickForwardRev));
-
-            requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
-            requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
+            if(stickTurn > STICK_DEADZONE) { // turn Right
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+                    case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
+                    case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                }
+                requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
+                requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
+            } else if(stickTurn < -STICK_DEADZONE) { // turn Left
+                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+                    case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
+                    case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                }
+                //calcTurning(stickTurn, lastRampPower[1], 0);
+                requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
+                requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
+            }
         }
     }
 }
@@ -268,20 +265,20 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     R = (1-abs(stickTrn))*(R_Max-R_Min) + R_Min;
     
     // calculate the requested angular velocity for the robot 
-    omega = fwdLinPwr*max_RPM;
+    omega = M1->Percent2RPM(fwdLinPwr);
     
     // calculate the rpm for the left wheel
     omega_L = (omega/R)*(R+(wheelBase/2));
     // calculate the rpm for the right wheel
     omega_R = (omega/R)*(R-(wheelBase/2));
 
-    // ensure the left wheel RPM doesnt go above the min or the max RPM
+    // ensure the left wheel RPM doesnt go below the min or above the max RPM
     omega_L = constrain(omega_L, min_RPM, max_RPM);
-    // ensure the left wheel RPM doesnt go above the min or the max RPM
+    // ensure the left wheel RPM doesnt go below the min or above the max RPM
     omega_R = constrain(omega_R, min_RPM, max_RPM);
 
-    turnMotorValues[0] = omega_L/max_RPM;
-    turnMotorValues[1] = omega_R/max_RPM;
+    turnMotorValues[0] = M1->RPM2Percent(omega_L);
+    turnMotorValues[1] = M2->RPM2Percent(omega_R);
 }
 
 
@@ -369,6 +366,15 @@ void Drive::emergencyStop() {
     // M1.write(0); M2.write(0);
 }
 
+void Drive::printSetup() {
+    Serial.print(F("  MAX RPM: "));
+    Serial.print(M1->Percent2RPM(1));
+    Serial.print(F("  -MAX RPM: "));
+    Serial.print(M1->Percent2RPM(-1));
+
+    Serial.print(F("\n"));
+}
+
 /**
  * prints the internal variables to the serial monitor in a clean format,
  * this function exists out of pure laziness to not have to comment out all the print statments
@@ -381,21 +387,22 @@ void Drive::printDebugInfo() {
     Serial.print(F("  R_HAT_X: "));
     Serial.print(stickTurn);
 
-    Serial.print(F("  |  Turn: "));
-    Serial.print(lastTurnPwr);
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
 
-    Serial.print(F("  |  Left ReqPwr: "));
-    Serial.print(requestedMotorPower[0]);
-    Serial.print(F("  Right ReqPwr: "));
-    Serial.print(requestedMotorPower[1]);
+    // Serial.print(F("  |  Left ReqPwr: "));
+    // Serial.print(requestedMotorPower[0]);
+    // Serial.print(F("  Right ReqPwr: "));
+    // Serial.print(requestedMotorPower[1]);
 
-    Serial.print(F("  |  Left: "));
+    Serial.print(F("  |  Omega: "));
+    Serial.print(omega);
+
+    Serial.print(F("  Left (W): "));
     Serial.print(omega_L);
-    Serial.print(F("  Right: "));
+    Serial.print(F("  Right (W): "));
     Serial.print(omega_R);
 
-
-    
     // Serial.print(F("  lastRampTime "));
     // Serial.print(lastRampTime[0]);
     // Serial.print(F("  requestedPower "));
@@ -426,7 +433,7 @@ void Drive::printDebugInfo() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
-    printDebugInfo();
+    // printDebugInfo();
 
     // get the ramp value
     requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
