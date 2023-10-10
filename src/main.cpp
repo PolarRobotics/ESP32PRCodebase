@@ -112,6 +112,8 @@ void setup() {
       drive->setServos(M1_PIN, M2_PIN);
   }
 
+  drive->printSetup();
+
   lights.setupLEDS();
   lights.setLEDStatus(Lights::PAIRING);
 
