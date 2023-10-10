@@ -35,9 +35,10 @@ Drive::Drive() {
   Drive(lineman, big_ampflow);
 }
 
-Drive::Drive(BotType botType, MotorType motorType, float gearRatio) {
+Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEncoders) {
   this->botType = botType;
   this->motorType = motorType;
+  this->hasEncoders = hasEncoders;
 
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
@@ -66,18 +67,22 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio) {
     R_Max = 24;
     R_Min = wheelBase/2;
     min_RPM = 200;
-    max_RPM = 0;
+    // max_RPM = 0;
   } 
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    this->M1 = new MotorControl(motorType, false, this->gearRatio);
-    this->M2 = new MotorControl(motorType, false, this->gearRatio);
+    // this->M1 = new MotorControl(motorType, false, this->gearRatio);
+    // this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
-    M1->setup(lpin), M2->setup(rpin);
+    // M1->setup(lpin), M2->setup(rpin);
+    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
+    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
 
-    max_RPM = M1->Percent2RPM(1);
+    // max_RPM = M1->Percent2RPM(1);
+    max_RPM = M1.Percent2RPM(1);
+
 }
 
 /**
@@ -88,13 +93,13 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 */
 void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    this->M1 = new MotorControl(motorType, true, this->gearRatio);
-    this->M2 = new MotorControl(motorType, true, this->gearRatio);
+    // this->M1 = new MotorControl(motorType, true, this->gearRatio);
+    // this->M2 = new MotorControl(motorType, true, this->gearRatio);
     
-    M1->setup(lpin, left_enc_a_pin, left_enc_b_pin);
-    M2->setup(rpin, right_enc_a_pin, right_enc_b_pin);
+    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
 
-    max_RPM = M1->Percent2RPM(1);
+    max_RPM = M1.Percent2RPM(1);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -265,7 +270,9 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     R = (1-abs(stickTrn))*(R_Max-R_Min) + R_Min;
     
     // calculate the requested angular velocity for the robot 
-    omega = M1->Percent2RPM(fwdLinPwr);
+    // omega = M1->Percent2RPM(fwdLinPwr);
+    omega = M1.Percent2RPM(fwdLinPwr);
+
     
     // calculate the rpm for the left wheel
     omega_L = (omega/R)*(R+(wheelBase/2));
@@ -277,8 +284,10 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
     omega_R = constrain(omega_R, min_RPM, max_RPM);
 
-    turnMotorValues[0] = M1->RPM2Percent(omega_L);
-    turnMotorValues[1] = M2->RPM2Percent(omega_R);
+    // turnMotorValues[0] = M1->RPM2Percent(omega_L);
+    // turnMotorValues[1] = M2->RPM2Percent(omega_R);
+    turnMotorValues[0] = M1.RPM2Percent(omega_L);
+    turnMotorValues[1] = M2.RPM2Percent(omega_R);
 }
 
 
@@ -362,15 +371,20 @@ void Drive::setLastRampPwr(float power, uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    M1->writelow(), M2->writelow();
+    // M1->writelow(), M2->writelow();
+    M1.writelow(), M2.writelow();
+
     // M1.write(0); M2.write(0);
 }
 
 void Drive::printSetup() {
     Serial.print(F("  MAX RPM: "));
-    Serial.print(M1->Percent2RPM(1));
+    // Serial.print(M1->Percent2RPM(1));
+    Serial.print(M1.Percent2RPM(1));
     Serial.print(F("  -MAX RPM: "));
-    Serial.print(M1->Percent2RPM(-1));
+    // Serial.print(M1->Percent2RPM(-1));
+    Serial.print(M1.Percent2RPM(-1));
+
 
     Serial.print(F("\n"));
 }
@@ -443,7 +457,10 @@ void Drive::update() {
     lastRampPower[0] = requestedMotorPower[0];
     lastRampPower[1] = requestedMotorPower[1];
     
-    M1->write(requestedMotorPower[0]);
-    M2->write(requestedMotorPower[1]);
+    // M1->write(requestedMotorPower[0]);
+    // M2->write(requestedMotorPower[1]);
+
+    M1.write(requestedMotorPower[0]);
+    M2.write(requestedMotorPower[1]);
 }
 
