@@ -41,11 +41,7 @@
  * 
  * @author Rhys Davies 
  */
-MotorControl::MotorControl(MotorType type, bool has_encoder, float gearRatio) {
-  this->has_encoder = has_encoder;
-  this->motor_type = type;
-  this->gear_ratio = gearRatio;
-  
+MotorControl::MotorControl() {  
   if(ServoCount < MAX_NUM_MOTORS)
     this->motorIndex = ServoCount++;  // assign a servo index to this instance
   else
@@ -57,9 +53,6 @@ MotorControl::MotorControl(MotorType type, bool has_encoder, float gearRatio) {
   //   GlobalClassPointer[EncoderCount++] = this;
   //   init_encoder();
   // }
-
-  // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
-  this->max_rpm = MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio;
 }
 
 void MotorControl::init_encoder() {
@@ -85,7 +78,10 @@ void MotorControl::init_encoder() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin) {
+uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+  this->has_encoder = has_encoder;
+  this->motor_type = type;
+  this->gear_ratio = gearRatio;
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
   
   // if (this->enc_a_pin != -1 && this->enc_b_pin != -1 && has_encoder) {
@@ -105,6 +101,9 @@ uint8_t MotorControl::setup(int mot_pin, int enc_a_chan_pin, int enc_b_chan_pin)
   //       return 254;
   //   }
   // }
+
+  // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
+  this->max_rpm = MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio;
 
   // call the logic to attach the motor pin and setup, return 255 on an error
   return attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
@@ -255,13 +254,13 @@ int MotorControl::calcSpeed(int current_count) {
 }
 
 int MotorControl::Percent2RPM(float pct) {
-  float temp = constrain(pct, -1, 1);
-  return temp * this->max_rpm;
+  // float temp = constrain(pct, -1, 1);
+  return (int)constrain(pct, -1, 1) * this->max_rpm;
 }
 
 float MotorControl::RPM2Percent(int rpm) {
-  int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
-  return temp / this->max_rpm;
+  // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
+  return (float)constrain(rpm, -this->max_rpm, this->max_rpm) / (float)this->max_rpm;
 }
 
 // Old code:
