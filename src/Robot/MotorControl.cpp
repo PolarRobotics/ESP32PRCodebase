@@ -255,11 +255,13 @@ int MotorControl::calcSpeed(int current_count) {
 }
 
 int MotorControl::Percent2RPM(float pct) {
-  return constrain(pct, -1, 1) * this->max_rpm;
+  float temp = constrain(pct, -1, 1);
+  return temp * this->max_rpm;
 }
 
 float MotorControl::RPM2Percent(int rpm) {
-  return constrain(rpm, -this->max_rpm, this->max_rpm) / this->max_rpm;
+  int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
+  return temp / this->max_rpm;
 }
 
 // Old code:
