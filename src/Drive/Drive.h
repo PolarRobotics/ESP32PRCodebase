@@ -28,7 +28,7 @@
 //these should = normal speed, QB needs 0.5 for both 
 
 // Controller Defines
-#define STICK_DEADZONE 0.0390625F // 8.0 / 127.0
+#define STICK_DEADZONE 0.035 //0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
 

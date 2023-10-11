@@ -103,7 +103,7 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float
   // }
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
-  this->max_rpm = MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio;
+  this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
 
   // call the logic to attach the motor pin and setup, return 255 on an error
   return attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
@@ -255,12 +255,12 @@ int MotorControl::calcSpeed(int current_count) {
 
 int MotorControl::Percent2RPM(float pct) {
   // float temp = constrain(pct, -1, 1);
-  return (int)constrain(pct, -1, 1) * this->max_rpm;
+  return this->max_rpm * constrain(pct, -1.0f, 1.0f);
 }
 
 float MotorControl::RPM2Percent(int rpm) {
   // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
-  return (float)constrain(rpm, -this->max_rpm, this->max_rpm) / (float)this->max_rpm;
+  return constrain(rpm, -this->max_rpm, this->max_rpm) * float(1 / this->max_rpm);
 }
 
 // Old code:
