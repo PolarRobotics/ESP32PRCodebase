@@ -39,6 +39,7 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
+  this->gearRatio = gearRatio;
 
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
@@ -68,6 +69,7 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
     R_Min = wheelBase/2;
     min_RPM = 200;
     // max_RPM = 0;
+    max_RPM = M1.Percent2RPM(1);
   } 
 }
 
@@ -79,10 +81,6 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
     // M1->setup(lpin), M2->setup(rpin);
     M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
     M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
-
-    // max_RPM = M1->Percent2RPM(1);
-    max_RPM = M1.Percent2RPM(1);
-
 }
 
 /**
@@ -98,8 +96,6 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_
     
     M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
     M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
-
-    max_RPM = M1.Percent2RPM(1);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -221,17 +217,21 @@ void Drive::generateMotionValues() {
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
             if(stickTurn > STICK_DEADZONE) { // turn Right
-                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
-                    case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
-                    case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
-                }
+                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+                //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
+                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                // }
+                calcTurning(stickTurn, abs(BSNscalar * stickForwardRev));
+
                 requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
             } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-                switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
-                    case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
-                    case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
-                }
+                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+                //     case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
+                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                // }
+
+                calcTurning(stickTurn, abs(BSNscalar * stickForwardRev));
                 //calcTurning(stickTurn, lastRampPower[1], 0);
                 requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
@@ -273,16 +273,23 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     // omega = M1->Percent2RPM(fwdLinPwr);
     omega = M1.Percent2RPM(fwdLinPwr);
 
-    
     // calculate the rpm for the left wheel
     omega_L = (omega/R)*(R+(wheelBase/2));
     // calculate the rpm for the right wheel
     omega_R = (omega/R)*(R-(wheelBase/2));
 
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_L = constrain(omega_L, min_RPM, max_RPM);
-    // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_R = constrain(omega_R, min_RPM, max_RPM);
+    // omega_L = constrain(omega_L, min_RPM, max_RPM);
+    // // ensure the left wheel RPM doesnt go below the min or above the max RPM
+    // omega_R = constrain(omega_R, min_RPM, max_RPM);
+
+    if (omega_L > max_RPM) {
+        omega_L = max_RPM;
+    }
+
+    if (omega_R < min_RPM) {
+        omega_R = min_RPM;
+    }
 
     // turnMotorValues[0] = M1->RPM2Percent(omega_L);
     // turnMotorValues[1] = M2->RPM2Percent(omega_R);

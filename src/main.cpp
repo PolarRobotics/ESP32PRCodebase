@@ -40,6 +40,7 @@ Lights& lights = Lights::getInstance();
 // Robot Information from EEPROM/Preferences
 BotType robotType;
 MotorType motorType;
+float gearRatio;
 
 // Config
 ConfigManager config;
@@ -70,6 +71,7 @@ void setup() {
   Serial.println(config.toString());
   robotType = config.getBotType();
   motorType = config.getMotorType();
+  gearRatio = config.getGearRatio();
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
@@ -80,12 +82,12 @@ void setup() {
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
-      drive = new Drive(kicker, motorType);
+      drive = new Drive(kicker, motorType, gearRatio);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback, motorType);
+      drive = new Drive(quarterback, motorType, gearRatio);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
@@ -96,7 +98,7 @@ void setup() {
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
-      drive = new Drive(center, motorType);
+      drive = new Drive(center, motorType, gearRatio);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case runningback:
@@ -108,7 +110,7 @@ void setup() {
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      drive = new Drive(lineman, motorType);
+      drive = new Drive(lineman, motorType, gearRatio);
       drive->setServos(M1_PIN, M2_PIN);
   }
 
