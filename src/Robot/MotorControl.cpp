@@ -260,7 +260,10 @@ int MotorControl::Percent2RPM(float pct) {
 
 float MotorControl::RPM2Percent(int rpm) {
   // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
-  return constrain(rpm, -this->max_rpm, this->max_rpm) * float(1 / this->max_rpm);
+  if (rpm == 0) { 
+    return 0.0f; 
+  }
+  return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
 }
 
 // Old code:
