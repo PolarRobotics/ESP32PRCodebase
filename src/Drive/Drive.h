@@ -74,8 +74,8 @@ class Drive {
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
     float wheelBase;
-    float omega;
-    float omega_L, omega_R;
+    int omega;
+    int omega_L, omega_R;
     float R, R_Max, R_Min;
     int max_RPM, min_RPM;
 
