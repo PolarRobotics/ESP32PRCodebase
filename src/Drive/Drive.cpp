@@ -64,13 +64,12 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
     wheelBase = 9.75;
     omega = 0;
     omega_L = 0, omega_R = 0;
-    R = 0;
-    R_Max = 24;
+    R = 0.0f;
+    R_Max = 24.0f;
     R_Min = wheelBase/2;
     min_RPM = 200;
-    // max_RPM = 0;
     // max_RPM = M1.Percent2RPM(1);
-    max_RPM = M1.max_rpm;
+    // max_RPM = M1.max_rpm;
 
   } 
 }
@@ -281,9 +280,9 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     omega_R = (omega/R)*(R-(wheelBase/2));
 
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_L = constrain(omega_L, min_RPM, max_RPM);
+    omega_L = constrain(omega_L, min_RPM, M1.max_rpm);
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_R = constrain(omega_R, min_RPM, max_RPM);
+    omega_R = constrain(omega_R, min_RPM, M1.max_rpm);
 
     // if (omega_L > max_RPM) {
     //     omega_L = max_RPM;
