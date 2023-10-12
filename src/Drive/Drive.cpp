@@ -69,7 +69,9 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
     R_Min = wheelBase/2;
     min_RPM = 200;
     // max_RPM = 0;
-    max_RPM = M1.Percent2RPM(1);
+    // max_RPM = M1.Percent2RPM(1);
+    max_RPM = M1.max_rpm;
+
   } 
 }
 
@@ -232,7 +234,7 @@ void Drive::generateMotionValues() {
                 // }
 
                 calcTurning(stickTurn, abs(BSNscalar * stickForwardRev));
-                //calcTurning(stickTurn, lastRampPower[1], 0);
+                
                 requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
             }
@@ -271,7 +273,7 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     
     // calculate the requested angular velocity for the robot 
     // omega = M1->Percent2RPM(fwdLinPwr);
-    omega = M1.Percent2RPM(fwdLinPwr);
+    omega = abs(M1.Percent2RPM(fwdLinPwr));
 
     // calculate the rpm for the left wheel
     omega_L = (omega/R)*(R+(wheelBase/2));
@@ -279,17 +281,17 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     omega_R = (omega/R)*(R-(wheelBase/2));
 
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    // omega_L = constrain(omega_L, min_RPM, max_RPM);
-    // // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    // omega_R = constrain(omega_R, min_RPM, max_RPM);
+    omega_L = constrain(omega_L, min_RPM, max_RPM);
+    // ensure the left wheel RPM doesnt go below the min or above the max RPM
+    omega_R = constrain(omega_R, min_RPM, max_RPM);
 
-    if (omega_L > max_RPM) {
-        omega_L = max_RPM;
-    }
+    // if (omega_L > max_RPM) {
+    //     omega_L = max_RPM;
+    // }
 
-    if (omega_R < min_RPM) {
-        omega_R = min_RPM;
-    }
+    // if (omega_R < min_RPM) {
+    //     omega_R = min_RPM;
+    // }
 
     // turnMotorValues[0] = M1->RPM2Percent(omega_L);
     // turnMotorValues[1] = M2->RPM2Percent(omega_R);
