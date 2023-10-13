@@ -284,16 +284,6 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
     omega_R = constrain(omega_R, min_RPM, M1.max_rpm);
 
-    // if (omega_L > max_RPM) {
-    //     omega_L = max_RPM;
-    // }
-
-    // if (omega_R < min_RPM) {
-    //     omega_R = min_RPM;
-    // }
-
-    // turnMotorValues[0] = M1->RPM2Percent(omega_L);
-    // turnMotorValues[1] = M2->RPM2Percent(omega_R);
     turnMotorValues[0] = M1.RPM2Percent(omega_L);
     turnMotorValues[1] = M2.RPM2Percent(omega_R);
 }
