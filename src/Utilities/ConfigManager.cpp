@@ -45,6 +45,17 @@ void ConfigManager::read() {
 }
 
 /**
+ * @brief gets the code version from the configuration.
+ * @return String - the version as a string
+ */
+String ConfigManager::version() {
+  preferences.begin("version", true);
+  String str = preferences.getString("code_version");
+  preferences.end();
+  return str;
+}
+
+/**
  * @brief gets the bot index from the configuration.
  * this index corresponds to the position in the config array that the bot config is pulled from
  * @return int the bot index in the array the configuration is from 
@@ -97,6 +108,8 @@ float ConfigManager::getWheelBase() {
  */
 const char * ConfigManager::toString() {
     string temp = "\nBot info: ";
+    temp.append("\ncode version: ");
+    temp.append(version().c_str());
     temp.append("\nbot array index #: ");
     temp.append(to_string(config->index));
     temp.append("\nbot name: ");
@@ -145,6 +158,14 @@ bool ConfigManager::write(bot_config_t *cfg) {
 
     // close the namespace
     preferences.end();
+
+    // store version to preferences
+
+    good = preferences.begin("version", false); 
+    if (!good) return false;
+    preferences.putString("version", PR_CODEBASE_VERSION);
+    preferences.end();
+
     return true;
   } else return false;
 }

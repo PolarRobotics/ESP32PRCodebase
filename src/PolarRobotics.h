@@ -12,6 +12,8 @@
 #include <Utilities/BotTypes.h>
 #include <Utilities/MotorTypes.h>
 
+#define PR_CODEBASE_VERSION "2.0.0 @ dev/main"
+
 // [PIN DECLARATIONS]
 // please follow: 
 // https://docs.google.com/spreadsheets/d/17pdff4T_3GTAkoctwm2IMg07Znoo-iJkyDGN5CqXq3w/edit#gid=0

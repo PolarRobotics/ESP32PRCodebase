@@ -23,6 +23,6 @@ const char* getBotTypeString(BotType type) {
  * @param n_idx the index of the bot in the array
  * @return const char* if the index is within range return the bot name
  */
-const char * getBotName(uint8_t index) {
+const char* getBotName(uint8_t index) {
   return (index > 0 && index < NUM_BOTS - 1) ? botConfigArray[index].bot_name : "Robot"; 
 }

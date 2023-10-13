@@ -44,7 +44,7 @@ typedef enum {
  */
 typedef struct BotConfig {
   uint8_t index;
-  const char * bot_name;
+  const char* bot_name;
   BotType bot_type; // primary robot position
   MotorType mot_type;
   float gear_ratio;
