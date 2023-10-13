@@ -36,6 +36,9 @@ void ConfigManager::read() {
     this->config->mot_type = (MotorType)preferences.getUChar("motor_type");
     // read the gear ratio
     this->config->gear_ratio = (float)preferences.getFloat("gear_ratio");
+    // read the wheel base
+    this->config->wheel_base = (float)preferences.getFloat("wheel_base");
+
 
     // close the bot_config namespace
     preferences.end();
@@ -75,6 +78,16 @@ float ConfigManager::getGearRatio() {
 }
 
 /**
+ * @brief getWheelBase returns the wheelbase the distance between the centers of the two drive tires
+ * for a standard two-wheel differential drive bot
+ * 
+ * @return float stored wheelbase value
+*/
+float ConfigManager::getWheelBase() {
+    return this->config->wheel_base;
+}
+
+/**
  * @brief converts the stored configuration into an easy to read string, 
  * to be printed to the console or other means.
  * 
@@ -94,6 +107,8 @@ const char * ConfigManager::toString() {
     temp.append(getMotorTypeString(config->mot_type));
     temp.append("\ngear ratio: ");
     temp.append(to_string(config->gear_ratio));
+    temp.append("\nwheel base: ");
+    temp.append(to_string(config->wheel_base));
     temp.append("\r\n");
     return temp.c_str();
 }
@@ -116,17 +131,17 @@ bool ConfigManager::write(bot_config_t *cfg) {
     // open the "bot_config" namespace and set it to read/write
     bool good = preferences.begin("bot_config", false); 
     if (!good) return false;
+
     // store the bot name to preferences
     preferences.putUChar("bot_name_idx", cfg->index);
-
     // store the bot type to preferences
     preferences.putUChar("bot_type", static_cast<uint8_t>(cfg->bot_type));
-  
     // store the bot type to preferences
     preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->mot_type));
-
     // store the robots drivetrain gear ratio
     preferences.putFloat("gear_ratio", cfg->gear_ratio);
+    // store the robots drivetrain gear ratio
+    preferences.putFloat("wheel_base", cfg->wheel_base);
 
     // close the namespace
     preferences.end();
@@ -151,6 +166,7 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
     this->config->mot_type = botConfigArray[botIndex].mot_type;
     this->config->bot_name = botConfigArray[botIndex].bot_name;
     this->config->gear_ratio = botConfigArray[botIndex].gear_ratio;
+    this->config->wheel_base = botConfigArray[botIndex].wheel_base;
 
     // write index to predefined configuration from the array defined in the header file
     return write(this->config);
@@ -164,15 +180,18 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
  * @param bottype the type of bot you wish to configure
  * @param motortype the motor type you wish to assign to the bot
  * @param gearratio the gear ratio you wish to assign to the bot
+ * @param wheelbase the distance between drive wheels
  * @return true configuration was successfully applied
  * @return false configuration check failed
  */
-bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio) {
+bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio, float wheelbase) {
   if (this->writable) {
     this->config->index = botindex;
     this->config->bot_type = bottype;
     this->config->mot_type = motortype;
+    this->config->bot_name = "Custom Robot";
     this->config->gear_ratio = gearratio;
+    this->config->wheel_base = wheelbase;
     
     return write(this->config);
   } else return false;

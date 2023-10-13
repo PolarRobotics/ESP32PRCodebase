@@ -20,6 +20,7 @@ void setup() {
   BotType bot_type = lineman; 
   MotorType motor_type = big_ampflow;
   float gear_ratio = 1;
+  float wheel_base = 10;
 
   //* Write standard bot configuration from BotTypes.botConfigArray
   if (config.setConfig(index))
