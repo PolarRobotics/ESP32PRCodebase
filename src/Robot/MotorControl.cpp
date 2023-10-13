@@ -156,11 +156,11 @@ void MotorControl::writelow() {
 //     digitalWrite(motorPins[pin], LOW);
 //     delayMicroseconds(2000 - Convert2PWM(pwr) - 40); //-170
 //     // digitalWrite(motorPins[0], HIGH);
-//     // delayMicroseconds(Convert2PWMVal(motorPower[0]) - 40);
+//     // delayMicroseconds(Convert2PWMVal(requestedMotorPower[0]) - 40);
 //     // digitalWrite(motorPins[0], LOW);
-//     // // delayMicroseconds(2000 - Convert2PWMVal(motorPower[0]) - 40); //-170
+//     // // delayMicroseconds(2000 - Convert2PWMVal(requestedMotorPower[0]) - 40); //-170
 //     // digitalWrite(motorPins[1], HIGH);
-//     // delayMicroseconds(Convert2PWMVal(motorPower[1]) - 40);
+//     // delayMicroseconds(Convert2PWMVal(requestedMotorPower[1]) - 40);
 //     // digitalWrite(motorPins[1], LOW);
-//     // delayMicroseconds(2000 - Convert2PWMVal(motorPower[1]) - 40); //-170
+//     // delayMicroseconds(2000 - Convert2PWMVal(requestedMotorPower[1]) - 40); //-170
 // }

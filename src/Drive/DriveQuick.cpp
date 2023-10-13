@@ -14,6 +14,14 @@ Features:
     1x omniwheel
 */
 
+//! Must call base class constructor with appropriate arguments
+DriveQuick::DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {
+  // initialize array
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    falcon_motor_pwr[i] = 0.0f;
+  }
+}
+
 /**
  * @brief 
  * prototype turning model: https://www.desmos.com/calculator/pjyj3tjwym
@@ -25,8 +33,8 @@ Features:
  */
 // void DriveQuick::generateMotionValues() {
 //     // generate the motion vector in polar form
-//     this->r = hypot(getFwdRev(), getTurn());
-//     this->falconTurnPwr = atan2(getFwdRev(), getTurn());
+//     this->r = hypot(getForwardPower(), getTurnPower());
+//     this->falconTurnPwr = atan2(getForwardPower(), getTurnPower());
 
 //     // ensure the magnitude of the speed does not go over 1 and multiply it by the bsn value
 //     this->r = constrain(this->r, 0, 1) * getBSN(); 
@@ -53,8 +61,8 @@ void DriveQuick::update() {
     // calculate the ramped power
     // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
     // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
-    falcon_motor_pwr[0] = ramp(getMotorPwr(0), 0, RB_ACCELERATION_RATE);
-    falcon_motor_pwr[1] = ramp(getMotorPwr(1), 1, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[0] = ramp(getReqMotorPwr(0), 0, RB_ACCELERATION_RATE);
+    falcon_motor_pwr[1] = ramp(getReqMotorPwr(1), 1, RB_ACCELERATION_RATE);
 
     // set the last ramp power, used in ramp
     setLastRampPwr(falcon_motor_pwr[0], 0);
@@ -67,6 +75,22 @@ void DriveQuick::update() {
     // write calculated powers to the motors 
     // note: adding a negative, because we cant change the motor direction in hardware
     M1.write(falcon_motor_pwr[0]);
-    M2.write(-falcon_motor_pwr[1]); 
+    M2.write(-falcon_motor_pwr[1]);
 }
 
+void DriveQuick::printDebugInfo() {
+    Serial.print(F("DQ | "));
+    Serial.print(F("L_Hat_Y: "));
+    Serial.print(stickForwardRev);
+    Serial.print(F("  R_HAT_X: "));
+    Serial.print(stickTurn);
+
+    // Serial.print(F("  |  Turn: "));
+    // Serial.print(lastTurnPwr);
+
+    Serial.print(F("  L_MotPwr: "));
+    Serial.print(falcon_motor_pwr[0]);
+    Serial.print(F("  R_MotPwr: "));
+    Serial.print(falcon_motor_pwr[1]);
+    Serial.print(F("\n"));
+}

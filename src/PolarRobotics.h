@@ -5,11 +5,14 @@
  * and other structures that are useful in a global scope.
  **/
 
-#ifndef POLAR_ROBOTICS_H_
-#define POLAR_ROBOTICS_H_
+#ifndef POLAR_ROBOTICS_H
+#define POLAR_ROBOTICS_H
 
 #include <Arduino.h>
-#include <ps5Controller.h>
+#include <Utilities/BotTypes.h>
+#include <Utilities/MotorTypes.h>
+
+#define PR_CODEBASE_VERSION "2.0.0 @ dev/main"
 
 // [PIN DECLARATIONS]
 // please follow: 
@@ -32,24 +35,7 @@
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
 // receiver, tackled, etc...
-#if BOT_TYPE == 6
 #define TACKLE_PIN 12
-#else
-#define TACKLE_PIN 13
-#endif
-
-
-// TODO: Some of our enums are capitalized, some are not. We should probably standardize this.
-
-// Robot Type Enum
-// Ordinals: 0 for lineman, 1 for reciever, 2 for center, 3 for quarterback, 4 for kicker
-enum TYPE {
-  lineman,
-  receiver,
-  center,
-  quarterback,
-  kicker
-};
 
 enum BOT_STATE {
   PAIRING,
@@ -60,25 +46,4 @@ enum BOT_STATE {
   TACKLED
 };
 
-enum AGE {
-  OLD,
-  NEW
-};
-
-enum ELEVATION {
-  low,
-  high
-};
-
-enum MOTORS {
-  big, // MOTOR_TYPE value of 0 for long/big motors
-  small, // MOTOR_TYPE value of 1 for short/small motors
-  mecanummotor, // MOTOR_TYPE value of 2 for small 12v mecanum motors
-  falconmotor // MOTOR_TYPE value of 3 for the falcon motors on the runningback
-};
-
-// external function implemented in main to allow accessing LED state from other files,
-// like `pairing.cpp`, that would otherwise cause circular dependencies
-extern void extUpdateLEDs(); 
-
-#endif
+#endif // POLAR_ROBOTICS_H

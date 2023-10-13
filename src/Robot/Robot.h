@@ -1,7 +1,5 @@
-#pragma once
-
-#ifndef ROBOT_H_
-#define ROBOT_H_
+#ifndef ROBOT_H
+#define ROBOT_H
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
@@ -23,22 +21,19 @@
 
 class Robot {
   private:
-    Drive* drive;
-    TYPE type; // `TYPE` enum declared in `PolarRobotics.h`
+    // ! Drive should be completely decoupled from Robot
+    BotType type; // `BotType` enum declared in `BotTypes.h`
+  protected:
+    // ! setType methods should only be called in the constructor of the derived class!
+    void setType(BotType t) { type = t; };
+    void setType(uint8_t t) { type = static_cast<BotType>(t); };
   public:
-    Robot() {};
-    Drive* getDrive() { return drive; };
-    void setDrive(Drive* d) { drive = d; };
-    TYPE getType() { return type; };
-    void setType(TYPE t) { type = t; };
-    void setType(uint8_t t) { type = static_cast<TYPE>(t); };
-
-    // Virtual function that effectively acts like a constructor
-    // "virtual" keyword required to enable runtime polymorphism (i.e. actually use overrides)
-    virtual void initialize() {};
+    // Robot() {};
+    BotType getType() { return type; };
 
     // Virtual function to perform any loop actions for special robots
-    virtual void action() {}; 
+    // `virtual` keyword required to enable runtime polymorphism (i.e. actually use overrides)
+    virtual void action() = 0;
 };
 
-#endif /* ROBOT_H_ */
+#endif // ROBOT_H

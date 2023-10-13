@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUILT_IN_LED_H
+#define BUILT_IN_LED_H
 
 /**
  * @brief Header for Global ESP Built-In LED Handling
@@ -16,3 +17,5 @@
 bool builtInLedOn();
 void toggleBuiltInLED();
 void setBuiltInLED(bool on = true);
+
+#endif // BUILT_IN_LED_H
