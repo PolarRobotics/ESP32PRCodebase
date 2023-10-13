@@ -12,7 +12,7 @@
 #include <Utilities/BotTypes.h>
 #include <Utilities/MotorTypes.h>
 
-#define PR_CODEBASE_VERSION "2.0.0 @ dev/main"
+#define PR_CODEBASE_VERSION "2.0.0 @ production"
 
 // [PIN DECLARATIONS]
 // please follow: 
