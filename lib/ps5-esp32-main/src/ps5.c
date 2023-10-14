@@ -236,6 +236,10 @@ void ps5ConnectEvent(uint8_t is_connected) {
     }
 }
 
+void setIsActive(bool new_is_active) {
+  is_active = new_is_active;
+}
+
 
 void ps5PacketEvent(ps5_t ps5, ps5_event_t event) {
     // Trigger packet event, but if this is the very first packet
