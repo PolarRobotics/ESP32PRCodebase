@@ -64,7 +64,6 @@ bool ps5Controller::isConnected() {
     tryReconnectAt = millis();
     ps5_l2cap_reconnect();
   }
-  // ESP_LOGE("ps5_isconnected", "is_active=%d\n", ps5IsConnected());
   return connected;
 }
 
