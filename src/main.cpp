@@ -199,11 +199,12 @@ void loop() {
  * @brief onConnection: Function to be called on controller connect
  */
 void onConnection() {
-    if(ps5.isConnected()) {
-        Serial.println(F("Controller Connected."));
-        // ps5.setLed(0, 255, 0);   // set LED green
-        lights.setLEDStatus(Lights::PAIRED);
-    }
+  if(ps5.isConnected()) {
+    Serial.println(F("Controller Connected."));
+    // ps5.setLed(0, 255, 0);   // set LED green
+    lights.setLEDStatus(Lights::PAIRED);
+    drive->emergencyStop();
+  }
 }
 
 /**
