@@ -146,5 +146,6 @@ void ps5SetOutput(ps5_cmd_t prev_cmd);
 void ps5SetBluetoothMacAddress(const uint8_t* mac);
 long ps5_l2cap_connect(uint8_t addr[6]);
 long ps5_l2cap_reconnect(void);
+void setIsActive(bool new_is_active);
 
 #endif
