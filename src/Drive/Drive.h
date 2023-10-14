@@ -61,6 +61,7 @@
 
 #define BRAKE_BUTTON_PCT 0
 
+
 class Drive {
   private:
     MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
@@ -78,6 +79,11 @@ class Drive {
     int omega_L, omega_R;
     float R, R_Max, R_Min;
     int max_RPM, min_RPM;
+    int enableTurnSensitivity;
+    // Turn sensitivity variables
+    float scaledSensitiveTurn;
+    float turnSensitivityScalar;
+    float domainAdjustment;
 
     void calcTurning(float stickTrn, float fwdLinPwr);
 
@@ -117,6 +123,7 @@ class Drive {
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
+
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0
