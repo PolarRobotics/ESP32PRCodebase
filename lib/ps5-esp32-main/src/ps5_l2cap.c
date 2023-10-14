@@ -115,15 +115,17 @@ long ps5_l2cap_connect(BD_ADDR addr) {
 **
 *******************************************************************************/
 long ps5_l2cap_reconnect(void) {
+    setIsActive(false);
     long ret;
     ret = L2CA_CONNECT_REQ(BT_PSM_HID_CONTROL, g_bd_addr, NULL, NULL);
     ESP_LOGE(ps5_TAG, "L2CA_CONNECT_REQ ret=%d\n", ret);
+    // ESP_LOGE(ps5_TAG, "is_active=%d\n", ps5IsConnected());
     if (ret == 0) {
         return -1;
     }
     l2cap_control_channel = ret;
 
-    // is_connected = false;
+    is_connected = false;
 
     return ret;
 }

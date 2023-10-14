@@ -81,8 +81,12 @@ Drive::Drive(BotType botType, MotorType motorType) {
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    M1.attach(lpin), M2.attach(rpin);
+  //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+  M1.attach(lpin), M2.attach(rpin);
+
+  // stop motors immediately upon initialization
+  M1.write(0);
+  M2.write(0);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -336,8 +340,8 @@ void Drive::setLastRampPwr(float power, uint8_t mtr) {
 }
 
 void Drive::emergencyStop() {
-    M1.writelow(), M2.writelow();
-    // M1.write(0); M2.write(0);
+    // M1.writelow(), M2.writelow();
+    M1.write(0); M2.write(0);
 }
 
 /**
