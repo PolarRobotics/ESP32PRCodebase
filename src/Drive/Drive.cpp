@@ -71,7 +71,13 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
     // max_RPM = M1.Percent2RPM(1);
     // max_RPM = M1.max_rpm;
 
+    // initialize turn sensitivity variables
+    enableTurnSensitivity = 2; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    turnSensitivityScalar = 0.49;
+    domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
+    
   } 
+
 }
 
 void Drive::setServos(uint8_t lpin, uint8_t rpin) {
@@ -222,7 +228,7 @@ void Drive::generateMotionValues() {
                 //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
                 //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
                 // }
-                calcTurning(stickTurn, abs(BSNscalar * stickForwardRev));
+                calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
 
                 requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
@@ -232,7 +238,7 @@ void Drive::generateMotionValues() {
                 //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
                 // }
 
-                calcTurning(stickTurn, abs(BSNscalar * stickForwardRev));
+                calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
                 
                 requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[0], stickForwardRev);
@@ -250,6 +256,8 @@ void Drive::generateMotionValues() {
  * Mathematical model:
  * Whitepaper: https://www.cs.columbia.edu/~allen/F17/NOTES/icckinematics.pdf
  * 
+ * Add link to Desmos in future
+ * 
  * Differential drive turning model
  * 
  * omega_R = (omega/R)*(R + l/2)
@@ -266,9 +274,15 @@ void Drive::generateMotionValues() {
  */
 void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     //R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min); // start of turn scaling 
-
+    if (enableTurnSensitivity == 0) // linear
+        scaledSensitiveTurn = stickTrn;
+    else if(enableTurnSensitivity == 1) // rhys's function
+        scaledSensitiveTurn = log((1-(turnSensitivityScalar * stickTrn + 0.5))/(turnSensitivityScalar * stickTrn + 0.5)) * domainAdjustment;
+    else // cubic
+        scaledSensitiveTurn = pow(stickTrn, 3);
+        
     // Calculate the R value from the stick turn input
-    R = (1-abs(stickTrn))*(R_Max-R_Min) + R_Min;
+    R = (1-scaledSensitiveTurn)*(R_Max-R_Min) + R_Min;
     
     // calculate the requested angular velocity for the robot 
     // omega = M1->Percent2RPM(fwdLinPwr);
@@ -428,6 +442,9 @@ void Drive::printDebugInfo() {
     Serial.print(requestedMotorPower[0]);
     Serial.print(F("  Right: "));
     Serial.print(requestedMotorPower[1]);
+
+    Serial.print("scaledSensitiveTurn: ");
+    Serial.print(scaledSensitiveTurn);
 
     Serial.print(F("\n"));
 }
