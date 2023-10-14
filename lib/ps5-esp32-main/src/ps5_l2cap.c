@@ -123,7 +123,7 @@ long ps5_l2cap_reconnect(void) {
     }
     l2cap_control_channel = ret;
 
-    // is_connected = false;
+    is_connected = false;
 
     return ret;
 }
