@@ -62,7 +62,6 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelB
 
   if (botType != mecanum_center) {
     // initialize parameters for turning model
-    // wheelBase = 9.75;
     omega = 0;
     omega_L = 0, omega_R = 0;
     R = 0.0f;
@@ -74,7 +73,7 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelB
 
     // initialize turn sensitivity variables
     enableTurnSensitivity = 2; // 0 for linear, 1 for Rhys's function, 2 for cubic
-    turnSensitivityScalar = 0.49;
+    turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
     
   } 
@@ -286,7 +285,6 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     R = (1-scaledSensitiveTurn)*(R_Max-R_Min) + R_Min;
     
     // calculate the requested angular velocity for the robot 
-    // omega = M1->Percent2RPM(fwdLinPwr);
     omega = abs(M1.Percent2RPM(fwdLinPwr));
 
     // calculate the rpm for the left wheel
@@ -391,14 +389,18 @@ void Drive::emergencyStop() {
 }
 
 void Drive::printSetup() {
+    Serial.print(F("Drive::printSetup()"));
+    Serial.print(F("MotorType: "));
+    Serial.print(getMotorTypeString(this->motorType));
+    Serial.print(F("  GearRatio: "));
+    Serial.print(this->gearRatio);
+    Serial.print(F("  Min RPM: "));
+    Serial.print(this->min_RPM);
     Serial.print(F("  MAX RPM: "));
-    // Serial.print(M1->Percent2RPM(1));
-    Serial.print(M1.Percent2RPM(1));
-    Serial.print(F("  -MAX RPM: "));
-    // Serial.print(M1->Percent2RPM(-1));
-    Serial.print(M1.Percent2RPM(-1));
-
-
+    Serial.print(M1.max_rpm);
+    Serial.print(F("  TurnSensitivityMode: "));
+    Serial.print(enableTurnSensitivity);
+    
     Serial.print(F("\n"));
 }
 
