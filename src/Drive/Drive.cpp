@@ -35,11 +35,12 @@ Drive::Drive() {
   Drive(lineman, big_ampflow);
 }
 
-Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEncoders) {
+Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelBase, bool hasEncoders) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
   this->gearRatio = gearRatio;
+  this->wheelBase = wheelBase;
 
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
@@ -61,7 +62,7 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, bool hasEnco
 
   if (botType != mecanum_center) {
     // initialize parameters for turning model
-    wheelBase = 9.75;
+    // wheelBase = 9.75;
     omega = 0;
     omega_L = 0, omega_R = 0;
     R = 0.0f;

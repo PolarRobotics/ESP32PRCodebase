@@ -41,6 +41,7 @@ Lights& lights = Lights::getInstance();
 BotType robotType;
 MotorType motorType;
 float gearRatio;
+float wheelBase;
 
 // Config
 ConfigManager config;
@@ -72,6 +73,8 @@ void setup() {
   robotType = config.getBotType();
   motorType = config.getMotorType();
   gearRatio = config.getGearRatio();
+  wheelBase = config.getWheelBase();
+
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
