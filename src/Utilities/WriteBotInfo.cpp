@@ -14,7 +14,7 @@ void setup() {
 
   //! If you want to use a predefined robot from BotTypes.h, declare the index here:
   // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
-  uint8_t index = 1; // also handles bot name index
+  uint8_t index = 0; // also handles bot name index
   
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
   BotType bot_type = lineman; 

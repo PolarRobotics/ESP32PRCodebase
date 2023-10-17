@@ -380,8 +380,8 @@ void Drive::printDebugInfo() {
     Serial.print(F("  Right: "));
     Serial.print(requestedMotorPower[1]);
 
-    Serial.print("scaledSensitiveTurn: ");
-    Serial.print(scaledSensitiveTurn);
+    //Serial.print(F("  scaledSensitiveTurn: "));
+    //Serial.print(scaledSensitiveTurn);
 
     Serial.print(F("\n"));
 }
@@ -402,8 +402,8 @@ void Drive::update() {
     // printDebugInfo();
 
     // get the ramp value
-    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], 0);
-    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], 1);
+    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
+    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
 
     // Set the ramp value to a function, needed for generateMotionValues
     lastRampPower[0] = requestedMotorPower[0];
