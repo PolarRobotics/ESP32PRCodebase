@@ -302,69 +302,6 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     turnMotorValues[1] = M2.RPM2Percent(omega_R);
 }
 
-
-/**
- * @brief ramp slowly increases the motor power each iteration of the main loop,
- * the period and amount of increase is determined by the constants TIME_INCREMENT and ACCELERATION_RATE
- * this function is critical in ensuring the bot has proper traction with the floor,
- * the smaller ACCELERATION_RATE or larger TIME_INCREMENT is, the slower the ramp will be,
- * think of it as the slope y=mx+b
- *
- * FUTURE: combine ACCELERATION_RATE and TIME_INCREMENT into one constant,
- * to allow for better tuning of ramp, we ran into problems during the 2022 comp with this,
- * possibly finding the best values for certain surfaces and storing them into a table and pulling from
- * this to determine a comfortable range for the drivers.
- *
- * @authors Max Phillips, Grant Brautigam
- * Created: early 2022
- *
- * @param requestedPower
- * @param mtr pass 0 for left and 1 for right, used to help ease with storing values for multiple motors
- * @return float
- */
-float Drive::ramp(float requestedPower, uint8_t mtr, float accelRate) {
-
-    if (millis() - lastRampTime[mtr] >= TIME_INCREMENT) {
-        if (abs(requestedPower) < THRESHOLD) { // if the input is effectively zero
-        // Experimental Braking Code
-            if (abs(currentRampPower[mtr]) < 0.1) { // if the current power is very small just set it to zero
-                currentRampPower[mtr] = 0;
-            }
-            else {
-                currentRampPower[mtr] *= BRAKE_PERCENTAGE;
-            }
-            //currentRampPower[mtr] = 0;
-            lastRampTime[mtr] = millis();
-        }
-        else if (abs(requestedPower - currentRampPower[mtr]) < accelRate) { // if the input is effectively at the current power
-            return requestedPower;
-        }
-        // if we need to increase speed and we are going forward
-        else if (requestedPower > currentRampPower[mtr] && requestedPower > 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] + accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to decrease speed and we are going forward
-        else if (requestedPower < currentRampPower[mtr] && requestedPower > 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] - accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to increase speed and we are going in reverse
-        else if (requestedPower < currentRampPower[mtr] && requestedPower < 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] - accelRate;
-            lastRampTime[mtr] = millis();
-        }
-        // if we need to decrease speed and we are going in reverse
-        else if (requestedPower > currentRampPower[mtr] && requestedPower < 0) { 
-            currentRampPower[mtr] = currentRampPower[mtr] + accelRate;
-            lastRampTime[mtr] = millis();
-        }
-    }
-
-    return currentRampPower[mtr];
-}
-
-
 /**
  * returns the stored motor value in the class
  * @param mtr the motor number to get, an array index, so 0 -> mtr 1, etc...
@@ -465,8 +402,8 @@ void Drive::update() {
     // printDebugInfo();
 
     // get the ramp value
-    requestedMotorPower[0] = ramp(requestedMotorPower[0], 0);
-    requestedMotorPower[1] = ramp(requestedMotorPower[1], 1);
+    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], 0);
+    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], 1);
 
     // Set the ramp value to a function, needed for generateMotionValues
     lastRampPower[0] = requestedMotorPower[0];
