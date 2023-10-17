@@ -47,6 +47,8 @@ MotorControl::MotorControl() {
   else
     this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+  currentPower = 0;
+  lastRampTime = millis();
 
   // if (has_encoder) {
   //   this->encoderIndex = EncoderCount;
@@ -263,6 +265,38 @@ float MotorControl::RPM2Percent(int rpm) {
   if (rpm == 0)
     return 0.0f; 
   return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+}
+
+/**
+ * @brief ramp slowly increases the motor power each iteration of the main loop,
+ * this function is critical in ensuring the bot has proper traction with the floor,
+ * think of it as the slope y=mx+b
+ *
+ * FUTURE: none...this is perfection (...atm...:0 )
+ *
+ * @authors Grant Brautigam, Julia DeVore, Lena Frate
+ * Created: fall 2023
+ *
+ * @param requestedPower, accelRate
+ * @return int
+ */
+int MotorControl::ramp(float requestedPower,  float accelRate) {
+    float timeElapsed = millis() - lastRampTime;
+    lastRampTime = millis();
+    if (requestedPower > currentPower) // need to speed up
+    {
+        currentPower = currentPower + accelRate * timeElapsed;
+        if (currentPower > requestedPower) 
+            currentPower = requestedPower; // to prevent you from speeding up past the requested speed
+    }
+    else // need to slow down
+    {
+        currentPower = currentPower - accelRate * timeElapsed; 
+        if (currentPower < requestedPower) 
+            currentPower = requestedPower; // to prevent you from slowing down below the requested speed
+    }
+    
+    return round(currentPower);
 }
 
 // Old code:
