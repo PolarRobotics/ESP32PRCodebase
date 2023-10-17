@@ -81,9 +81,9 @@ class Drive {
     int max_RPM, min_RPM;
     int enableTurnSensitivity;
     // Turn sensitivity variables
-    float scaledSensitiveTurn;
-    float turnSensitivityScalar;
-    float domainAdjustment;
+    float scaledSensitiveTurn = 0.0f;
+    float turnSensitivityScalar = 0.0f;
+    float domainAdjustment = 0.0f;
 
     void calcTurning(float stickTrn, float fwdLinPwr);
 

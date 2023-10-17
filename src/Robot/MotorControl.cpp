@@ -280,8 +280,22 @@ float MotorControl::RPM2Percent(int rpm) {
  * @param requestedPower, accelRate
  * @return int
  */
-int MotorControl::ramp(float requestedPower,  float accelRate) {
+float MotorControl::ramp(float requestedPower,  float accelRate) {
     float timeElapsed = millis() - lastRampTime;
+    // Serial.print("  time elapsed: ");
+    // Serial.print(timeElapsed);
+
+    // Serial.print("  acceleration: ");
+    // Serial.print(accelRate);
+
+    // Serial.print("  requested power: ");
+    // Serial.print(requestedPower);
+
+    // Serial.print("  currentPower: ");
+    // Serial.print(currentPower);
+
+    // Serial.print("\n");
+
     lastRampTime = millis();
     if (requestedPower > currentPower) // need to speed up
     {
@@ -296,7 +310,7 @@ int MotorControl::ramp(float requestedPower,  float accelRate) {
             currentPower = requestedPower; // to prevent you from slowing down below the requested speed
     }
     
-    return round(currentPower);
+    return currentPower;
 }
 
 // Old code:
