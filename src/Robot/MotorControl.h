@@ -49,6 +49,10 @@ private:
   uint32_t tempTimeon;
   uint16_t power2Duty(float power);
 
+  // for ramp
+  float currentPower;     
+  float lastRampTime;
+
   // Encoder
   bool has_encoder;
   uint8_t encoderIndex;
@@ -83,6 +87,8 @@ public:
 
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
+
+  int ramp(float requestedPower, float accelRate);
 };
 
 // MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
