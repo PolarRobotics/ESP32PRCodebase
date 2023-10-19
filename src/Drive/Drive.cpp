@@ -65,8 +65,9 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelB
     omega = 0;
     omega_L = 0, omega_R = 0;
     R = 0.0f;
-    R_Max = 24.0f;
-    R_Min = wheelBase/2;
+    // R_Max = 24.0f;
+    R_Max = 36.0f;
+    R_Min = wheelBase/2 + 4;
     min_RPM = 200;
     // max_RPM = M1.Percent2RPM(1);
     // max_RPM = M1.max_rpm;
