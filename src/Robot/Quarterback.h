@@ -66,7 +66,7 @@ class Quarterback : public Robot {
     float currentFlywheelPower = 0;
     float flywheelSpeedFactor = 0;
     unsigned long lastDBElev = 0, lastDBFW = 0, lastDBFWChange = 0, lastDBConv = 0; // DB is for debounce
-    const float speedFac[NUM_SPEED_INCREMENTS] = { 0.0, 0.3, 0.5, 0.8 };
+    const float speedFac[NUM_SPEED_INCREMENTS] = { 0.0, 0.45, 0.75};
   public:
     Quarterback(
       uint8_t flywheelPin, 
