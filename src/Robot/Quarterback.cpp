@@ -174,7 +174,7 @@ void Quarterback::changeFWSpeed(SpeedStatus speed) {
     }
 
     // Cap the arrayPos so it doesn't go out of bounds
-    arrayPos = constrain(arrayPos, 0, 3);
+    arrayPos = constrain(arrayPos, 0, 2);
 
     // Set the flywheelSpeedFactor
     flywheelSpeedFactor = speedFac[arrayPos];
