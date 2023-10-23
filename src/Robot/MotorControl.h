@@ -50,8 +50,9 @@ private:
   uint16_t power2Duty(float power);
 
   // for ramp
-  float currentPower;     
+  float requestedRPM;     
   float lastRampTime;
+  float timeElapsed;
 
   // Encoder
   bool has_encoder;

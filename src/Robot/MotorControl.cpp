@@ -47,7 +47,7 @@ MotorControl::MotorControl() {
   else
     this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
-  currentPower = 0;
+  requestedRPM = 0;
   lastRampTime = millis();
 
   // if (has_encoder) {
@@ -281,7 +281,7 @@ float MotorControl::RPM2Percent(int rpm) {
  * @return int
  */
 float MotorControl::ramp(float requestedPower,  float accelRate) {
-    float timeElapsed = millis() - lastRampTime;
+    timeElapsed = millis() - lastRampTime;
     // Serial.print("  time elapsed: ");
     // Serial.print(timeElapsed);
 
@@ -297,20 +297,21 @@ float MotorControl::ramp(float requestedPower,  float accelRate) {
     // Serial.print("\n");
 
     lastRampTime = millis();
-    if (requestedPower > currentPower) // need to speed up
+    if (requestedPower > requestedRPM) // need to speed up
     {
-        currentPower = currentPower + accelRate * timeElapsed;
-        if (currentPower > requestedPower) 
-            currentPower = requestedPower; // to prevent you from speeding up past the requested speed
+        requestedRPM = requestedRPM + accelRate * timeElapsed;
+        if (requestedRPM > requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from speeding up past the requested speed
     }
     else // need to slow down
     {
-        currentPower = currentPower - accelRate * timeElapsed; 
-        if (currentPower < requestedPower) 
-            currentPower = requestedPower; // to prevent you from slowing down below the requested speed
+        requestedRPM = requestedRPM - accelRate * timeElapsed; 
+        if (requestedRPM < requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from slowing down below the requested speed
     }
     
-    return currentPower;
+    return requestedRPM;
+
 }
 
 // Old code:
