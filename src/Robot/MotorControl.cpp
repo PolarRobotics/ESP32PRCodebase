@@ -47,6 +47,8 @@ MotorControl::MotorControl() {
   else
     this->motorIndex = 255;
   // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+  requestedRPM = 0;
+  lastRampTime = millis();
 
   // if (has_encoder) {
   //   this->encoderIndex = EncoderCount;
@@ -263,6 +265,53 @@ float MotorControl::RPM2Percent(int rpm) {
   if (rpm == 0)
     return 0.0f; 
   return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+}
+
+/**
+ * @brief ramp slowly increases the motor power each iteration of the main loop,
+ * this function is critical in ensuring the bot has proper traction with the floor,
+ * think of it as the slope y=mx+b
+ *
+ * FUTURE: none...this is perfection (...atm...:0 )
+ *
+ * @authors Grant Brautigam, Julia DeVore, Lena Frate
+ * Created: fall 2023
+ *
+ * @param requestedPower, accelRate
+ * @return int
+ */
+float MotorControl::ramp(float requestedPower,  float accelRate) {
+    timeElapsed = millis() - lastRampTime;
+    // Serial.print("  time elapsed: ");
+    // Serial.print(timeElapsed);
+
+    // Serial.print("  acceleration: ");
+    // Serial.print(accelRate);
+
+    // Serial.print("  requested power: ");
+    // Serial.print(requestedPower);
+
+    // Serial.print("  currentPower: ");
+    // Serial.print(currentPower);
+
+    // Serial.print("\n");
+
+    lastRampTime = millis();
+    if (requestedPower > requestedRPM) // need to speed up
+    {
+        requestedRPM = requestedRPM + accelRate * timeElapsed;
+        if (requestedRPM > requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from speeding up past the requested speed
+    }
+    else // need to slow down
+    {
+        requestedRPM = requestedRPM - accelRate * timeElapsed; 
+        if (requestedRPM < requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from slowing down below the requested speed
+    }
+    
+    return requestedRPM;
+
 }
 
 // Old code:

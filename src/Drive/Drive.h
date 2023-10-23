@@ -12,7 +12,7 @@
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
 // #define ACCELERATION_RATE .0375f // probably lower for runningback
-#define ACCELERATION_RATE 0.0375f // probably lower for runningback
+#define ACCELERATION_RATE 0.00375f // probably lower for runningback
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
@@ -81,9 +81,9 @@ class Drive {
     int max_RPM, min_RPM;
     int enableTurnSensitivity;
     // Turn sensitivity variables
-    float scaledSensitiveTurn;
-    float turnSensitivityScalar;
-    float domainAdjustment;
+    float scaledSensitiveTurn = 0.0f;
+    float turnSensitivityScalar = 0.0f;
+    float domainAdjustment = 0.0f;
 
     void calcTurning(float stickTrn, float fwdLinPwr);
 
