@@ -127,6 +127,7 @@ class Drive {
     void generateMotionValues();
     virtual void update();
     virtual void printDebugInfo();
+    virtual void printCsvInfo();
 
     //* The following variables are initialized in the constructor
     // the max allowable turning when the bot is traveling at lowest speed

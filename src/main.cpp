@@ -141,7 +141,7 @@ void setup() {
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
   if (ps5.isConnected()) {
-    Serial.print(F("\r\nConnected"));
+    // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
 
     if (robotType == mecanum_center) {
@@ -182,14 +182,14 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    drive->printDebugInfo(); // prints info to serial monitor in a human readable format
+    drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       
   } else { // no response from PS5 controller within last 300 ms, so stop
       // Emergency stop if the controller disconnects
-      Serial.print(F("\r\nDISCONNECTED"));
       drive->emergencyStop();
       lights.setLEDStatus(Lights::UNPAIRED);
   }
@@ -203,8 +203,8 @@ void onConnection() {
     Serial.println(F("Controller Connected."));
     // ps5.setLed(0, 255, 0);   // set LED green
     lights.setLEDStatus(Lights::PAIRED);
-    drive->emergencyStop();
   }
+  drive->emergencyStop();
 }
 
 /**
