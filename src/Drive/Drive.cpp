@@ -382,7 +382,31 @@ void Drive::printDebugInfo() {
 }
 
 void Drive::printCsvInfo() {
+    Serial.print(stickForwardRev);
+    Serial.print(F(","));
+    Serial.print(stickTurn);
+    Serial.print(F(","));
+    Serial.print(lastTurnPwr);
+    Serial.print(F(","));
+
+    // Serial.print(F("  |  Left ReqPwr: "));
+    // Serial.print(requestedMotorPower[0]);
+    // Serial.print(F("  Right ReqPwr: "));
+    // Serial.print(requestedMotorPower[1]);
     
+    // Serial.print(F("  lastRampTime "));
+    // Serial.print(lastRampTime[0]);
+    // Serial.print(F("  requestedPower "));
+    // Serial.print(requestedPower);
+    // Serial.print(F("  current "));
+    // Serial.print(currentRampPower[0]);
+    // Serial.print(F("  requestedPower - currentRampPower "));
+    // Serial.println(requestedPower - currentRampPower[mtr], 10);
+
+    Serial.print(requestedMotorPower[0]);
+    Serial.print(F(","));
+    Serial.print(requestedMotorPower[1]);
+    Serial.print(F("\n"));
 }
 
 /**

@@ -182,7 +182,7 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    drive->printDebugInfo(); // prints info to serial monitor in a human readable format
+    // drive->printDebugInfo(); // prints info to serial monitor in a human readable format
     drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
     //! Performs all special robot actions depending on the instantiated Robot subclass
