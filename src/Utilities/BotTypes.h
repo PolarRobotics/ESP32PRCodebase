@@ -71,7 +71,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 6,  ">=",       lineman,     big_ampflow,    1.0f,      10.00f },  // 6:  >=
   { 7,  "32.2",     receiver,    small_ampflow,  0.5f,      11.50f },  // 7:  32.2
   { 8,  "9.8",      receiver,    big_ampflow,    0.5f,      11.50f },  // 8:  9.8
-  { 9,  "c",        runningback, falcon,         0.5f,      0.00f  },  // 9:  c
+  { 9,  "c",        runningback, falcon,         0.5f,      8.00f  },  // 9:  c
   { 10, "phi",      center,      small_ampflow,  0.6f,      11.50f },  // 10: Φ
   { 11, "inf",      quarterback, small_ampflow,  0.5625f,   11.50f },  // 11: ∞
   { 12, "theta",    kicker,      small_ampflow,  0.34375f,  10.00f }   // 12: Θ
