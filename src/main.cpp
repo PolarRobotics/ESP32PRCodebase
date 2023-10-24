@@ -173,7 +173,9 @@ void loop() {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
         lights.tackled = true;
-      } else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+      } 
+      // debounce the tackle sensor input
+      else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
         lights.setLEDStatus(Lights::OFFENSE);
         lights.tackled = false;
       }
