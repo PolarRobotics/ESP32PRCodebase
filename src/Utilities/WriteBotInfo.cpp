@@ -29,10 +29,10 @@ void setup() {
   //   Serial.println(F("Error writing bot config"));
 
   //* Write custom bot configuration
-  // if(config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base))
-  //   Serial.println(F("Config write successful"));
-  // else
-  //   Serial.println(F("Error writing bot config"));  
+  if(config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base))
+    Serial.println(F("Config write successful"));
+  else
+    Serial.println(F("Error writing bot config"));  
 
   //* Read back for verification
   Serial.println(F("Readback:"));
