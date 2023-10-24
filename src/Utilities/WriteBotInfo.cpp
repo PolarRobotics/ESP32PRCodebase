@@ -24,22 +24,17 @@ void setup() {
   float gear_ratio = 1;
   float wheel_base = 10;
 
-  //! Set this depending on if you want to use custom config or not
-  constexpr bool useCustomConfig = false;
+  //* Write standard bot configuration from BotTypes.botConfigArray
+  // if (config.setConfig(index))
+  //   Serial.println(F("Config write successful"));
+  // else
+  //   Serial.println(F("Error writing bot config"));
 
-  if (useCustomConfig) {
-    //* Write custom bot configuration
-    validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base);
-  } else {
-    //* Write standard bot configuration from BotTypes.botConfigArray
-    validConfig = config.setConfig(index);
-  }
-
-  if (validConfig) {
-    Serial.println(F("Config write successful"));
-  } else {
-    Serial.println(F("Error writing bot config"));
-  }
+  //* Write custom bot configuration
+  // if(config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base))
+  //   Serial.println(F("Config write successful"));
+  // else
+  //   Serial.println(F("Error writing bot config"));  
 
   //* Read back for verification
   Serial.println(F("Readback:"));
