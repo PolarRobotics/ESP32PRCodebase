@@ -18,18 +18,18 @@ void setup() {
   
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
   BotType bot_type = lineman; 
-  MotorType motor_type = big_ampflow;
+  MotorType motor_type = small_12v;
   float gear_ratio = 1;
   float wheel_base = 10;
 
   //* Write standard bot configuration from BotTypes.botConfigArray
-  if (config.setConfig(index))
-    Serial.println(F("Config write successful"));
-  else
-    Serial.println(F("Error writing bot config"));
+  // if (config.setConfig(index))
+  //   Serial.println(F("Config write successful"));
+  // else
+  //   Serial.println(F("Error writing bot config"));
 
   //* Write custom bot configuration
-  // if(config.setConfig(index, bot_type, motor_type, gear_ratio))
+  // if(config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base))
   //   Serial.println(F("Config write successful"));
   // else
   //   Serial.println(F("Error writing bot config"));  

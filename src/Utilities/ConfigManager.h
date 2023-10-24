@@ -37,7 +37,7 @@ class ConfigManager {
     // ConfigManager(bool writable = false);
     ~ConfigManager();
     void read();
-    String version();
+    const char* version();
     int botIndex();
     BotType getBotType();
     MotorType getMotorType();
