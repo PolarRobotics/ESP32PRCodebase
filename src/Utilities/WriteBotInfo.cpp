@@ -6,7 +6,7 @@
 // Preferences preferences;
 ConfigManager config;
 
-bool done = false;
+bool validConfig = false;
 
 void setup() {
   Serial.begin(115200);
@@ -16,23 +16,23 @@ void setup() {
   // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
   uint8_t index = 0; // also handles bot name index
   
+  //* Write standard bot configuration from BotTypes.botConfigArray
+  validConfig = config.setConfig(index);
+
+  // CUSTOM BOT CONFIGURATION
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
   BotType bot_type = lineman; 
   MotorType motor_type = big_ampflow;
   float gear_ratio = 1;
   float wheel_base = 10;
+  
+  //* Write custom bot configuration
+  // validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base);
 
-  //* Write standard bot configuration from BotTypes.botConfigArray
-  if (config.setConfig(index))
+  if (validConfig)
     Serial.println(F("Config write successful"));
   else
     Serial.println(F("Error writing bot config"));
-
-  //* Write custom bot configuration
-  // if(config.setConfig(index, bot_type, motor_type, gear_ratio))
-  //   Serial.println(F("Config write successful"));
-  // else
-  //   Serial.println(F("Error writing bot config"));  
 
   //* Read back for verification
   Serial.println(F("Readback:"));
