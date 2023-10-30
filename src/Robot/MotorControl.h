@@ -10,8 +10,6 @@
 #define MAX_PWM_US 2000
 #define MIN_PWM_US 1000
 
-#define ACCELERATION_RATE 0.00375f // probably lower for runningback
-
 //PWM defines:
 #define PWM_RES 16 //channel resolution in bits, this is a really high resolution, can lower this if we have stability problems
 // #define PWM_MAXDUTY 65535    // (2^16) - 1
@@ -92,8 +90,6 @@ public:
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
-
-  void update();
 };
 
 // MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];

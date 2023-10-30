@@ -90,7 +90,7 @@ class Drive {
   protected:
     // MotorControl* M1;
     // MotorControl* M2;
-    //MotorControl M1, M2;
+    MotorControl M1, M2;
     float stickForwardRev, stickTurn;
     float lastTurnPwr;
     float turnPower;
@@ -103,8 +103,6 @@ class Drive {
         SLOW,
         BRAKE
     };
-
-    MotorControl M1, M2;
 
     Drive();
     Drive(BotType botType, MotorType motorType, float gearRatio = 1.0f, float wheelBase = 10.0f, bool hasEncoders = false);
