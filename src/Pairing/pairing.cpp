@@ -119,7 +119,7 @@ void getAddress(const char* &addr) {
 /// @brief Search for PS5 Controllers and pair to the first one found
 /// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
-void activatePairing(bool doRePair, int discoverTime) {
+void activatePairing(bool doRePair, int discoverTime = DEFAULT_BT_DISCOVER_TIME, int repairTime = DEFAULT_BT_REPAIR_TIME) {
   Serial.begin(115200);
   // pinMode(LED_BUILTIN, OUTPUT);
 
@@ -131,7 +131,7 @@ void activatePairing(bool doRePair, int discoverTime) {
   Serial.print(F("PAIRING PIN "));
   Serial.println(digitalRead(PAIRING_PIN));
 
-  if (digitalRead(PAIRING_PIN) == HIGH) { // search for new devices
+  if (digitalRead(PAIRING_PIN) == HIGH) { //! search for new devices
     // begin broadcasting as "ESP32" as master role
     if (!SerialBT.begin("ESP32", true)) { 
       Serial.println(F("SerialBT failed!")); // function returns false if failed
@@ -218,7 +218,7 @@ void activatePairing(bool doRePair, int discoverTime) {
       setBuiltInLED(false);
     }
 
-  } else {
+  } else { //! if PAIRING_PIN is LOW, reconnect to previous controller
     if (doRePair) {
       // see if we have a stored MAC address and try to pair to it
       if (addrCharPtr != nullptr) {
@@ -242,7 +242,7 @@ void activatePairing(bool doRePair, int discoverTime) {
         if (ps5.isConnected()) {
           Serial.println(F("PS5 Controller Connected!"));
           yeet;
-        } // otherwise look for devices to pair with
+        }
       } 
     }
   }
