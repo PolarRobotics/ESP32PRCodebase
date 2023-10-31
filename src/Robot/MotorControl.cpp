@@ -150,6 +150,11 @@ void MotorControl::write(float pwr) {
   ledcWrite(this->motorIndex, power2Duty(pwr));
 }
 
+void MotorControl::setSpeed(float pwr){
+  float newPower = ramp(pwr, ACCELERATION_RATE);
+  this->write(newPower);
+}
+
 void MotorControl::displayPinInfo() {
   Serial.print(F("Motor: "));
   Serial.print(this->motorIndex);
