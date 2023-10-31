@@ -64,6 +64,7 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
+  pinMode(PAIRING_PIN, INPUT_PULLDOWN); // PULLDOWN - low until connected to 3v3
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
