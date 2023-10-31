@@ -51,12 +51,12 @@ void ConfigManager::read() {
  * @brief gets the code version from the configuration.
  * @return String - the version as a string
  */
-const char* ConfigManager::version() {
+String ConfigManager::version() {
   bool good = preferences.begin(CODE_VERSION_PREF_KEY, true);
   if (!good) return NO_VERSION_PLACEHOLDER;
   String str = preferences.getString(CODE_VERSION_PREF_KEY, NO_VERSION_PLACEHOLDER);
   preferences.end();
-  return str.c_str();
+  return str;
 }
 
 /**
@@ -113,7 +113,7 @@ float ConfigManager::getWheelBase() {
 const char * ConfigManager::toString() {
     string temp = "\nBot info: ";
     temp.append("\ncode version: ");
-    temp.append(version());
+    temp.append(version().c_str());
     temp.append("\nbot array index #: ");
     temp.append(to_string(config->index));
     temp.append("\nbot name: ");
