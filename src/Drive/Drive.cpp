@@ -380,6 +380,12 @@ void Drive::printDebugInfo() {
 
     Serial.print(F("\n"));
 }
+/**
+ * @brief prints the internal variables to the serial monitor in a csv format
+ * this function is important for data acquisition
+ * @author Corbin Hibler
+ * Updated: 2023-10-30
+*/
 
 void Drive::printCsvInfo() {
     Serial.print(F("L_HAT_Y,"));
