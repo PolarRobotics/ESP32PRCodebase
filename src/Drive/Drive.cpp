@@ -32,15 +32,17 @@
 */
 
 Drive::Drive() {
-  Drive(lineman, big_ampflow);
+  Drive(lineman, big_ampflow, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelBase, bool hasEncoders) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
-  this->gearRatio = gearRatio;
-  this->wheelBase = wheelBase;
+  this->gearRatio = driveParams.gear_ratio;
+  this->wheelBase = driveParams.wheel_base;
+  this->R_Min = driveParams.r_min;
+  this->R_Max = driveParams.r_max;
 
   if (botType == quarterback) {
     this->BIG_BOOST_PCT = 0.8; 
@@ -66,8 +68,8 @@ Drive::Drive(BotType botType, MotorType motorType, float gearRatio, float wheelB
     omega_L = 0, omega_R = 0;
     R = 0.0f;
     // R_Max = 24.0f;
-    R_Max = 36.0f;
-    R_Min = wheelBase/2 + 4;
+    // R_Max = 36.0f;
+    // R_Min = wheelBase/2 + 4;
     min_RPM = 200;
     // max_RPM = M1.Percent2RPM(1);
     // max_RPM = M1.max_rpm;

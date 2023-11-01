@@ -40,8 +40,7 @@ Lights& lights = Lights::getInstance();
 // Robot Information from EEPROM/Preferences
 BotType robotType;
 MotorType motorType;
-float gearRatio;
-float wheelBase;
+drive_param_t driveParams;
 
 // Config
 ConfigManager config;
@@ -72,8 +71,9 @@ void setup() {
   Serial.println(config.toString());
   robotType = config.getBotType();
   motorType = config.getMotorType();
-  gearRatio = config.getGearRatio();
-  wheelBase = config.getWheelBase();
+  driveParams = config.getDriveParams();
+  // gearRatio = config.getGearRatio();
+  // wheelBase = config.getWheelBase();
 
 
   // work backwards from highest ordinal enum since lineman should be default case
@@ -85,12 +85,12 @@ void setup() {
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
-      drive = new Drive(kicker, motorType, gearRatio);
+      drive = new Drive(kicker, motorType, driveParams);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback, motorType, gearRatio);
+      drive = new Drive(quarterback, motorType, driveParams);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
@@ -101,7 +101,7 @@ void setup() {
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
-      drive = new Drive(center, motorType, gearRatio);
+      drive = new Drive(center, motorType, driveParams);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case runningback:
@@ -113,7 +113,7 @@ void setup() {
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      drive = new Drive(lineman, motorType, gearRatio);
+      drive = new Drive(lineman, motorType, driveParams);
       drive->setServos(M1_PIN, M2_PIN);
   }
 
