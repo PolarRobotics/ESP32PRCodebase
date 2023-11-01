@@ -155,7 +155,7 @@ const char * ConfigManager::toString() {
  * @param cfg the configuration you wish to save to EEPROM
  * @return true if this instance of the config manager is writable, false if not
  */
-bool ConfigManager::write(bot_config_t *cfg) {
+bool ConfigManager::write(bot_config_t* cfg) {
   if (this->writable) {  
     // open the "bot_config" namespace and set it to read/write
     bool good = preferences.begin("bot_config", false); 
