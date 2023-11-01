@@ -209,7 +209,7 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
     this->config->drive_params.gear_ratio = botConfigArray[botIndex].drive_params.gear_ratio;
     this->config->drive_params.wheel_base = botConfigArray[botIndex].drive_params.wheel_base;
     this->config->drive_params.r_min = botConfigArray[botIndex].drive_params.r_min;
-    this->config->drive_params.r_max = botConfigArray[botIndex].drive_params.r_min;
+    this->config->drive_params.r_max = botConfigArray[botIndex].drive_params.r_max;
 
     // write index to predefined configuration from the array defined in the header file
     return write(this->config);
