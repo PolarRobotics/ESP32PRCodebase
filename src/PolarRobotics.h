@@ -11,6 +11,7 @@
 #include <Arduino.h>
 #include <Utilities/BotTypes.h>
 #include <Utilities/MotorTypes.h>
+#include <Utilities/DriveParameters.h>
 
 #define PR_CODEBASE_VERSION "2.0.2 @ production"
 
