@@ -24,7 +24,11 @@ void setup() {
   float gear_ratio = 1;
   float wheel_base = 10;
 
-  //! Set this depending on if you want to use custom config or not
+  //! Do not use custom config except for TEMPORARY testing, OR:
+  //! DO NOT USE WITHOUT DOCUMENTING YOUR CHANGES BY:
+  //! - sending a message in the programming chat in Discord, AND:
+  //! - making a comment in the bot types spreadsheet (see link above), AND:
+  //! - mirroring your changes into botConfigArray in BotTypes.h and pushing your changes to a new branch as appropriate
   constexpr bool useCustomConfig = false;
 
   if (useCustomConfig) {
