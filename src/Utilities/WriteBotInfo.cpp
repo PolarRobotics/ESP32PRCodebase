@@ -23,13 +23,15 @@ void setup() {
   MotorType motor_type = small_12v;
   float gear_ratio = 1;
   float wheel_base = 10;
+  float r_min = 9.00f;
+  float r_max = 36.00f;
 
   //! Set this depending on if you want to use custom config or not
   constexpr bool useCustomConfig = false;
 
   if (useCustomConfig) {
     //* Write custom bot configuration
-    validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base);
+    validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base, r_min, r_max);
   } else {
     //* Write standard bot configuration from BotTypes.botConfigArray
     validConfig = config.setConfig(index);
