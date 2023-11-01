@@ -105,7 +105,7 @@ class Drive {
     };
 
     Drive();
-    Drive(BotType botType, MotorType motorType, float gearRatio = 1.0f, float wheelBase = 10.0f, bool hasEncoders = false);
+    Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false);
     void setServos(uint8_t lpin, uint8_t rpin);
     void setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
