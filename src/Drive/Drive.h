@@ -70,10 +70,6 @@ class Drive {
     bool hasEncoders;
 
     float BSNscalar;
-    float requestedMotorPower[NUM_MOTORS];
-    float currentRampPower[NUM_MOTORS];
-    float lastRampPower[NUM_MOTORS];
-    float turnMotorValues[NUM_MOTORS];
     float wheelBase;
     int omega;
     int omega_L, omega_R;
@@ -94,7 +90,10 @@ class Drive {
     float stickForwardRev, stickTurn;
     float lastTurnPwr;
     float turnPower;
-    unsigned long lastRampTime[NUM_MOTORS];
+
+    float requestedMotorPower[NUM_MOTORS];
+    float lastRampPower[NUM_MOTORS];
+    float turnMotorValues[NUM_MOTORS];
 
   public:
     enum Speed {
@@ -115,9 +114,6 @@ class Drive {
     float getTurnPower();
     void setBSN(Speed bsn); //(float powerMultiplier);
     float getBSN();
-    float getReqMotorPwr(uint8_t mtr);
-    void setReqMotorPwr(float power, uint8_t mtr);
-    void setLastRampPwr(float power, uint8_t mtr);
     void emergencyStop();
     void generateMotionValues();
     virtual void update();

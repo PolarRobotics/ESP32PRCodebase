@@ -14,4 +14,4 @@ typedef struct drive_param {
     float r_max;
 } drive_param_t;
 
-#endif
+#endif // DRIVE_PARAMETERS_H
