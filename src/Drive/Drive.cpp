@@ -61,7 +61,6 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   // initialize arrays
   for (int i = 0; i < NUM_MOTORS; i++) {
     requestedMotorPower[i] = 0.0f;
-    currentRampPower[i] = 0.0f;
     lastRampPower[i] = 0.0f;
     turnMotorValues[i] = 0.0f;
   }
@@ -308,23 +307,6 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
     turnMotorValues[1] = M2.RPM2Percent(omega_R);
 }
 
-/**
- * returns the stored motor value in the class
- * @param mtr the motor number to get, an array index, so 0 -> mtr 1, etc...
- * @return returns the stored motor power for a given motor
-*/
-float Drive::getReqMotorPwr(uint8_t mtr) {
-    return this->requestedMotorPower[mtr];
-}
-
-void Drive::setReqMotorPwr(float power, uint8_t mtr) {
-    this->requestedMotorPower[mtr] = power;
-}
-
-void Drive::setLastRampPwr(float power, uint8_t mtr) {
-    this->lastRampPower[mtr] = power;
-}
-
 void Drive::emergencyStop() {
     // M1->writelow(), M2->writelow();
     M1.writelow(), M2.writelow();
@@ -333,18 +315,25 @@ void Drive::emergencyStop() {
 }
 
 void Drive::printSetup() {
-    Serial.print(F("Drive::printSetup()"));
-    Serial.print(F("MotorType: "));
+    Serial.print(F("\nDrive::printSetup():"));
+    Serial.print(F("\nMotorType: "));
     Serial.print(getMotorTypeString(this->motorType));
-    Serial.print(F("  GearRatio: "));
+    Serial.print(F("\nGearRatio: "));
     Serial.print(this->gearRatio);
-    Serial.print(F("  Min RPM: "));
+    Serial.print(F("\nR_Min: "));
+    Serial.print(this->R_Min);
+    Serial.print(F("\nR_Max: "));
+    Serial.print(this->R_Max);
+    Serial.print(F("\nMin RPM: "));
     Serial.print(this->min_RPM);
-    Serial.print(F("  MAX RPM: "));
+    Serial.print(F("\nMAX RPM: "));
     Serial.print(M1.max_rpm);
-    Serial.print(F("  TurnSensitivityMode: "));
+    Serial.print(F("\nTurnSensitivityMode: "));
     Serial.print(enableTurnSensitivity);
-    
+    Serial.print(F("\nEncoders: "));
+    Serial.print(F("\nHas Encoders? "));
+    Serial.print(this->hasEncoders ? F("True") : F("False"));
+
     Serial.print(F("\n"));
 }
 
@@ -371,9 +360,9 @@ void Drive::printDebugInfo() {
     Serial.print(F("  |  Omega: "));
     Serial.print(omega);
 
-    Serial.print(F("  Left (W): "));
+    Serial.print(F("  omega_L: "));
     Serial.print(omega_L);
-    Serial.print(F("  Right (W): "));
+    Serial.print(F("  omega_R: "));
     Serial.print(omega_R);
 
     // Serial.print(F("  lastRampTime "));

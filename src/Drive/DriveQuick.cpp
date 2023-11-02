@@ -17,9 +17,9 @@ Features:
 //! Must call base class constructor with appropriate arguments
 DriveQuick::DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {
   // initialize array
-  for (int i = 0; i < NUM_MOTORS; i++) {
-    falcon_motor_pwr[i] = 0.0f;
-  }
+  // for (int i = 0; i < NUM_MOTORS; i++) {
+  //   falcon_motor_pwr[i] = 0.0f;
+  // }
 }
 
 /**
@@ -55,42 +55,56 @@ DriveQuick::DriveQuick() : Drive(BotType::runningback, MotorType::falcon) {
  * Updated: 10-11-2020
 */
 void DriveQuick::update() {
-    // Generate turning motion
-    generateMotionValues();
+  // Generate turning motion
+  generateMotionValues();
 
-    // calculate the ramped power
-    // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
-    // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
-    falcon_motor_pwr[0] = M1.ramp(getReqMotorPwr(0), RB_ACCELERATION_RATE);
-    falcon_motor_pwr[1] = M2.ramp(getReqMotorPwr(1), RB_ACCELERATION_RATE);
+  // calculate the ramped power
+  // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);
+  // falcon_motor_pwr[1] = ramp(falcon_motor_pwr[1], 1);
+  // falcon_motor_pwr[0] = M1.ramp(getReqMotorPwr(0), RB_ACCELERATION_RATE);
+  // falcon_motor_pwr[1] = M2.ramp(getReqMotorPwr(1), RB_ACCELERATION_RATE);
 
-    // set the last ramp power, used in ramp
-    setLastRampPwr(falcon_motor_pwr[0], 0);
-    setLastRampPwr(falcon_motor_pwr[1], 1);
+  requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], RB_ACCELERATION_RATE);
+  requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], RB_ACCELERATION_RATE);
 
-    // if the requested motor power is really small, set the motors to zero to prevent stalls
-    falcon_motor_pwr[0] = fabs(falcon_motor_pwr[0]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[0];
-    falcon_motor_pwr[1] = fabs(falcon_motor_pwr[1]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[1];
-    
-    // write calculated powers to the motors 
-    // note: adding a negative, because we cant change the motor direction in hardware
-    M1.write(falcon_motor_pwr[0]);
-    M2.write(-falcon_motor_pwr[1]);
+  // set the last ramp power, used in ramp
+  // setLastRampPwr(falcon_motor_pwr[0], 0);
+  // setLastRampPwr(falcon_motor_pwr[1], 1);
+
+  // Set the ramp value to a function, needed for generateMotionValues
+  lastRampPower[0] = requestedMotorPower[0];
+  lastRampPower[1] = requestedMotorPower[1];
+
+  // if the requested motor power is really small, set the motors to zero to prevent stalls
+  // falcon_motor_pwr[0] = fabs(falcon_motor_pwr[0]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[0];
+  // falcon_motor_pwr[1] = fabs(falcon_motor_pwr[1]) < MOTOR_ZERO_OFFST ? 0 : falcon_motor_pwr[1];
+
+  requestedMotorPower[0] = fabs(requestedMotorPower[0]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[0];
+  requestedMotorPower[1] = fabs(requestedMotorPower[1]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[1];
+  
+  // write calculated powers to the motors 
+  // note: adding a negative, because we cant change the motor direction in hardware
+  M1.write(requestedMotorPower[0]);
+  M2.write(-requestedMotorPower[1]);
 }
 
 void DriveQuick::printDebugInfo() {
-    Serial.print(F("DQ | "));
-    Serial.print(F("L_Hat_Y: "));
-    Serial.print(stickForwardRev);
-    Serial.print(F("  R_HAT_X: "));
-    Serial.print(stickTurn);
+  Serial.print(F("DQ | "));
+  Serial.print(F("L_Hat_Y: "));
+  Serial.print(stickForwardRev);
+  Serial.print(F("  R_HAT_X: "));
+  Serial.print(stickTurn);
 
-    // Serial.print(F("  |  Turn: "));
-    // Serial.print(lastTurnPwr);
+  // Serial.print(F("  |  Turn: "));
+  // Serial.print(lastTurnPwr);
 
-    Serial.print(F("  L_MotPwr: "));
-    Serial.print(falcon_motor_pwr[0]);
-    Serial.print(F("  R_MotPwr: "));
-    Serial.print(falcon_motor_pwr[1]);
-    Serial.print(F("\n"));
+  Serial.print(F("  L_MotPwr: "));
+  // Serial.print(falcon_motor_pwr[0]);
+  Serial.print(requestedMotorPower[0]);
+
+  Serial.print(F("  R_MotPwr: "));
+  // Serial.print(falcon_motor_pwr[1]);
+  Serial.print(requestedMotorPower[1]);
+
+  Serial.print(F("\n"));
 }
