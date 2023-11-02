@@ -118,13 +118,11 @@ class Drive {
     void setReqMotorPwr(float power, uint8_t mtr);
     void setLastRampPwr(float power, uint8_t mtr);
     void emergencyStop();
-    float ramp(float requestedPower, uint8_t mtr, float accelRate = ACCELERATION_RATE);
     void generateMotionValues();
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
     virtual void printCsvInfo();
-
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0

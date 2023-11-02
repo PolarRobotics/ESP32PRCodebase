@@ -68,7 +68,7 @@ String ConfigManager::version() {
  * this index corresponds to the position in the config array that the bot config is pulled from
  * @return int the bot index in the array the configuration is from 
  */
-int ConfigManager::botIndex() {
+int ConfigManager::getBotIndex() {
     return this->config->index;
 }
 
