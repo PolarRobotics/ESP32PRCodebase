@@ -26,10 +26,8 @@ class ConfigManager {
     BotType bot_type;
     MotorType motor_type;
     
-    drive_param_t* drive_params;
-
     // Write Function
-    bool write(bot_config_t *cfg);
+    bool write(bot_config_t* cfg);
   protected:
     Preferences preferences;
   public:
@@ -38,11 +36,9 @@ class ConfigManager {
     ~ConfigManager();
     void read();
     String version();
-    int botIndex();
+    int getBotIndex();
     BotType getBotType();
     MotorType getMotorType();
-    float getGearRatio();
-    float getWheelBase();
     drive_param_t getDriveParams();
     const char * toString();
     bool setConfig(uint8_t botindex);
