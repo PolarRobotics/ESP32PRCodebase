@@ -12,8 +12,8 @@ MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
   this->conveyorPin = conveyorpin;
 
   // Attach the motors inside the class to their respective pins
-  flywheelMotor.attach(flywheelPin);
-  conveyorMotor.attach(conveyorPin);
+  flywheelMotor.setup(flywheelPin);
+  conveyorMotor.setup(conveyorPin);
 
   // Set the motor to zero so it doesnt spin on startup
   conveyorMotor.write(MC_CONVEYOR_OFF);

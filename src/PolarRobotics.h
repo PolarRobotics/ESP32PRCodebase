@@ -11,8 +11,9 @@
 #include <Arduino.h>
 #include <Utilities/BotTypes.h>
 #include <Utilities/MotorTypes.h>
+#include <Utilities/DriveParameters.h>
 
-#define PR_CODEBASE_VERSION "2.0.2 @ production"
+#define PR_CODEBASE_VERSION "2.1.0 @ production"
 
 // [PIN DECLARATIONS]
 // please follow: 
@@ -31,6 +32,12 @@
 #define SPECBOT_PIN2 19
 #define SPECBOT_PIN3 21
 #define SPECBOT_PIN4 22
+
+// ENCODER PIN DEFINITIONS
+#define ENC1_CHA 35
+#define ENC1_CHB 34
+#define ENC2_CHA VP
+#define ENC2_CHB VN
 
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   

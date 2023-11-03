@@ -1,5 +1,14 @@
 #include <Arduino.h>
-#include "Robot/MotorControl.h"
+
+#include "MotorControl.h"
+
+// void ext_read_encoder0() {
+//   GlobalClassPointer[0]->readEncoder();
+// }
+
+// void ext_read_encoder1() {
+//   GlobalClassPointer[1]->readEncoder();
+// }
 
 /**
  * @brief 
@@ -27,32 +36,85 @@
  * 
  * where -1, 0 and 1 correspond to the throttles in the reverse, stop and forward directions
  * 
+ * !TODO:
+ * allow for us values outside the 1000us to 2000us, allow user to input the min and max values and pwr2Duty will account for that range
+ * 
  * @author Rhys Davies 
  */
-MotorControl::MotorControl() {
-    if(ServoCount < MAX_NUM_MOTORS)
-        this->motorIndex = ServoCount++;  // assign a servo index to this instance
-    else
-        this->motorIndex = 255;
-    // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+MotorControl::MotorControl() {  
+  if(ServoCount < MAX_NUM_MOTORS)
+    this->motorIndex = ServoCount++;  // assign a servo index to this instance
+  else
+    this->motorIndex = 255;
+  // this->motorIndex = ServoCount < MAX_NUM_MOTORS ? ServoCount++ : 255;
+  requestedRPM = 0;
+  lastRampTime = millis();
+
+  // if (has_encoder) {
+  //   this->encoderIndex = EncoderCount;
+  //   GlobalClassPointer[EncoderCount++] = this;
+  //   init_encoder();
+  // }
+}
+
+void MotorControl::init_encoder() {
+  // for use in void readEncoder()
+  this->encoderACount = 0;
+  this->b_channel_state = 0;
+  this->rollover = 2048;
+
+  // for use in int calcSpeed()
+  this->prev_current_count = 0;
+  this->rollover_threshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+  this->current_time = 0;
+  this->prev_current_time = 0; 
+  this->omega = 0;
 }
 
 /**
- * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
+ * @brief setup the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
  * Updated 2-26-2023
  * 
- * @param pin the pin the motor is connected to
+ * @param mot_pin the pin the motor is connected to
+ * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::attach(int pin) {
-    return attach(pin, MIN_PWM_US, MAX_PWM_US);
+uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+  this->has_encoder = has_encoder;
+  this->motor_type = type;
+  this->gear_ratio = gearRatio;
+  this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
+  
+  // if (this->enc_a_pin != -1 && this->enc_b_pin != -1 && has_encoder) {
+  //   pinMode(this->enc_a_pin, INPUT_PULLUP);
+  //   pinMode(this->enc_b_pin, INPUT);
+
+  //   switch(this->encoderIndex) {
+  //     case 0: {
+  //       attachInterrupt(this->enc_a_pin, ext_read_encoder0, RISING);
+  //       break;
+  //     }
+  //     case 1: {
+  //       attachInterrupt(this->enc_a_pin, ext_read_encoder1, RISING);
+  //       break;
+  //     }
+  //     default:
+  //       return 254;
+  //   }
+  // }
+
+  // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
+  this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
+
+  // call the logic to attach the motor pin and setup, return 255 on an error
+  return attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
 }
 
 /**
- * @brief attach the given pin to the next free channel, returns channel number or 255 if failure
+ * @brief attach_us the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
- * Updated 2-26-2023
+ * Updated 9-24-2023
  * 
  * @param pin the pin the motor is connected to
  * @param min min on time in us
@@ -60,19 +122,19 @@ uint8_t MotorControl::attach(int pin) {
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
 uint8_t MotorControl::attach(int pin, int min, int max) {
-    if(this->motorIndex < MAX_NUM_MOTORS - 1) {
-        // pinMode(pin, OUTPUT);                             // set servo pin to output
-        // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
-        servos[this->motorIndex].pin = pin;                  // assign this servo a pin
-        // servos[this->motorIndex].isactive = true;            // set the servo to active
-        servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
-        this->min = min; 
-        this->max = max;
-        ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);
-        ledcAttachPin(pin, this->motorIndex);
-        ledcWrite(this->motorIndex, 0);
-    }
-    return this->motorIndex;
+  if(this->motorIndex < MAX_NUM_MOTORS - 1) {
+    // pinMode(pin, OUTPUT);                             // set servo pin to output
+    // digitalWrite(pin, LOW);                           // set the servo pin to low to avoid spinouts
+    servos[this->motorIndex].pin = pin;                  // assign this servo a pin
+    // servos[this->motorIndex].isactive = true;         // set the servo to active
+    servos[this->motorIndex].channel = this->motorIndex; // set the servo ledc channel
+    this->min_pwm = min; 
+    this->max_pwm = max;
+    ledcSetup(this->motorIndex, PWM_FREQ, PWM_RES);      // activate the timer channel to be used
+    ledcAttachPin(pin, this->motorIndex);                // attach the pin to the timer channel
+    ledcWrite(this->motorIndex, 0);                      // write a duty cycle of zero to activate the timer
+  }
+  return this->motorIndex;
 }
 
 /**
@@ -85,22 +147,25 @@ uint8_t MotorControl::attach(int pin, int min, int max) {
  * @param pwr input power
 */
 void MotorControl::write(float pwr) {
-    ledcWrite(this->motorIndex, power2Duty(pwr));
+  ledcWrite(this->motorIndex, power2Duty(pwr));
 }
 
 void MotorControl::displayPinInfo() {
-    Serial.print(F("Motor: "));
-    Serial.print(this->motorIndex);
-    Serial.print(F(" on Pin #"));
-    Serial.print(servos[this->motorIndex].pin);
-    Serial.print(F(" Channel: "));
-    Serial.print(servos[this->motorIndex].channel);
-    Serial.print(F("\r\n"));
+  Serial.print(F("Motor: "));
+  Serial.print(this->motorIndex);
+  Serial.print(F(" on Pin #"));
+  Serial.print(servos[this->motorIndex].pin);
+  Serial.print(F(" Channel: "));
+  Serial.print(servos[this->motorIndex].channel);
+  Serial.print(F(" Enc Chan A Pin: "));
+  Serial.print(this->enc_a_pin);
+  Serial.print(F(" Enc Chan B Pin: "));
+  Serial.print(this->enc_b_pin);
+  Serial.print(F("\r\n"));
 
     // Serial.print(F("\r\nDuty Cycle: "));
     // Serial.print(power2Duty(pwr));
 }
-
 
 /**
  * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
@@ -115,9 +180,10 @@ void MotorControl::displayPinInfo() {
  * @param power the input power
 */
 uint16_t MotorControl::power2Duty(float power) {
-    // this can be written in compiler code, but we are trying to save on flash memory
-    this->tempTimeon = (power + 1) * 500 + 1000;
-    return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
+  // this can be written in compiler code, but we are trying to save on flash memory
+  // linearly convert a [-1, 1] motor power to a microseconds value between 1000us and 2000us
+  this->tempTimeon = (power + 1) * 500 + 1000;
+  return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
 }
 
 /**
@@ -129,6 +195,124 @@ void MotorControl::writelow() {
     digitalWrite(servos[this->motorIndex].pin, LOW);
 }
 
+
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+ * called on an interrupt
+ * 
+ * when the encoder interrupt is called, read the b pin to see what state it is in
+ * this eliminates the need for two seperate interrupts
+ * 
+*/
+void MotorControl::readEncoder() {
+
+  b_channel_state = digitalRead(this->enc_b_pin);
+
+  if (b_channel_state == 1) {
+    if (encoderACount >= rollover) {
+      encoderACount = 0;
+    } else {
+      encoderACount = encoderACount + 1;
+    }
+      
+  } else {
+    if (encoderACount == 0) {
+      encoderACount = rollover;
+    } else {
+      encoderACount = encoderACount - 1;
+    }  
+  }
+}
+
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+ * 
+ * 
+*/
+int MotorControl::calcSpeed(int current_count) {  
+  current_time = millis();
+  
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_count) >= rollover_threshold) {
+    if ((current_count-rollover_threshold)>0) {
+      omega = float ((current_count-rollover)-prev_current_count)/(current_time-prev_current_time);
+    } else {
+      omega = float ((current_count+rollover)-prev_current_count)/(current_time-prev_current_time);
+    }
+  } else {
+    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+  }
+
+  prev_current_count = current_count;
+  prev_current_time = current_time;
+
+  return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+}
+
+int MotorControl::Percent2RPM(float pct) {
+  // float temp = constrain(pct, -1, 1);
+  return this->max_rpm * constrain(pct, -1.0f, 1.0f);
+}
+
+float MotorControl::RPM2Percent(int rpm) {
+  // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
+  if (rpm == 0)
+    return 0.0f; 
+  return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+}
+
+/**
+ * @brief ramp slowly increases the motor power each iteration of the main loop,
+ * this function is critical in ensuring the bot has proper traction with the floor,
+ * think of it as the slope y=mx+b
+ *
+ * FUTURE: none...this is perfection (...atm...:0 )
+ *
+ * @authors Grant Brautigam, Julia DeVore, Lena Frate
+ * Created: fall 2023
+ *
+ * @param requestedPower, accelRate
+ * @return int
+ */
+float MotorControl::ramp(float requestedPower,  float accelRate) {
+    timeElapsed = millis() - lastRampTime;
+    // Serial.print("  time elapsed: ");
+    // Serial.print(timeElapsed);
+
+    // Serial.print("  acceleration: ");
+    // Serial.print(accelRate);
+
+    // Serial.print("  requested power: ");
+    // Serial.print(requestedPower);
+
+    // Serial.print("  currentPower: ");
+    // Serial.print(currentPower);
+
+    // Serial.print("\n");
+
+    lastRampTime = millis();
+    if (requestedPower > requestedRPM) // need to speed up
+    {
+        requestedRPM = requestedRPM + accelRate * timeElapsed;
+        if (requestedRPM > requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from speeding up past the requested speed
+    }
+    else // need to slow down
+    {
+        requestedRPM = requestedRPM - accelRate * timeElapsed; 
+        if (requestedRPM < requestedPower) 
+            requestedRPM = requestedPower; // to prevent you from slowing down below the requested speed
+    }
+    
+    return requestedRPM;
+
+}
 
 // Old code:
 
@@ -164,3 +348,5 @@ void MotorControl::writelow() {
 //     // digitalWrite(motorPins[1], LOW);
 //     // delayMicroseconds(2000 - Convert2PWMVal(requestedMotorPower[1]) - 40); //-170
 // }
+
+

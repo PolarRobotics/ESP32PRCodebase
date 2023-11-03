@@ -20,10 +20,10 @@ Quarterback::Quarterback(
     this->elevationPin = elevationPin;
 
     // Attach the motors to their respective pins
-    flywheelMotor.attach(flywheelPin);
-    conveyorMotor.attach(conveyorPin);
-    elevationMotors.attach(elevationPin);
-
+    flywheelMotor.setup(flywheelPin);
+    conveyorMotor.setup(conveyorPin);
+    elevationMotors.setup(elevationPin);
+  
     // Set the conveyor motor to zero so it doesnt spin on startup
     conveyorMotor.write(CONVEYOR_OFF);
 
@@ -174,7 +174,7 @@ void Quarterback::changeFWSpeed(SpeedStatus speed) {
     }
 
     // Cap the arrayPos so it doesn't go out of bounds
-    arrayPos = constrain(arrayPos, 0, 3);
+    arrayPos = constrain(arrayPos, 0, 2);
 
     // Set the flywheelSpeedFactor
     flywheelSpeedFactor = speedFac[arrayPos];
