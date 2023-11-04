@@ -106,7 +106,7 @@ void setup() {
       break;
     case runningback:
       robot = new Lineman();
-      drive = new DriveQuick();
+      drive = new DriveQuick(driveParams);
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case receiver:
@@ -166,6 +166,8 @@ void loop() {
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
       drive->setBSN(Drive::SLOW);
+    } else if (ps5.R2() && robotType == runningback) {
+      drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
     } else {
       drive->setBSN(Drive::NORMAL);
     }
@@ -175,7 +177,7 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman && robotType != runningback) {
+    if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
