@@ -196,6 +196,10 @@ void Drive::setBSN(Speed bsn) {
     }
 }
 
+void Drive::setBSNValue(float bsn_pct) {
+    BSNscalar = bsn_pct;
+}
+
 float Drive::getBSN() {
     return this->BSNscalar;
 }

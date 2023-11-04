@@ -56,8 +56,9 @@
 
 // BSN for the falcon motors used on the runningback
 #define FALCON_BOOST_PCT  1.0
-#define FALCON_NORMAL_PCT 0.5
-#define FALCON_SLOW_PCT   0.1
+#define FALCON_NORMAL_TREVOR_PCT 0.6 // used to make trevor(nt) happy
+#define FALCON_NORMAL_PCT 0.4 // 0.5
+#define FALCON_SLOW_PCT   0.15
 
 #define BRAKE_BUTTON_PCT 0
 
@@ -113,6 +114,7 @@ class Drive {
     float getForwardPower();
     float getTurnPower();
     void setBSN(Speed bsn); //(float powerMultiplier);
+    void setBSNValue(float bsn_pct);
     float getBSN();
     void emergencyStop();
     void generateMotionValues();
