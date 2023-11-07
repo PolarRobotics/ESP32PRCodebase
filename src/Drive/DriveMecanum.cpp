@@ -154,7 +154,7 @@ void DriveMecanum::printDebugInfo() {
     for (int i = 0; i < NUM_MOTORS; i++) {
         Serial.print(i);
         Serial.print(F("  "));
-        Serial.print(getReqMotorPwr(i));
+        // Serial.print(getReqMotorPwr(i));
         Serial.print(F("  "));
     }
     Serial.print(F("\n"));
