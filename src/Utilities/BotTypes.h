@@ -60,6 +60,25 @@ typedef struct BotConfig {
 
 #define NUM_BOTS 13
 
+// Bot Aliases
+#define BOT_IPP         0
+#define BOT_I_PLUS_PLUS 0
+#define BOT_SQRT_NEG_1  1
+#define BOT_PI          2
+#define BOT_RHO         3
+#define BOT_2_72        4
+#define BOT_SMILEY      5
+#define BOT_GEQ         6
+#define BOT_32_2        7
+#define BOT_9_8         8
+#define BOT_C           9
+#define BOT_PHI         10
+#define BOT_CENTER      10
+#define BOT_INF         11
+#define BOT_QB          11
+#define BOT_THETA       12
+#define BOT_KICKER      12
+
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
