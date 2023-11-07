@@ -32,10 +32,10 @@ DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum
 }
 
 void DriveMecanum::setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin) {
-    this->LF.attach(lfpin);
-    this->RF.attach(rfpin);
-    this->LR.attach(lrpin);
-    this->RR.attach(rrpin);
+    this->LF.setup(lfpin);
+    this->RF.setup(rfpin);
+    this->LR.setup(lrpin);
+    this->RR.setup(rrpin);
 }
 
 void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
@@ -154,7 +154,7 @@ void DriveMecanum::printDebugInfo() {
     for (int i = 0; i < NUM_MOTORS; i++) {
         Serial.print(i);
         Serial.print(F("  "));
-        Serial.print(getReqMotorPwr(i));
+        // Serial.print(getReqMotorPwr(i));
         Serial.print(F("  "));
     }
     Serial.print(F("\n"));

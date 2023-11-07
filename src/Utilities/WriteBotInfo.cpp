@@ -15,7 +15,8 @@ void setup() {
   //* STANDARD BOT CONFIGURATION
   //! If you want to use a predefined robot from BotTypes.h, declare the index here:
   // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
-  uint8_t index = 0; // also handles bot name index
+  //! Please reset to zero when you are done uploading to avoid merge conflicts.
+  uint8_t index = 9; // also handles bot name index
 
   //* CUSTOM BOT CONFIGURATION
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
@@ -23,6 +24,8 @@ void setup() {
   MotorType motor_type = small_12v;
   float gear_ratio = 1;
   float wheel_base = 10;
+  float r_min = 9.00f;
+  float r_max = 36.00f;
 
   //! Do not use custom config except for TEMPORARY testing, OR:
   //! DO NOT USE WITHOUT DOCUMENTING YOUR CHANGES BY:
@@ -33,7 +36,7 @@ void setup() {
 
   if (useCustomConfig) {
     //* Write custom bot configuration
-    validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base);
+    validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base, r_min, r_max);
   } else {
     //* Write standard bot configuration from BotTypes.botConfigArray
     validConfig = config.setConfig(index);
