@@ -166,8 +166,9 @@ void loop() {
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
       drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && robotType == runningback) {
-      drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
+    } else if (ps5.R2() && motorType == falcon) {
+      // used to calibrate the max pwm signal for the falcon 500 motors
+      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
     } else {
       drive->setBSN(Drive::NORMAL);
     }

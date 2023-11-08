@@ -45,20 +45,20 @@
 // #endif
 
 // BSN for Short/Small Motors
-#define SMALL_BOOST_PCT 0.85
-#define SMALL_NORMAL_PCT 0.7
-#define SMALL_SLOW_PCT 0.4
+#define SMALL_BOOST_PCT  0.85f
+#define SMALL_NORMAL_PCT 0.7f
+#define SMALL_SLOW_PCT   0.4f
 
 // BSN for the 12v motors used on the new center
-#define MECANUM_BOOST_PCT  0.8
-#define MECANUM_NORMAL_PCT 0.6
-#define MECANUM_SLOW_PCT   0.3
+#define MECANUM_BOOST_PCT  0.8f
+#define MECANUM_NORMAL_PCT 0.6f
+#define MECANUM_SLOW_PCT   0.3f
 
 // BSN for the falcon motors used on the runningback
-#define FALCON_BOOST_PCT  1.0
-#define FALCON_NORMAL_TREVOR_PCT 0.6 // used to make trevor(nt) happy
-#define FALCON_NORMAL_PCT 0.4 // 0.5
-#define FALCON_SLOW_PCT   0.15
+#define FALCON_CALIBRATION_FACTOR 1.0f
+#define FALCON_BOOST_PCT          0.6f
+#define FALCON_NORMAL_PCT         0.4f // 0.5
+#define FALCON_SLOW_PCT           0.15f
 
 #define BRAKE_BUTTON_PCT 0
 
