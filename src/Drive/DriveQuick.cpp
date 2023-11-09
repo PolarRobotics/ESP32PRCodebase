@@ -56,7 +56,7 @@ DriveQuick::DriveQuick(drive_param_t driveParams) : Drive(BotType::runningback, 
 */
 void DriveQuick::update() {
   // Generate turning motion
-  generateMotionValues();
+  generateMotionValues(RB_TANK_MODE_PCT);
 
   // calculate the ramped power
   // falcon_motor_pwr[0] = ramp(falcon_motor_pwr[0], 0);

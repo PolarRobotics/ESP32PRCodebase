@@ -209,16 +209,16 @@ float Drive::getBSN() {
  * @authors Grant Brautigam, Rhys Davies, Max Phillips
  * Created: 9-12-2022
 */
-void Drive::generateMotionValues() {
+void Drive::generateMotionValues(float tankModePct) {
     if (fabs(stickForwardRev) < STICK_DEADZONE) { // fwd stick is zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             requestedMotorPower[0] = 0, requestedMotorPower[1] = 0; // not moving, set motors to zero
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
-            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
-            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * tankModePct;
+            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * tankModePct;
         } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward muchso use tank mode
-            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
-            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
+            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * tankModePct;
+            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * tankModePct;
         } // no general else since encountered infinite loop
     } else { // fwd stick is not zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
