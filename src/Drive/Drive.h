@@ -23,6 +23,8 @@
 #define NORMAL_TURN_CONSTANT 0.05
 // Value for the tank mode speed reduction percentage
 #define TANK_MODE_PCT 0.75
+// Value for the tank mode speed reduction percentage
+#define RB_TANK_MODE_PCT 0.5
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
@@ -117,7 +119,7 @@ class Drive {
     void setBSNValue(float bsn_pct);
     float getBSN();
     void emergencyStop();
-    void generateMotionValues();
+    void generateMotionValues(float tankModePct = TANK_MODE_PCT);
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
