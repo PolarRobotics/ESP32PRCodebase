@@ -42,7 +42,7 @@
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
 // receiver, tackled, etc...
-#define TACKLE_PIN 12
+#define TACKLE_PIN 13
 
 enum BOT_STATE {
   PAIRING,
