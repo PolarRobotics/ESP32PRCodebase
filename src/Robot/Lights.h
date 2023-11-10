@@ -41,10 +41,8 @@ public:
   void pairState(bool state);
 
   // LED Variables
-  bool tackled = false;
   unsigned long tackleTime = 0;
   const int switchTime = 1000; //! KEEP THIS HERE!!!
-  int ledStatus = 0;
 };
 
 #endif // LIGHTS_H

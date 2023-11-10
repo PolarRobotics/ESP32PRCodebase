@@ -178,16 +178,15 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
+    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
-        lights.tackled = true;
       } 
       // debounce the tackle sensor input
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
         lights.setLEDStatus(Lights::OFFENSE);
-        lights.tackled = false;
       }
     }
 
