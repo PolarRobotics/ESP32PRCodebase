@@ -28,7 +28,7 @@
 #define M4_PIN 27 // |    N/A    | rightRear  |
 
 // Pins for special bot features, conveyor, flywheels, etc...
-#define SPECBOT_PIN1 18   // Special Bot Pins
+#define SPECBOT_PIN1 18
 #define SPECBOT_PIN2 19
 #define SPECBOT_PIN3 21
 #define SPECBOT_PIN4 22

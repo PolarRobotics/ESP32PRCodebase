@@ -117,17 +117,19 @@ void setup() {
       drive->setServos(M1_PIN, M2_PIN);
   }
 
-  drive->printSetup();
+  // drive->printSetup();
 
+  // Set up and initialize lights for pairing process
   lights.setupLEDS();
   lights.setLEDStatus(Lights::PAIRING);
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
+  // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
   
-
+  // Kicker safety enable once paired
   if (robotType == kicker) {
     ((Kicker*) robot)->enable();
   }

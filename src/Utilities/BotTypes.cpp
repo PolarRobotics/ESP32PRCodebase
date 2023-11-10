@@ -12,6 +12,7 @@ botTypeStrings[NUM_POSITIONS] = {
   { kicker,          "kicker"          }
 };
 
+// Function to map BotTypes to human-readable C-strings
 const char* getBotTypeString(BotType type) {
   return botTypeStrings[static_cast<int>(type)].value;
 }
