@@ -2,6 +2,7 @@
 
 using namespace std;
 
+// TODO: This should be moved to ConfigManager.h (after combine)
 #define CODE_VERSION_PREF_KEY "version"
 #define NO_VERSION_PLACEHOLDER "NO_VERSION"
 
@@ -9,6 +10,7 @@ ConfigManager::ConfigManager() {
   this->config = new bot_config_t();
 }
 
+// TODO: This can either be removed or reworked (needs to call base constructor if so)
 // ConfigManager::ConfigManager(bool writable) {
 //   this->writable = writable;
 //   this->config = new bot_config_t();
@@ -31,21 +33,19 @@ ConfigManager::~ConfigManager() {
 void ConfigManager::read() {
     // open the bot_config namespace, readonly is true (defaults to false)
     preferences.begin("bot_config", true);
+
     // read the bot name index   
     this->config->index = preferences.getUChar("bot_name_idx");
-    // read the bot type
+    
+    // read the bot and motor type
     this->config->bot_type = (BotType)preferences.getUChar("bot_type");
-    // read the motor type
     this->config->mot_type = (MotorType)preferences.getUChar("motor_type");
-    // read the gear ratio
-    this->config->drive_params.gear_ratio = (float)preferences.getFloat("gear_ratio");
-    // read the wheel base
-    this->config->drive_params.wheel_base = (float)preferences.getFloat("wheel_base");
-    // read the r min
-    this->config->drive_params.r_min = (float)preferences.getFloat("r_min");
-    // read the r max
-    this->config->drive_params.r_max = (float)preferences.getFloat("r_max");
 
+    // read drive parameters
+    this->config->drive_params.gear_ratio = (float)preferences.getFloat("gear_ratio");
+    this->config->drive_params.wheel_base = (float)preferences.getFloat("wheel_base");
+    this->config->drive_params.r_min = (float)preferences.getFloat("r_min");
+    this->config->drive_params.r_max = (float)preferences.getFloat("r_max");
 
     // close the bot_config namespace
     preferences.end();
