@@ -13,7 +13,7 @@
 #include <Utilities/MotorTypes.h>
 #include <Utilities/DriveParameters.h>
 
-#define PR_CODEBASE_VERSION "2.2.1 @ production"
+#define PR_CODEBASE_VERSION "2.3.0 @ production"
 
 // [PIN DECLARATIONS]
 // please follow: 
@@ -28,12 +28,12 @@
 #define M4_PIN 27 // |    N/A    | rightRear  |
 
 // Pins for special bot features, conveyor, flywheels, etc...
-#define SPECBOT_PIN1 18   // Special Bot Pins
+#define SPECBOT_PIN1 18
 #define SPECBOT_PIN2 19
 #define SPECBOT_PIN3 21
 #define SPECBOT_PIN4 22
 
-// ENCODER PIN DEFINITIONS
+// Encoder pin definitions
 #define ENC1_CHA 35
 #define ENC1_CHB 34
 #define ENC2_CHA VP
