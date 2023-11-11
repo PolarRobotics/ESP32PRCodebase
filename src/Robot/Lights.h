@@ -25,6 +25,7 @@ public:
     OFFENSE,     // blue and green
     DEFENSE,     // green
     TACKLED,     // turn red when tackled
+    DISCO,       // go crazy
     OFF
   };
   static Lights& getInstance() {

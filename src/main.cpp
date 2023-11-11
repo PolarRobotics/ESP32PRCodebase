@@ -175,6 +175,10 @@ void loop() {
       drive->setBSN(Drive::NORMAL);
     }
 
+    if (ps5.Share()) {
+      lights.setLEDStatus(Lights::DISCO);
+    }
+
     // Manual LED State Toggle (Defense/Offense)
     if (ps5.Options()) {
       lights.togglePosition();
@@ -198,6 +202,8 @@ void loop() {
     // drive->printDebugInfo(); // prints info to serial monitor in a human readable format
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) forma   drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
+    if (lights.returnStatus() == lights.DISCO)
+      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       
