@@ -39,7 +39,7 @@ Drive::Drive(BotType botType, MotorType motorType) {
   Drive(botType, motorType, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
@@ -78,7 +78,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     // max_RPM = M1.max_rpm;
 
     // initialize turn sensitivity variables
-    enableTurnSensitivity = 2; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
     turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
     

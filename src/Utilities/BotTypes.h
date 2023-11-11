@@ -72,6 +72,7 @@ typedef struct BotConfig {
 #define BOT_32_2        7
 #define BOT_9_8         8
 #define BOT_C           9
+#define BOT_RB          9
 #define BOT_PHI         10
 #define BOT_CENTER      10
 #define BOT_INF         11
@@ -88,11 +89,11 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 2,  "pi",       receiver,    small_ampflow,  { 0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
   { 3,  "rho",      lineman,     big_ampflow,    { 0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
   { 4,  "2.72",     lineman,     big_ampflow,    { 0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
-  { 5,  ":)",       lineman,     small_ampflow,  { 1.0f,      9.75f ,  9.00f,  36.00f }},  //* 5:  :)
+  { 5,  ":)",       lineman,     small_ampflow,  { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
   { 6,  ">=",       lineman,     big_ampflow,    { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
   { 7,  "32.2",     receiver,    small_ampflow,  { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 7:  32.2
   { 8,  "9.8",      lineman,     big_ampflow,    { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 8:  9.8
-  { 9,  "c",        runningback, falcon,         { 0.5f,      8.00f ,  4.00f,  36.00f }},  //* 9:  c
+  { 9,  "c",        runningback, falcon,         { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
   { 10, "phi",      center,      small_ampflow,  { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
   { 11, "inf",      quarterback, small_ampflow,  { 0.5625f,   11.50f,  9.00f,  36.00f }},  //* 11: ∞
   { 12, "theta",    kicker,      small_ampflow,  { 0.34375f,  10.00f,  9.00f,  36.00f }}   //* 12: Θ
