@@ -52,13 +52,18 @@ void ConfigManager::read() {
 }
 
 /**
- * @brief gets the code version from the configuration.
- * @return String - the version as a string
+ * @brief gets the code version from the configuration
+ * @return the version as an ESP32 'String'
  */
 String ConfigManager::version() {
+  // determine if code version key exists
   bool good = preferences.begin(CODE_VERSION_PREF_KEY, true);
   if (!good) return NO_VERSION_PLACEHOLDER;
+
+  // if key exists, retrieve it
   String str = preferences.getString(CODE_VERSION_PREF_KEY, NO_VERSION_PLACEHOLDER);
+
+  // close code version namespace and return the key as a string
   preferences.end();
   return str;
 }
@@ -88,6 +93,7 @@ MotorType ConfigManager::getMotorType() {
     return this->config->mot_type;
 }
 
+// TODO: Can these two functions be removed
 /**
  * @brief getGearRatio returns the gear ratio (input tooth count / output tooth count)
  * @return float the stored gear ratio decimal
@@ -163,24 +169,22 @@ bool ConfigManager::write(bot_config_t* cfg) {
 
     // store the bot name to preferences
     preferences.putUChar("bot_name_idx", cfg->index);
-    // store the bot type to preferences
+
+    // store the bot and motor type to preferences
     preferences.putUChar("bot_type", static_cast<uint8_t>(cfg->bot_type));
-    // store the bot type to preferences
     preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->mot_type));
-    // store the robots drivetrain gear ratio
+
+    // store drive parameters (gear ratio, wheelbase, r_min, r_max)
     preferences.putFloat("gear_ratio", cfg->drive_params.gear_ratio);
-    // store the robots drivetrain wheel base
     preferences.putFloat("wheel_base", cfg->drive_params.wheel_base);
-    // store the robots drivetrain r min
     preferences.putFloat("r_min", cfg->drive_params.r_min);
-    // store the robots drivetrain r max
     preferences.putFloat("r_max", cfg->drive_params.r_max);
 
     // close the namespace
     preferences.end();
 
-    // store version to preferences
-
+    // store code version to preferences
+    // determine if code version key exists
     good = preferences.begin(CODE_VERSION_PREF_KEY, false); 
     if (!good) return false;
     preferences.putString(CODE_VERSION_PREF_KEY, PR_CODEBASE_VERSION);

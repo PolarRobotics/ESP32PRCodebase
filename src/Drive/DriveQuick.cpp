@@ -15,7 +15,7 @@ Features:
 */
 
 //! Must call base class constructor with appropriate arguments
-DriveQuick::DriveQuick(drive_param_t driveParams) : Drive(BotType::runningback, MotorType::falcon, driveParams) {
+DriveQuick::DriveQuick(drive_param_t driveParams) : Drive(BotType::runningback, MotorType::falcon, driveParams, false, 0) {
   // initialize array
   // for (int i = 0; i < NUM_MOTORS; i++) {
   //   falcon_motor_pwr[i] = 0.0f;
