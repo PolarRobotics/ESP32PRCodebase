@@ -4,7 +4,7 @@
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
- * this class takes the the the stick input, scales the turning value for each motor and ramps that value over time,
+ * this class takes the stick input, scales the turning value for each motor and ramps that value over time,
  * then sets the ramped value to the motors
  * @authors Rhys Davies (@rdavies02), Max Phillips (@RyzenFromFire)
  *
@@ -126,10 +126,8 @@ void Drive::setMotorType(MotorType motorType) {
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
 */
 void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
-    // left stick all the way foreward is 0, backward is 255
-    // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
-    // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
-    // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
+    // left stick all the way forward is 0, backward is 255
+    // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
     stickForwardRev = (leftY / 127.5f);
     stickTurn = (rightX / 127.5f);  
 
@@ -233,21 +231,12 @@ void Drive::generateMotionValues(float tankModePct) {
             to turn right. The left motor should get set to 1 and the right motor should get set to
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
-            if(stickTurn > STICK_DEADZONE) { // turn Right
-                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
-                //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
-                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
-                // }
+            if (stickTurn > STICK_DEADZONE) { // turn Right
                 calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
 
                 requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
-            } else if(stickTurn < -STICK_DEADZONE) { // turn Left
-                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
-                //     case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
-                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
-                // }
-
+            } else if (stickTurn < -STICK_DEADZONE) { // turn Left
                 calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
                 
                 requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
@@ -412,9 +401,6 @@ void Drive::update() {
     // Set the ramp value to a function, needed for generateMotionValues
     lastRampPower[0] = requestedMotorPower[0];
     lastRampPower[1] = requestedMotorPower[1];
-    
-    // M1->write(requestedMotorPower[0]);
-    // M2->write(requestedMotorPower[1]);
 
     M1.write(requestedMotorPower[0]);
     M2.write(requestedMotorPower[1]);
