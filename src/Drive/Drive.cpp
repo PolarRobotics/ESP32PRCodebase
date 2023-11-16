@@ -386,7 +386,6 @@ void Drive::printDebugInfo() {
  * @author Corbin Hibler
  * Updated: 2023-10-30
 */
-
 void Drive::printCsvInfo() {
     Serial.print(F("L_HAT_Y,"));
     Serial.print(stickForwardRev);
@@ -400,7 +399,6 @@ void Drive::printCsvInfo() {
     Serial.print(requestedMotorPower[1]);
     Serial.print(F("\n"));
 }
-
 /**
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the
@@ -426,4 +424,3 @@ void Drive::update() {
     M1.write(requestedMotorPower[0]);
     M2.write(requestedMotorPower[1]);
 }
-
