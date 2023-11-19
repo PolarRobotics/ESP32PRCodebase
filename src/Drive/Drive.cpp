@@ -86,7 +86,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
 
 }
 
-void Drive::setServos(uint8_t lpin, uint8_t rpin) {
+void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     // this->M1 = new MotorControl(motorType, false, this->gearRatio);
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
@@ -97,12 +97,12 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 }
 
 /**
- * setServos
+ * setupMotors
  * @brief to be called when setting up a motor with an encoder
  * 
  * 
 */
-void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
+void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     // this->M1 = new MotorControl(motorType, true, this->gearRatio);
     // this->M2 = new MotorControl(motorType, true, this->gearRatio);
