@@ -72,6 +72,9 @@ private:
   unsigned long prev_current_time;
   float omega;
 
+  //PILoop
+
+
 public:
   int max_rpm;          // the motor max rpm * the gear ratio 
   MotorControl();
@@ -81,6 +84,7 @@ public:
   
   void write(float pwr);
   void writelow();
+  void stop();
   
   // Encoder Related Functions
   void readEncoder();
@@ -90,6 +94,13 @@ public:
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
+
+  // Closed Loop related functions
+  int PILoop(int target_rpm);
+  int getCurrentSpeed();
+  int trapIntagral(int current_error);
+
+
 };
 
 // MotorControl* GlobalClassPointer[MAX_NUM_ENCODERS];
