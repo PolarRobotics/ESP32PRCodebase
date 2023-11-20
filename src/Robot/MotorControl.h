@@ -42,6 +42,25 @@ private:
   float omega;
 
   //PILoop
+  int adjusted_speed;
+  int error;
+  float k_p;
+  float k_i;
+  float deadZone; //needs to be peramiterized
+
+  //setTargetSpeed
+  int ramped_speed;
+  int set_speed;
+  bool CL_enable;
+
+  //getCurrentSpeed
+  int current_speed;
+
+  //integrate
+  int prev_current_error;
+  int integral_sum;
+  unsigned long prev_integral_time;
+
 
 
 public:
@@ -54,6 +73,7 @@ public:
   void write(float pwr);
   void writelow();
   void stop();
+  void setTargetSpeed(int target_rpm);
   
   // Encoder Related Functions
   void readEncoder();
@@ -64,12 +84,14 @@ public:
 
   float ramp(float requestedPower, float accelRate);
 
-  // Closed Loop related functions
-  int PILoop(int target_rpm);
-  int getCurrentSpeed();
-  int trapIntagral(int current_error);
-
-   // Encoder Related Functions
+  // Encoder Related Functions
   void readEncoder();
   int calcSpeed(int current_count);
+
+  // Closed Loop related functions
+  int PILoop(int target_speed);
+  int getCurrentSpeed();
+  int trapIntagral(int current_error);
+  int integrate(int current_error);
+  void integrateReset();
 };

@@ -152,7 +152,7 @@ void MotorControl::setTargetSpeed(int target_rpm) {
   ramped_speed = this->ramp(target_rpm, 0.00375f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
   // if there are working encoders its safe to use the PL loop, 
-  // if the encoder fails or is not present the PI loop must be bypased to aviod an out of control robot
+  // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
   if (CL_enable) 
     set_speed = PILoop(ramped_speed);  
   else 
