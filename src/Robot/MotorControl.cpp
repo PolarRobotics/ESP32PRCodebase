@@ -50,6 +50,8 @@ MotorControl::MotorControl() {
   requestedRPM = 0;
   lastRampTime = millis();
 
+  CL_enable = false;
+
   // if (has_encoder) {
   //   this->encoderIndex = EncoderCount;
   //   GlobalClassPointer[EncoderCount++] = this;
@@ -195,6 +197,92 @@ void MotorControl::writelow() {
     digitalWrite(servos[this->motorIndex].pin, LOW);
 }
 
+/**
+ * @brief NEEDS SPELLCHECK stop derectly writes o to the motor. It also resets the integral adder inside the PI loop. 
+ * This is an esay way to rapidly stop motion on an indeviual motor
+ * 
+ */
+void MotorControl::stop() {
+    this->write(0);
+    if (CL_enable)
+      this->PILoop(0);
+}
+
+/**
+ * @brief NEEDS SPELLCHECK setTargetSpeed is the "main loop" of motor control. It is the profered function to set the speed of a motor
+ * it calls other inportent functions like ramp and PILoop
+ * 
+*/
+void MotorControl::setTargetSpeed(int target_rpm) {
+
+  ramped_speed = this->ramp(target_rpm, 0.00375f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+
+  // if there are working encoders its safe to use the PL loop, 
+  // if the encoder fails or is not present the PI loop must be bypased to aviod an out of control robot
+  if (CL_enable) 
+    set_speed = PILoop(ramped_speed);  
+  else 
+    set_speed = ramped_speed;
+
+  this->write(RPM2Percent(set_speed)); //convert speed to the coresponding motor power and write to the motor 
+
+}
+
+/**
+ * @brief NEEDS SPELLCHECK getCurrentSpeed is the interface between the main CPU and the encoder modual 
+ * 
+*/
+int MotorControl::getCurrentSpeed() {
+
+  //! Quantum this is yours to write
+
+  return current_speed; 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrate uses trapizodial intgration to calculate the running integral sum for the PI controller
+ * 
+*/
+int MotorControl::integrate(int current_error) {
+
+  integral_sum = integral_sum + 0.5*(current_error + prev_current_error)*(millis()-prev_integral_time);
+  prev_integral_time = millis();
+  prev_current_error = current_error;
+
+  return integral_sum; 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrateReset resets the varibles in integral
+ * 
+*/
+void MotorControl::integrateReset() {
+  integral_sum = 0;
+  prev_integral_time = millis();
+}
+
+/**
+ * @brief NEEDS SPELLCHECK PILoop is the closed loop controller. this is the main function for CL  
+ * @author Grant Brautigam
+ * Updated 11-19-2023
+ * 
+*/
+int MotorControl::PILoop(int target_speed) {
+  
+  deadZone = 0.1; // for 10% motor power, the power level at witch the motor no longer turns
+
+  if (abs(target_speed) <= Percent2RPM(deadZone)) { // the motor wants to stop, skip and reset the PI loop  
+    adjusted_speed = 0;
+    integrateReset();
+  } else {
+    error = target_speed - getCurrentSpeed();
+    
+    adjusted_speed = k_p*error + k_i*integrate(error);
+  }
+
+  return adjusted_speed; 
+
+}
 
 /**
  * @brief 
