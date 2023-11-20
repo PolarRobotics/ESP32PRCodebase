@@ -41,18 +41,33 @@ private:
   unsigned long prev_current_time;
   float omega;
 
+  //PILoop
+
+
 public:
   int max_rpm;          // the motor max rpm * the gear ratio 
   MotorControl();
   uint8_t setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
-
-  //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
-  void write(float pct);
+  uint8_t attach(int mot_pin, int min = MIN_PWM_US, int max = MAX_PWM_US); // as above but also sets min and max values for writes. 
+  void displayPinInfo();
+  
+  void write(float pwr);
+  void writelow();
+  void stop();
+  
+  // Encoder Related Functions
+  void readEncoder();
+  int calcSpeed(int current_count);
 
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
+
+  // Closed Loop related functions
+  int PILoop(int target_rpm);
+  int getCurrentSpeed();
+  int trapIntagral(int current_error);
 
    // Encoder Related Functions
   void readEncoder();
