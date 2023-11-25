@@ -14,24 +14,24 @@ struct Pair {
 
 /* Sample Usage
 
-//* Define Number of Elements in Array
+// Define Number of Elements in Array
 #define SIZE 10
 
-//* Define core enum
+// Define core enum
 typedef enum {
   RED,
   GREEN,
   BLUE
 } COLOR;
 
-//* Define compile time mapping of enum values to strings (const char*)
+// Define compile time mapping of enum values to strings (const char*)
 constexpr Pair<COLOR, const char*> colors[SIZE] = {
   {RED, "red"},
   {GREEN, "green"},
   {BLUE, "blue"}
 };
 
-//* Define string conversion function
+// Define string conversion function
 const char* getColorName(COLOR key) {
   return colors[static_cast<int>(key)].value;
 }
