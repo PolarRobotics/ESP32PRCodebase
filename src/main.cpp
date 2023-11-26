@@ -58,7 +58,7 @@ int rollerover = 2048;
 int b_channel_state = 0;
 
 void encoderA() {
-
+  Serial.print("here");
   b_channel_state = digitalRead(b_channel);
 
   if (b_channel_state == 1) {
@@ -215,7 +215,7 @@ void setup() {
 void loop() {
 
   speed = calcSpeed(encoderACount);
-
+  Serial.print(encoderACount);
   drive->update(speed);
 
   delay(50);
