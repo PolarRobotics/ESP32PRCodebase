@@ -173,6 +173,10 @@ int MotorControl::getCurrentSpeed() {
   return current_speed; 
 }
 
+void MotorControl::setCurrentSpeed(int speed) {
+ current_speed = speed;
+}
+
 /**
  * @brief NEEDS SPELLCHECK integrate uses trapizodial intgration to calculate the running integral sum for the PI controller
  * 

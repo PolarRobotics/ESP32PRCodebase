@@ -13,7 +13,7 @@ class DriveQuick : public Drive {
     //! Must call base class constructor with appropriate arguments
     DriveQuick(drive_param_t driveParams); // This is the prototype, see DriveQuick.cpp for implementation
     // void generateMotionValues();
-    void update() override;
+    void update(int speed) override;
     void printDebugInfo() override;
 };
 

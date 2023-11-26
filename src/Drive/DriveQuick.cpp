@@ -54,7 +54,7 @@ DriveQuick::DriveQuick(drive_param_t driveParams) : Drive(BotType::runningback, 
  * Created: 9-12-2022
  * Updated: 10-11-2020
 */
-void DriveQuick::update() {
+void DriveQuick::update(int speed) {
   // Generate turning motion
   generateMotionValues(RB_TANK_MODE_PCT);
 

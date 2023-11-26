@@ -424,18 +424,10 @@ void Drive::printCsvInfo() {
  * Created: 9-12-2022
  * Updated: 10-11-2020
 */
-void Drive::update() {
-    // Generate turning motion
-    // generateMotionValues();
-    
-    // get the ramp value
-    // requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-    // requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+void Drive::update(int speed) {
 
-
+    M1.setCurrentSpeed(speed);
     M1.setTargetSpeed(1000);
-
-
 
     // // Generate turning motion
     // generateMotionValues();

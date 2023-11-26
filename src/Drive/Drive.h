@@ -126,7 +126,7 @@ class Drive {
     float getBSN();
     void emergencyStop();
     void generateMotionValues(float tankModePct = TANK_MODE_PCT);
-    virtual void update();
+    virtual void update(int speed);
     void printSetup();
     virtual void printDebugInfo();
     virtual void printCsvInfo();
