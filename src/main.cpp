@@ -216,6 +216,8 @@ void loop() {
 
   drive->update(speed);
 
+  delay(50);
+
   // if (ps5.isConnected()) {
   //   // Serial.print(F("\r\nConnected"));
   //   // ps5.setLed(255, 0, 0);   // set LED red

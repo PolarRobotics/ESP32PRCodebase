@@ -405,6 +405,8 @@ void Drive::update(int speed) {
     M1.setCurrentSpeed(speed);
     M1.setTargetSpeed(1000);
 
+    Serial.println( (String) "DATA,DATE,TIME," + speed + "," + ",AUTOSCROLL_20");
+
     // // Generate turning motion
     // generateMotionValues();
     // //printDebugInfo();
