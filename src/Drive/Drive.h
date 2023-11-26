@@ -118,7 +118,7 @@ class Drive {
     float getBSN();
     void emergencyStop();
     void generateMotionValues();
-    virtual void update();
+    virtual void update(int speed);
     void printSetup();
     virtual void printDebugInfo();
 

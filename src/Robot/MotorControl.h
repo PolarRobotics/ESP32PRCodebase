@@ -105,7 +105,7 @@ public:
   void writelow();
   void stop();
   void setTargetSpeed(int target_rpm);
-  
+  void setCurrentSpeed(int speed);
   // Encoder Related Functions
   void readEncoder();
   int calcSpeed(int current_count);

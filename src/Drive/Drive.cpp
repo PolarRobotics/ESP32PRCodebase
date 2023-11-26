@@ -400,12 +400,10 @@ void Drive::printDebugInfo() {
  * Created: 9-12-2022
  * Updated: 10-11-2020
 */
-void Drive::update() {
+void Drive::update(int speed) {
 
-
+    M1.setCurrentSpeed(speed);
     M1.setTargetSpeed(1000);
-
-
 
     // // Generate turning motion
     // generateMotionValues();

@@ -50,6 +50,65 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
+int speed = 0;
+int a_channel = 35;
+int b_channel = 34;
+int encoderACount = 0;
+int rollerover = 2048;
+int b_channel_state = 0;
+
+void encoderA() {
+
+  b_channel_state = digitalRead(b_channel);
+
+  if (b_channel_state == 1) {
+    if (encoderACount >= rollerover) {
+      encoderACount = 0;
+    } else {
+      encoderACount = encoderACount + 1;
+    }
+      
+  } else {
+    if (encoderACount == 0) {
+      encoderACount = rollerover;
+    } else {
+      encoderACount = encoderACount - 1;
+    }
+      
+  }
+}
+
+int prev_current_count = 0;
+int rolleroverthreshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+unsigned long current_time = 0;
+unsigned long prev_current_time = 0; 
+float omega = 0;
+
+float commanded_power = 0;
+
+int calcSpeed(int current_count) {
+  
+  current_time = millis();
+  
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_count) >= rolleroverthreshold) {
+    if ((current_count-rolleroverthreshold)>0) {
+      omega = float ((current_count-rollerover)-prev_current_count)/(current_time-prev_current_time);
+    } else {
+      omega = float ((current_count+rollerover)-prev_current_count)/(current_time-prev_current_time);
+    }
+  } else {
+    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+  }
+
+  prev_current_count = current_count;
+  prev_current_time = current_time;
+
+  return omega*312.5f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+
+}
+
+
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -132,6 +191,11 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
+  pinMode(a_channel, INPUT_PULLUP);
+  pinMode(b_channel, INPUT);
+
+  attachInterrupt(a_channel, encoderA, RISING);
+
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
@@ -148,7 +212,9 @@ void setup() {
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
 
-  drive->update();
+  speed = calcSpeed(encoderACount);
+
+  drive->update(speed);
 
   // if (ps5.isConnected()) {
   //   // Serial.print(F("\r\nConnected"));
