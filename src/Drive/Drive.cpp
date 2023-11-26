@@ -426,19 +426,33 @@ void Drive::printCsvInfo() {
 */
 void Drive::update() {
     // Generate turning motion
-    generateMotionValues();
+    // generateMotionValues();
     
     // get the ramp value
-    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+    // requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
+    // requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
 
-    // Set the ramp value to a function, needed for generateMotionValues
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
+
+    M1.setTargetSpeed(1000);
+
+
+
+    // // Generate turning motion
+    // generateMotionValues();
+    // //printDebugInfo();
+
+    // // get the ramp value
+    // requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
+    // requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+
+    // // Set the ramp value to a function, needed for generateMotionValues
+    // lastRampPower[0] = requestedMotorPower[0];
+    // lastRampPower[1] = requestedMotorPower[1];
     
-    // M1->write(requestedMotorPower[0]);
-    // M2->write(requestedMotorPower[1]);
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+    // // M1->write(requestedMotorPower[0]);
+    // // M2->write(requestedMotorPower[1]);
+
+    // M1.write(requestedMotorPower[0]);
+    // M2.write(requestedMotorPower[1]);
 }
 

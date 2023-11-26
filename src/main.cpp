@@ -149,80 +149,73 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
-  if (ps5.isConnected()) {
-    // Serial.print(F("\r\nConnected"));
-    // ps5.setLed(255, 0, 0);   // set LED red
 
-    if (robotType == mecanum_center) {
-      ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-    } else {
-      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-    }
+  drive->update();
 
     // determine BSN percentage (boost, slow, or normal)
-    if (ps5.Touchpad()){
-      drive->emergencyStop();
-      drive->setBSN(Drive::BRAKE);
-    } else if (ps5.R1()) {
-      drive->setBSN(Drive::BOOST);
-      // ps5.setLed(0, 255, 0);   // set LED red
-    } else if (ps5.L1()) {
-      drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && motorType == falcon) {
-      // used to calibrate the max pwm signal for the falcon 500 motors
-      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
-    } else {
-      drive->setBSN(Drive::NORMAL);
-    }
+    // if (ps5.Touchpad()){
+    //   drive->emergencyStop();
+    //   drive->setBSN(Drive::BRAKE);
+    // } else if (ps5.R1()) {
+    //   drive->setBSN(Drive::BOOST);
+    //   // ps5.setLed(0, 255, 0);   // set LED red
+    // } else if (ps5.L1()) {
+    //   drive->setBSN(Drive::SLOW);
+    // } else if (ps5.R2() && motorType == falcon) {
+    //   // used to calibrate the max pwm signal for the falcon 500 motors
+    //   drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
+    // } else {
+    //   drive->setBSN(Drive::NORMAL);
+    // }
 
-    if (ps5.Share()) 
-      lights.setLEDStatus(Lights::DISCO);
+    // if (ps5.Share()) 
+    //   lights.setLEDStatus(Lights::DISCO);
     
-    // Manual LED State Toggle (Home/Away/Off)
-    if (ps5.Options()) 
-      lights.togglePosition();
+    // // Manual LED State Toggle (Home/Away/Off)
+    // if (ps5.Options()) 
+    //   lights.togglePosition();
     
-    // If the robot is able to hold the ball, it is able to be tackled:
-    if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
-      // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
-      if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
-        lights.setLEDStatus(Lights::TACKLED);
-        lights.tackleTime = millis();
-      } 
-      // leave the tackled state after some time and the tackle sensor pin went back to high
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
-          lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) {
-        switch (lights.homeStatus()) {
-          case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
-          case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
-          case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
-        }
-      }
-    }
+    // // If the robot is able to hold the ball, it is able to be tackled:
+    // if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
+    //   // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
+    //   if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
+    //     lights.setLEDStatus(Lights::TACKLED);
+    //     lights.tackleTime = millis();
+    //   } 
+    //   // leave the tackled state after some time and the tackle sensor pin went back to high
+    //   else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+    //       lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) {
+    //     switch (lights.homeStatus()) {
+    //       case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
+    //       case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
+    //       case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
+    //     }
+    //   }
+    // }
 
-    //* Update the motors based on the inputs from the controller
-    //* Can change functionality depending on subclass, like robot.action()
-    drive->update();
+    // //* Update the motors based on the inputs from the controller
+    // //* Can change functionality depending on subclass, like robot.action()
+    // drive->update();
 
-    if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime)) {
-      lights.updateLEDS();
-      lights.updateTime = millis();
-    }
-    //! Performs all special robot actions depending on the instantiated Robot subclass
-    robot->action();
+    // if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime)) {
+    //   lights.updateLEDS();
+    //   lights.updateTime = millis();
+    // }
+    // //! Performs all special robot actions depending on the instantiated Robot subclass
+    // robot->action();
 
-    // DEBUGGING:  
-    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
-    // lights.printDebugInfo();
+    // // DEBUGGING:  
+    // // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+    // // lights.printDebugInfo();
 
-    delay(5); // necessary for lights to be happy
+    // delay(5); // necessary for lights to be happy
       
-  } else { // no response from PS5 controller within last 300 ms, so stop
-      // Emergency stop if the controller disconnects
-      drive->emergencyStop();
-      lights.setLEDStatus(Lights::UNPAIRED);
-  }
+  // } else { // no response from PS5 controller within last 300 ms, so stop
+  //     // Emergency stop if the controller disconnects
+  //     drive->emergencyStop();
+  //     lights.setLEDStatus(Lights::UNPAIRED);
+  // }
 }
 
 /**
