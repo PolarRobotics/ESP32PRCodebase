@@ -403,7 +403,8 @@ void Drive::printDebugInfo() {
 void Drive::update(int speed) {
 
     M1.setCurrentSpeed(speed);
-    M1.setTargetSpeed(1000);
+    M1.setTargetSpeed(2016); // results in 800ish rpm from encoder
+    //M1.write(0.3);
 
     Serial.println( (String) "DATA,DATE,TIME," + speed + "," + ",AUTOSCROLL_20");
 

@@ -51,6 +51,8 @@ MotorControl::MotorControl() {
   lastRampTime = millis();
 
   CL_enable = false;
+  k_p = 0;
+  k_i = 0;
 
   // if (has_encoder) {
   //   this->encoderIndex = EncoderCount;
@@ -214,8 +216,8 @@ void MotorControl::stop() {
  * 
 */
 void MotorControl::setTargetSpeed(int target_rpm) {
-
-  ramped_speed = this->ramp(target_rpm, 0.00375f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+ //Serial.println("here");
+  ramped_speed = ramp(target_rpm, 1.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
   // if there are working encoders its safe to use the PL loop, 
   // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
@@ -372,7 +374,7 @@ float MotorControl::RPM2Percent(int rpm) {
  * @param requestedPower, accelRate
  * @return int
  */
-float MotorControl::ramp(float requestedPower,  float accelRate) {
+int MotorControl::ramp(int requestedPower,  float accelRate) {
     timeElapsed = millis() - lastRampTime;
     // Serial.print("  time elapsed: ");
     // Serial.print(timeElapsed);

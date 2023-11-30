@@ -113,7 +113,7 @@ public:
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
 
-  float ramp(float requestedPower, float accelRate);
+  int ramp(int requestedPower, float accelRate);
 
   // Closed Loop related functions
   int PILoop(int target_speed);
