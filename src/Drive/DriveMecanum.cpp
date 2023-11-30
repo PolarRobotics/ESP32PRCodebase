@@ -47,9 +47,9 @@ void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
     this->stickTurn    = rightX / 127.5f;
 
     // account for stick deadzone
-    this->stickForward = fabs(stickForward) < STICK_DEADZONE ? 0 : stickForward;
-    this->stickStrafe  = fabs(stickStrafe)  < STICK_DEADZONE ? 0 : stickStrafe;
-    this->stickTurn    = fabs(stickTurn)    < STICK_DEADZONE ? 0 : stickTurn;
+    this->stickForward = fabs(stickForward) < MC_STICK_DEADZONE ? 0 : stickForward;
+    this->stickStrafe  = fabs(stickStrafe)  < MC_STICK_DEADZONE ? 0 : stickStrafe;
+    this->stickTurn    = fabs(stickTurn)    < MC_STICK_DEADZONE ? 0 : stickTurn;
 }
 
 
@@ -132,10 +132,10 @@ void DriveMecanum::generateMotorValuesOld() {
 
 void DriveMecanum::generateMotorValues() {
 
-    mecanumMotorPwr[0] = stickForward + stickStrafe - stickTurn; // LF
-    mecanumMotorPwr[1] = stickForward - stickStrafe + stickTurn; // RF
-    mecanumMotorPwr[2] = stickForward - stickStrafe - stickTurn; // LB
-    mecanumMotorPwr[3] = stickForward + stickStrafe + stickTurn; // RB
+    mecanumMotorPwr[0] = stickForward + stickStrafe + stickTurn; // LF
+    mecanumMotorPwr[1] = stickForward - stickStrafe - stickTurn; // RF
+    mecanumMotorPwr[2] = stickForward - stickStrafe + stickTurn; // LB
+    mecanumMotorPwr[3] = stickForward + stickStrafe - stickTurn; // RB
 }
 
 
@@ -163,24 +163,33 @@ void DriveMecanum::update() {
 }
 
 void DriveMecanum::printDebugInfo() {
-    Serial.print(F("LIX: "));
+    Serial.print(F("SLX: "));
     Serial.print(stickStrafe);
-    Serial.print(F("  LIY: "));
+    Serial.print(F("  SLY: "));
     Serial.print(stickForward);
-    Serial.print(F("  RIX: "));
+    Serial.print(F("  SRX: "));
     Serial.print(stickTurn);
 
-    Serial.print(F("  Xcomp: "));
-    Serial.print(this->x_comp);
-    Serial.print(F("  Ycomp: "));
-    Serial.print(this->y_comp);
+    // Serial.print(F("  Xcomp: "));
+    // Serial.print(this->x_comp);
+    // Serial.print(F("  Ycomp: "));
+    // Serial.print(this->y_comp);
 
-    Serial.print(F("  PWRO: "));
-    for (int i = 0; i < NUM_MOTORS; i++) {
-        Serial.print(i);
-        Serial.print(F("  "));
-        // Serial.print(getReqMotorPwr(i));
-        Serial.print(F("  "));
-    }
+    Serial.print(F("  LF: "));
+    Serial.print(mecanumMotorPwr[0]);
+    Serial.print(F("  RF: "));
+    Serial.print(mecanumMotorPwr[1]);
+    Serial.print(F("  LB: "));
+    Serial.print(mecanumMotorPwr[2]);
+    Serial.print(F("  RB: "));
+    Serial.print(mecanumMotorPwr[3]);
+
+    // Serial.print(F("  PWRO: "));
+    // for (int i = 0; i < NUM_MOTORS; i++) {
+    //     Serial.print(i);
+    //     Serial.print(F("  "));
+    //     // Serial.print(getReqMotorPwr(i));
+    //     Serial.print(F("  "));
+    // }
     Serial.print(F("\n"));
 }

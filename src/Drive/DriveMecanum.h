@@ -8,6 +8,7 @@
 
 #define MC_NUM_MOTORS 4
 #define MC_ACCELERATION_RATE .0375
+#define MC_STICK_DEADZONE 0.075
 
 //! for mecanum BSN values, see Drive.h
 
