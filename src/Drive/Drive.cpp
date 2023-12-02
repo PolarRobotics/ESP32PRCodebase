@@ -85,7 +85,8 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
     turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
-    
+    power = 0;
+    lastTime = 0;
   } 
 
 }
@@ -427,10 +428,23 @@ void Drive::printCsvInfo() {
 void Drive::update(int speed) {
 
     M1.setCurrentSpeed(speed);
-    M1.setTargetSpeed(2016); // results in 800ish rpm from encoder
-    //M1.write(0.3);
 
-    Serial.println( (String) "DATA,DATE,TIME," + speed + "," + ",AUTOSCROLL_20");
+    M1.setTargetSpeed(1000); // results in 800ish rpm from encoder
+
+    // if ((millis() - lastTime) >= 5000) {
+    //     power = power + 0.05;
+    //     lastTime = millis();
+    // }
+
+    // if (power > 1) 
+    //     M1.stop();
+    // else
+    //     M1.write(power);
+    
+
+    //Serial.print(power);
+
+    Serial.println( (String) "DATA,DATE,TIME," + speed + "," + power + "," ",AUTOSCROLL_20");
 
     // // Generate turning motion
     // generateMotionValues();

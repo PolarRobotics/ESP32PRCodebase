@@ -54,7 +54,7 @@ int speed = 0;
 int a_channel = 35;
 int b_channel = 34;
 int encoderACount = 0;
-int rollerover = 2048;
+int rollerover = 10000;
 int b_channel_state = 0;
 
 void encoderA() {
@@ -79,7 +79,7 @@ void encoderA() {
 }
 
 int prev_current_count = 0;
-int rolleroverthreshold = 500; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+int rolleroverthreshold = 2000; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
 unsigned long current_time = 0;
 unsigned long prev_current_time = 0; 
 float omega = 0;
@@ -215,7 +215,7 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
-
+  //Serial.print(encoderACount);
   speed = calcSpeed(encoderACount);
   
   drive->update(speed);

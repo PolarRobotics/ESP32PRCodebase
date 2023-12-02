@@ -45,8 +45,8 @@ MotorControl::MotorControl() {
   requestedRPM = 0;
   lastRampTime = millis();
 
-  CL_enable = false;
-  k_p = 0;
+  CL_enable = true;
+  k_p = 1.5;
   k_i = 0;
 
   // if (has_encoder) {
@@ -285,14 +285,16 @@ int MotorControl::calcSpeed(int current_count) {
 
 int MotorControl::Percent2RPM(float pct) {
   // float temp = constrain(pct, -1, 1);
-  return this->max_rpm * constrain(pct, -1.0f, 1.0f);
+  //return this->max_rpm * constrain(pct, -1.0f, 1.0f);
+  return 4651*pow(pct, 1.7783f);
 }
 
 float MotorControl::RPM2Percent(int rpm) {
   // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
   if (rpm == 0)
     return 0.0f; 
-  return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+  //return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+  return .0087f*pow(rpm, 0.5616f);
 }
 
 /**
