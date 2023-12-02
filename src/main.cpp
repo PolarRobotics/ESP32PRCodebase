@@ -216,66 +216,66 @@ void loop() {
   //Serial.print(encoderACount);
   speed = calcSpeed(encoderACount);
   
-  drive->update(speed);
+  //drive->update(speed);
 
-  delay(100);
+  delay(5);
 
-  // if (ps5.isConnected()) {
-  //   // Serial.print(F("\r\nConnected"));
-  //   // ps5.setLed(255, 0, 0);   // set LED red
+  if (ps5.isConnected()) {
+    // Serial.print(F("\r\nConnected"));
+    // ps5.setLed(255, 0, 0);   // set LED red
 
-  //   if (robotType == mecanum_center) {
-  //     ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-  //   } else {
-  //     drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-  //   }
+    if (robotType == mecanum_center) {
+      ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
+    } else {
+      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+    }
 
-  //   // determine BSN percentage (boost, slow, or normal)
-  //   if (ps5.Touchpad()){
-  //     drive->emergencyStop();
-  //     drive->setBSN(Drive::BRAKE);
-  //   } else if (ps5.R1()) {
-  //     drive->setBSN(Drive::BOOST);
-  //     // ps5.setLed(0, 255, 0);   // set LED red
-  //   } else if (ps5.L1()) {
-  //     drive->setBSN(Drive::SLOW);
-  //   } else if (ps5.R2() && robotType == runningback) {
-  //     drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
-  //   } else {
-  //     drive->setBSN(Drive::NORMAL);
-  //   }
+    // determine BSN percentage (boost, slow, or normal)
+    if (ps5.Touchpad()){
+      drive->emergencyStop();
+      drive->setBSN(Drive::BRAKE);
+    } else if (ps5.R1()) {
+      drive->setBSN(Drive::BOOST);
+      // ps5.setLed(0, 255, 0);   // set LED red
+    } else if (ps5.L1()) {
+      drive->setBSN(Drive::SLOW);
+    } else if (ps5.R2() && robotType == runningback) {
+      drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
+    } else {
+      drive->setBSN(Drive::NORMAL);
+    }
 
-  //   // Manual LED State Toggle (Defense/Offense)
-  //   if (ps5.Options()) {
-  //     lights.togglePosition();
-  //   }
+    // Manual LED State Toggle (Defense/Offense)
+    if (ps5.Options()) {
+      lights.togglePosition();
+    }
 
-  //   if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
-  //     if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-  //       lights.setLEDStatus(Lights::TACKLED);
-  //       lights.tackleTime = millis();
-  //       lights.tackled = true;
-  //     } 
-  //     // debounce the tackle sensor input
-  //     else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
-  //       lights.setLEDStatus(Lights::OFFENSE);
-  //       lights.tackled = false;
-  //     }
-  //   }
+    if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
+      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+        lights.setLEDStatus(Lights::TACKLED);
+        lights.tackleTime = millis();
+        lights.tackled = true;
+      } 
+      // debounce the tackle sensor input
+      else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+        lights.setLEDStatus(Lights::OFFENSE);
+        lights.tackled = false;
+      }
+    }
 
-  //   //* Update the motors based on the inputs from the controller
-  //   //* Can change functionality depending on subclass, like robot.action()
-  //   drive->update();
-  //   drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    //* Update the motors based on the inputs from the controller
+    //* Can change functionality depending on subclass, like robot.action()
+    drive->update(speed);
+    //drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
-  //   //! Performs all special robot actions depending on the instantiated Robot subclass
-  //   robot->action();
+    //! Performs all special robot actions depending on the instantiated Robot subclass
+    robot->action();
       
-  // } else { // no response from PS5 controller within last 300 ms, so stop
-  //     // Emergency stop if the controller disconnects
-  //     drive->emergencyStop();
-  //     lights.setLEDStatus(Lights::UNPAIRED);
-  // }
+  } else { // no response from PS5 controller within last 300 ms, so stop
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
+      lights.setLEDStatus(Lights::UNPAIRED);
+  }
 }
 
 /**

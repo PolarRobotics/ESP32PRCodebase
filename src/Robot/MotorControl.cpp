@@ -51,8 +51,11 @@ MotorControl::MotorControl() {
   lastRampTime = millis();
 
   CL_enable = true;
-  k_p = 1.5;
-  k_i = 0;
+  k_p = 2;
+  k_i = 0.15;
+  integral_sum = 0;
+  prev_current_error = 0;
+  prev_integral_time = 0;
 
   // if (has_encoder) {
   //   this->encoderIndex = EncoderCount;
@@ -217,7 +220,7 @@ void MotorControl::stop() {
 */
 void MotorControl::setTargetSpeed(int target_rpm) {
  //Serial.println("here");
-  ramped_speed = ramp(target_rpm, 1.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+  ramped_speed = ramp(target_rpm, 5.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
   // if there are working encoders its safe to use the PL loop, 
   // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
@@ -251,10 +254,10 @@ void MotorControl::setCurrentSpeed(int speed) {
 */
 int MotorControl::integrate(int current_error) {
 
-  integral_sum = integral_sum + 0.5*(current_error + prev_current_error)*(millis()-prev_integral_time);
+  integral_sum = integral_sum + (current_error + prev_current_error); //*(millis()-prev_integral_time)/100;
   prev_integral_time = millis();
   prev_current_error = current_error;
-
+  
   return integral_sum; 
 }
 
@@ -264,6 +267,7 @@ int MotorControl::integrate(int current_error) {
 */
 void MotorControl::integrateReset() {
   integral_sum = 0;
+  prev_current_error = 0;
   prev_integral_time = millis();
 }
 
@@ -284,6 +288,7 @@ int MotorControl::PILoop(int target_speed) {
     error = target_speed - getCurrentSpeed();
     
     adjusted_speed = k_p*error + k_i*integrate(error);
+
   }
 
   return adjusted_speed; 
@@ -352,7 +357,7 @@ int MotorControl::calcSpeed(int current_count) {
 int MotorControl::Percent2RPM(float pct) {
   // float temp = constrain(pct, -1, 1);
   //return this->max_rpm * constrain(pct, -1.0f, 1.0f);
-  return 4651*pow(pct, 1.7783f);
+  return copysign(4651*pow(abs(pct), 1.7783f), pct);
 }
 
 float MotorControl::RPM2Percent(int rpm) {
@@ -360,7 +365,7 @@ float MotorControl::RPM2Percent(int rpm) {
   if (rpm == 0)
     return 0.0f; 
   //return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
-  return .0087f*pow(rpm, 0.5616f);
+  return copysign(.0087f*pow(abs(rpm), 0.5616f), rpm);
 }
 
 /**

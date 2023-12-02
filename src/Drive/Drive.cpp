@@ -403,14 +403,18 @@ void Drive::printDebugInfo() {
 */
 void Drive::update(int speed) {
 
+    generateMotionValues();
+
     M1.setCurrentSpeed(speed);
 
-    M1.setTargetSpeed(1000); // results in 800ish rpm from encoder
+    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
 
-    // if ((millis() - lastTime) >= 5000) {
-    //     power = power + 0.05;
-    //     lastTime = millis();
-    // }
+    if ((millis() - lastTime) >= 100) {
+        //power = power + 0.05;
+        power = M1.RPM2Percent(speed);
+        Serial.println( (String) "DATA,DATE,TIME," + speed + "," + power + "," ",AUTOSCROLL_20");
+        lastTime = millis();
+    }
 
     // if (power > 1) 
     //     M1.stop();
@@ -420,7 +424,7 @@ void Drive::update(int speed) {
 
     //Serial.print(power);
 
-    Serial.println( (String) "DATA,DATE,TIME," + speed + "," + power + "," ",AUTOSCROLL_20");
+    //Serial.println( (String) "DATA,DATE,TIME," + speed + "," + power + "," ",AUTOSCROLL_20");
 
     // // Generate turning motion
     // generateMotionValues();
