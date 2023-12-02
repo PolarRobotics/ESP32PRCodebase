@@ -82,6 +82,9 @@ class Drive {
     float turnSensitivityScalar = 0.0f;
     float domainAdjustment = 0.0f;
 
+    unsigned long lastTime;
+    float power;
+
     void calcTurning(float stickTrn, float fwdLinPwr);
 
   protected:
