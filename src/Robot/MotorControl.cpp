@@ -48,6 +48,8 @@ MotorControl::MotorControl() {
   CL_enable = true;
   k_p = 2;
   k_i = 0.15;
+  //k_i = 0.05;
+
   integral_sum = 0;
   prev_current_error = 0;
   prev_integral_time = 0;
@@ -224,6 +226,7 @@ int MotorControl::PILoop(int target_speed) {
     adjusted_speed = k_p*error + k_i*integrate(error);
 
   }
+  //Serial.println(adjusted_speed);
 
   return adjusted_speed; 
 
@@ -298,8 +301,11 @@ float MotorControl::RPM2Percent(int rpm) {
   // int temp = constrain(rpm, -this->max_rpm, this->max_rpm);
   if (rpm == 0)
     return 0.0f; 
-  //return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
-  return copysign(.0087f*pow(abs(rpm), 0.5616f), rpm);
+  return constrain(rpm, -this->max_rpm, this->max_rpm) / float(this->max_rpm);
+  //if (rpm < 0)
+    //return copysign(.0012f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.7895f), rpm);
+
+  //return copysign(.0087f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.5616f), rpm);
 }
 
 /**
