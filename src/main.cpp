@@ -104,7 +104,7 @@ int calcSpeed(int current_count) {
   prev_current_count = current_count;
   prev_current_time = current_time;
 
-  return omega*312.5f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+  return omega*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
 
 }
 

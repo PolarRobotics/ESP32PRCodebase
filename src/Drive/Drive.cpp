@@ -406,17 +406,20 @@ void Drive::update(int speed) {
     generateMotionValues();
 
     M1.setCurrentSpeed(speed);
-
+    //M1.write(-.3);
+    //M1.setTargetSpeed(-900);
     M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
 
     if ((millis() - lastTime) >= 100) {
-        //power = power + 0.05;
-        power = M1.RPM2Percent(speed);
-        Serial.println( (String) "DATA,DATE,TIME," + speed + "," + power + "," ",AUTOSCROLL_20");
+        power = power - 0.05;
+        //power = M1.RPM2Percent(speed);
         lastTime = millis();
+        Serial.println( (String) "DATA,DATE,TIME," + power + "," + speed + "," ",AUTOSCROLL_20");
     }
+    
 
-    // if (power > 1) 
+
+    // if (power < -1) 
     //     M1.stop();
     // else
     //     M1.write(power);
