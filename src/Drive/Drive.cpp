@@ -39,7 +39,7 @@ Drive::Drive(BotType botType, MotorType motorType) {
   Drive(botType, motorType, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
@@ -78,7 +78,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     // max_RPM = M1.max_rpm;
 
     // initialize turn sensitivity variables
-    enableTurnSensitivity = 2; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
     turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
     
@@ -209,16 +209,16 @@ float Drive::getBSN() {
  * @authors Grant Brautigam, Rhys Davies, Max Phillips
  * Created: 9-12-2022
 */
-void Drive::generateMotionValues() {
+void Drive::generateMotionValues(float tankModePct) {
     if (fabs(stickForwardRev) < STICK_DEADZONE) { // fwd stick is zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             requestedMotorPower[0] = 0, requestedMotorPower[1] = 0; // not moving, set motors to zero
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
-            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
-            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * tankModePct;
+            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * tankModePct;
         } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward muchso use tank mode
-            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
-            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
+            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * tankModePct;
+            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * tankModePct;
         } // no general else since encountered infinite loop
     } else { // fwd stick is not zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero

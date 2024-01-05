@@ -52,12 +52,20 @@ Preferences prefs;
 BluetoothSerial SerialBT;
 
 #define LOOP_DELAY 100
-const char* macTest = "bc:c7:46:03"; // length 11
-const char* macTest2 = "bc:c7:46:04"; // length 11
+
 bool foundController = false;
+
+// Bluetooth connection security and role for ESP32
 esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
+// MAC Addresses to match to PS5 Controllers
+const char* macTest = "bc:c7:46:03"; // length 11
+const char* macTest2 = "bc:c7:46:04"; // length 11
+
+/// @brief Detects if a given MAC Address is considered a PS5 Controller
+/// @param addrCharPtr the address to test (C string)
+/// @return true if the address represents a controller, false otherwise
 bool addressIsController(const char* addrCharPtr) {
   if (strncmp(addrCharPtr, macTest, 11) == 0)
     return true;
@@ -65,8 +73,6 @@ bool addressIsController(const char* addrCharPtr) {
     return true;
   else return false;
 }
-
-// in the original code, this was all in the if condition... removed for legibility
 
 /// @brief Begins the asynchronous discovery process for PS5 controllers
 /// @return a boolean if the discovery started successfully. should generally return true.
@@ -92,8 +98,12 @@ bool startDiscovery() {
 void storeAddress(const char* addr, bool clear = false) {
   if (clear) prefs.clear();
   prefs.begin(PREF_KEY, false); // false means read/write mode
-  // this is not std::string, it's an ESP thing
-  String str(addr); // create string from char array to store in preferences
+
+  // create 'String' from char array to store in preferences
+  //* this is not std::string, it's an ESP thing
+  String str(addr); 
+
+  // Store MAC Address
   size_t size = prefs.putString(PREF_KEY, str);
   Serial.print(F("Storing MAC Address: "));
   Serial.print(&str.c_str()[0]);

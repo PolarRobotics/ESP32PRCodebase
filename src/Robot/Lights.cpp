@@ -56,6 +56,13 @@ void Lights::updateLEDS() {
       leds = CRGB::Red;
       break;
     }
+    case DISCO: {
+      for(int i = 0; i < NUM_LEDS; i++) {
+        leds.fill_rainbow(iteration);
+      }
+      iteration++;
+      break;
+    }
     case OFF: {
       leds = CRGB::Black;
       break;

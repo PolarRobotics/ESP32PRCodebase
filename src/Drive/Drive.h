@@ -11,8 +11,7 @@
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
-// #define ACCELERATION_RATE .0375f // probably lower for runningback
-#define ACCELERATION_RATE 0.00375f // probably lower for runningback
+#define ACCELERATION_RATE 0.00375f // [RPM/ms] possibly change to RPM/s for future
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
@@ -23,6 +22,8 @@
 #define NORMAL_TURN_CONSTANT 0.05
 // Value for the tank mode speed reduction percentage
 #define TANK_MODE_PCT 0.75
+// Value for the tank mode speed reduction percentage
+#define RB_TANK_MODE_PCT 0.5
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 //these should = normal speed, QB needs 0.5 for both 
@@ -45,20 +46,20 @@
 // #endif
 
 // BSN for Short/Small Motors
-#define SMALL_BOOST_PCT 0.85
-#define SMALL_NORMAL_PCT 0.7
-#define SMALL_SLOW_PCT 0.4
+#define SMALL_BOOST_PCT  0.85f
+#define SMALL_NORMAL_PCT 0.7f
+#define SMALL_SLOW_PCT   0.4f
 
 // BSN for the 12v motors used on the new center
-#define MECANUM_BOOST_PCT  0.8
-#define MECANUM_NORMAL_PCT 0.6
-#define MECANUM_SLOW_PCT   0.3
+#define MECANUM_BOOST_PCT  0.8f
+#define MECANUM_NORMAL_PCT 0.6f
+#define MECANUM_SLOW_PCT   0.3f
 
 // BSN for the falcon motors used on the runningback
-#define FALCON_BOOST_PCT  1.0
-#define FALCON_NORMAL_TREVOR_PCT 0.6 // used to make trevor(nt) happy
-#define FALCON_NORMAL_PCT 0.4 // 0.5
-#define FALCON_SLOW_PCT   0.15
+#define FALCON_CALIBRATION_FACTOR 1.0f
+#define FALCON_BOOST_PCT          0.6f
+#define FALCON_NORMAL_PCT         0.4f // 0.5
+#define FALCON_SLOW_PCT           0.15f
 
 #define BRAKE_BUTTON_PCT 0
 
@@ -106,7 +107,7 @@ class Drive {
 
     Drive();
     Drive(BotType botType, MotorType motorType);
-    Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false);
+    Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
     void setServos(uint8_t lpin, uint8_t rpin);
     void setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
@@ -117,7 +118,7 @@ class Drive {
     void setBSNValue(float bsn_pct);
     float getBSN();
     void emergencyStop();
-    void generateMotionValues();
+    void generateMotionValues(float tankModePct = TANK_MODE_PCT);
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
