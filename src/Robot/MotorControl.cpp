@@ -186,15 +186,6 @@ uint16_t MotorControl::power2Duty(float power) {
   return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
 }
 
-/**
- * @brief writelow hopefully helps to prevent the issue with motors spinning at 
- * max speed on boot, sending bots into the stratosphere
- * 
- */
-void MotorControl::writelow() {
-    digitalWrite(servos[this->motorIndex].pin, LOW);
-}
-
 
 /**
  * @brief 

@@ -80,7 +80,6 @@ public:
   void displayPinInfo();
   
   void write(float pwr);
-  void writelow();
   
   // Encoder Related Functions
   void readEncoder();
