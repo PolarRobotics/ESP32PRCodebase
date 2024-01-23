@@ -396,8 +396,7 @@ void Drive::printCsvInfo() {
     Serial.print(F(",Left Motor,"));
     Serial.print(requestedMotorPower[0]);
     Serial.print(F(",Right Motor,"));
-    Serial.print(requestedMotorPower[1]);
-    Serial.print(F("\n"));
+    Serial.println(requestedMotorPower[1]);
 }
 /**
  * @brief updates the motors after calling all the functions to generate
