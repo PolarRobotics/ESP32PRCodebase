@@ -13,7 +13,7 @@
 #include <Utilities/MotorTypes.h>
 #include <Utilities/DriveParameters.h>
 
-#define PR_CODEBASE_VERSION "2.3.0 @ production"
+#define PR_CODEBASE_VERSION "2.3.1 @ production"
 
 // [PIN DECLARATIONS]
 // please follow: 
