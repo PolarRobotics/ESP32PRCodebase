@@ -7,6 +7,7 @@ contains the code needed to operate multiple postions of robots needed to play a
   alt="DevkitC pinout"
   style="margin: 0 auto; width: 300px">
 
+
 <!-- ## NodeMCU-32s Pinout
 
 https://m.media-amazon.com/images/I/516SPcBz+pL._AC_SY350_.jpg 
