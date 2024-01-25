@@ -3,13 +3,15 @@
 // constexpr to be evaluated at compile time
 constexpr Pair<BotType, const char*> 
 botTypeStrings[NUM_POSITIONS] = {
-  { lineman,         "lineman"         },
-  { receiver,        "receiver"        },
-  { runningback,     "runningback"     },
-  { center,          "center"          },
-  { mecanum_center,  "mecanum_center"  },
-  { quarterback,     "quarterback"     },
-  { kicker,          "kicker"          }
+  { lineman,            "lineman"            },
+  { receiver,           "receiver"           },
+  { runningback,        "runningback"        },
+  { center,             "center"             },
+  { mecanum_center,     "mecanum_center"     },
+  { quarterback_old,    "quarterback_old"    },
+  { quarterback_base,   "quarterback_base"   },
+  { quarterback_turret, "quarterback_turret" },
+  { kicker,             "kicker"             }
 };
 
 // Function to map BotTypes to human-readable C-strings
