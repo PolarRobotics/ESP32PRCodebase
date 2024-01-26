@@ -199,7 +199,7 @@ void setup() {
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 
-  delay(5000);
+  delay(1000);
 }
 
 /*

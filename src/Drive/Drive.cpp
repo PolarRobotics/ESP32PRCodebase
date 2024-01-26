@@ -414,7 +414,13 @@ void Drive::update(int speed) {
         power = power - 0.05;
         //power = M1.RPM2Percent(speed);
         lastTime = millis();
-        Serial.println( (String) "DATA,DATE,TIME," + power + "," + speed + "," ",AUTOSCROLL_20");
+        Serial.print(M1.Percent2RPM(requestedMotorPower[0]));
+        Serial.print("  ");
+        Serial.print(speed);
+        Serial.print("  ");
+        Serial.println(abs(M1.Percent2RPM(requestedMotorPower[0]) - speed));
+        
+       // Serial.println( (String) "DATA,DATE,TIME," + power + "," + speed + "," ",AUTOSCROLL_20");
     }
     
 
