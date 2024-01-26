@@ -50,29 +50,58 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
-int speed = 0;
-int a_channel = 35;
-int b_channel = 34;
-int encoderACount = 0;
+// Alter
+int speedL = 0;
+int a_channelL = 35;
+int b_channelL = 34;
+int encoderLCount = 0;
 int rollerover = 10000;
-int b_channel_state = 0;
+int b_channel_stateL = 0;
 
-void encoderA() {
+void encoderL() {
   
-  b_channel_state = digitalRead(b_channel);
+  b_channel_stateL = digitalRead(b_channelL);
 
-  if (b_channel_state == 1) {
-    if (encoderACount >= rollerover) {
-      encoderACount = 0;
+  if (b_channel_stateL == 1) {
+    if (encoderLCount >= rollerover) {
+      encoderLCount = 0;
     } else {
-      encoderACount = encoderACount + 1;
+      encoderLCount = encoderLCount + 1;
     }
       
   } else {
-    if (encoderACount == 0) {
-      encoderACount = rollerover;
+    if (encoderLCount == 0) {
+      encoderLCount = rollerover;
     } else {
-      encoderACount = encoderACount - 1;
+      encoderLCount = encoderLCount - 1;
+    }
+      
+  }
+}
+
+// Added
+int speedR = 0;
+int a_channelR = 36;    // Pin Label VP
+int b_channelR = 39;    // Pin Label VN
+int encoderRCount = 0;
+int b_channel_stateR = 0;
+
+void encoderR() {
+  
+  b_channel_stateR = digitalRead(b_channelR);
+
+  if (b_channel_stateR == 1) {
+    if (encoderRCount >= rollerover) {
+      encoderRCount = 0;
+    } else {
+      encoderRCount = encoderRCount + 1;
+    }
+      
+  } else {
+    if (encoderRCount == 0) {
+      encoderRCount = rollerover;
+    } else {
+      encoderRCount = encoderRCount - 1;
     }
       
   }
@@ -191,10 +220,18 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
-  pinMode(a_channel, INPUT_PULLUP);
-  pinMode(b_channel, INPUT);
+  // Alter
+  pinMode(a_channelL, INPUT_PULLUP);
+  pinMode(b_channelL, INPUT);
 
-  attachInterrupt(a_channel, encoderA, RISING);
+  attachInterrupt(a_channelL, encoderL, RISING);
+
+  // Added
+  pinMode(a_channelR, INPUT_PULLUP);
+  pinMode(b_channelR, INPUT);
+
+  attachInterrupt(a_channelR, encoderR, RISING);
+
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -214,11 +251,15 @@ void setup() {
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
   //Serial.print(encoderACount);
-  speed = calcSpeed(encoderACount);
+  // Alter
+  speedL = calcSpeed(encoderLCount);
+  // Added
+  speedR = calcSpeed(encoderRCount);
+
   
   //drive->update(speed);
 
-  delay(5);
+  delay(100);
 
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
@@ -265,7 +306,11 @@ void loop() {
 
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
-    drive->update(speed);
+    // Alter
+    drive->update2(speedL, speedR);
+    // Added
+    //drive->update(speedR);
+
     //drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
     //! Performs all special robot actions depending on the instantiated Robot subclass

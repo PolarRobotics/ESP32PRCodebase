@@ -122,6 +122,10 @@ class Drive {
     void emergencyStop();
     void generateMotionValues();
     virtual void update(int speed);
+
+    // here
+    virtual void update2(int speedL, int speedR);
+
     void printSetup();
     virtual void printDebugInfo();
 
