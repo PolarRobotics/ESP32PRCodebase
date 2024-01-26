@@ -45,7 +45,7 @@ MotorControl::MotorControl() {
   requestedRPM = 0;
   lastRampTime = millis();
 
-  CL_enable = true;
+  CL_enable = false;
   k_p = 2;
   k_i = 0.15;
   //k_i = 0.05;
@@ -230,37 +230,6 @@ int MotorControl::PILoop(int target_speed) {
 
   return adjusted_speed; 
 
-}
-
-/**
- * @brief 
- * @author Grant Brautigam
- * Updated 9-11-2023
- * 
- * called on an interrupt
- * 
- * when the encoder interrupt is called, read the b pin to see what state it is in
- * this eliminates the need for two seperate interrupts
- * 
-*/
-void MotorControl::readEncoder() {
-
-  b_channel_state = digitalRead(this->enc_b_pin);
-
-  if (b_channel_state == 1) {
-    if (encoderACount >= rollover) {
-      encoderACount = 0;
-    } else {
-      encoderACount = encoderACount + 1;
-    }
-      
-  } else {
-    if (encoderACount == 0) {
-      encoderACount = rollover;
-    } else {
-      encoderACount = encoderACount - 1;
-    }  
-  }
 }
 
 /**

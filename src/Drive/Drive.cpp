@@ -395,6 +395,7 @@ void Drive::printDebugInfo() {
 
     Serial.print(F("\n"));
 }
+
 /**
  * @brief Prints variables to the serial monitor in a csv format
  * This function is important for data acquisition
@@ -415,7 +416,9 @@ void Drive::printCsvInfo() {
     Serial.print(F(",header5,"));
     Serial.println(5); // last line is -ALWAYS- println or else the python script will break
 }
+
 /**
+ * 
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the
  * programmer doesnt have to call all the functions, this just handles it,
@@ -472,3 +475,28 @@ void Drive::update(int speed) {
     // M2.write(requestedMotorPower[1]);
 }
 
+
+
+void Drive::update2(int speedL, int speedR) {
+
+    generateMotionValues();
+
+    M1.setCurrentSpeed(speedL);
+    M2.setCurrentSpeed(speedR);
+    //M1.write(-.3);
+    //M1.setTargetSpeed(-900);
+    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+    M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+
+    if ((millis() - lastTime) >= 100) {
+        power = power - 0.05;
+        //power = M1.RPM2Percent(speed);
+        lastTime = millis();
+    }
+    // 2 target and 2 actual and millis
+    Serial.print("millis," + millis());
+    Serial.print(",left encoder target speed," + M1.Percent2RPM(requestedMotorPower[0]));
+    Serial.print(",left encoder actual speed," + speedL);
+    // Serial.print(",right encoder target speed," + M2.Percent2RPM(requestedMotorPower[1]));
+    // Serial.println(",right encoder actual speed," + speedR);
+}

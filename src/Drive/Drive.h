@@ -130,6 +130,10 @@ class Drive {
     void emergencyStop();
     void generateMotionValues(float tankModePct = TANK_MODE_PCT);
     virtual void update(int speed);
+
+    // here
+    virtual void update2(int speedL, int speedR);
+
     void printSetup();
     virtual void printDebugInfo();
     virtual void printCsvInfo();
