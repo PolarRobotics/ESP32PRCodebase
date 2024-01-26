@@ -494,9 +494,14 @@ void Drive::update2(int speedL, int speedR) {
         lastTime = millis();
     }
     // 2 target and 2 actual and millis
-    Serial.print("millis," + millis());
-    Serial.print(",left encoder target speed," + M1.Percent2RPM(requestedMotorPower[0]));
-    Serial.print(",left encoder actual speed," + speedL);
-    // Serial.print(",right encoder target speed," + M2.Percent2RPM(requestedMotorPower[1]));
-    // Serial.println(",right encoder actual speed," + speedR);
+    Serial.print("millis,");
+    Serial.print(millis());
+    Serial.print(",left encoder target speed,");
+    Serial.print(M1.Percent2RPM(requestedMotorPower[0]));
+    Serial.print(",left encoder actual speed,");
+    Serial.print(speedL);
+    Serial.print(",right encoder target speed,");
+    Serial.print(M2.Percent2RPM(requestedMotorPower[1]));
+    Serial.print(",right encoder actual speed,");
+    Serial.println(speedR);
 }

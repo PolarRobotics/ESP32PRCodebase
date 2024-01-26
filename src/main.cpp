@@ -238,7 +238,7 @@ void setup() {
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 
-  delay(5000);
+  delay(1000);
 }
 
 /*
@@ -261,7 +261,7 @@ void loop() {
   
   //drive->update(speed);
 
-  delay(100);
+  delay(5);
 
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
