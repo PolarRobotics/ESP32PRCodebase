@@ -79,33 +79,33 @@ void encoderL() {
   }
 }
 
-// right
-int speedR = 0;
-int a_channelR = 36;    // Pin Label VP
-int b_channelR = 39;    // Pin Label VN
-int encoderRCount = 0;
-int b_channel_stateR = 0;
+// // right
+// int speedR = 0;
+// int a_channelR = 36;    // Pin Label VP
+// int b_channelR = 39;    // Pin Label VN
+// int encoderRCount = 0;
+// int b_channel_stateR = 0;
 
-void encoderR() {
+// void encoderR() {
   
-  b_channel_stateR = digitalRead(b_channelR);
+//   b_channel_stateR = digitalRead(b_channelR);
 
-  if (b_channel_stateR == 1) {
-    if (encoderRCount >= rollerover) {
-      encoderRCount = 0;
-    } else {
-      encoderRCount = encoderRCount + 1;
-    }
+//   if (b_channel_stateR == 1) {
+//     if (encoderRCount >= rollerover) {
+//       encoderRCount = 0;
+//     } else {
+//       encoderRCount = encoderRCount + 1;
+//     }
       
-  } else {
-    if (encoderRCount == 0) {
-      encoderRCount = rollerover;
-    } else {
-      encoderRCount = encoderRCount - 1;
-    }
+//   } else {
+//     if (encoderRCount == 0) {
+//       encoderRCount = rollerover;
+//     } else {
+//       encoderRCount = encoderRCount - 1;
+//     }
       
-  }
-}
+//   }
+// }
 
 int prev_current_count = 0;
 int rolleroverthreshold = 2000; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
@@ -227,11 +227,11 @@ void setup() {
 
   attachInterrupt(a_channelL, encoderL, RISING);
 
-  // right
-  pinMode(a_channelR, INPUT_PULLUP);
-  pinMode(b_channelR, INPUT);
+  // // right
+  // pinMode(a_channelR, INPUT_PULLUP);
+  // pinMode(b_channelR, INPUT);
 
-  attachInterrupt(a_channelR, encoderR, RISING);
+  // attachInterrupt(a_channelR, encoderR, RISING);
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
