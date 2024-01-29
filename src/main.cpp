@@ -50,6 +50,93 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
+// left
+int speedL = 0;
+int a_channelL = 35;
+int b_channelL = 34;
+int encoderLCount = 0;
+int rollerover = 10000;
+int b_channel_stateL = 0;
+
+void encoderL() {
+  
+  b_channel_stateL = digitalRead(b_channelL);
+
+  if (b_channel_stateL == 1) {
+    if (encoderLCount >= rollerover) {
+      encoderLCount = 0;
+    } else {
+      encoderLCount = encoderLCount + 1;
+    }
+      
+  } else {
+    if (encoderLCount == 0) {
+      encoderLCount = rollerover;
+    } else {
+      encoderLCount = encoderLCount - 1;
+    }
+      
+  }
+}
+
+// right
+int speedR = 0;
+int a_channelR = 36;    // Pin Label VP
+int b_channelR = 39;    // Pin Label VN
+int encoderRCount = 0;
+int b_channel_stateR = 0;
+
+void encoderR() {
+  
+  b_channel_stateR = digitalRead(b_channelR);
+
+  if (b_channel_stateR == 1) {
+    if (encoderRCount >= rollerover) {
+      encoderRCount = 0;
+    } else {
+      encoderRCount = encoderRCount + 1;
+    }
+      
+  } else {
+    if (encoderRCount == 0) {
+      encoderRCount = rollerover;
+    } else {
+      encoderRCount = encoderRCount - 1;
+    }
+      
+  }
+}
+
+int prev_current_count = 0;
+int rolleroverthreshold = 2000; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
+unsigned long current_time = 0;
+unsigned long prev_current_time = 0; 
+float omega = 0;
+
+float commanded_power = 0;
+
+int calcSpeed(int current_count) {
+  
+  current_time = millis();
+  
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_count) >= rolleroverthreshold) {
+    if ((current_count-rolleroverthreshold)>0) {
+      omega = float ((current_count-rollerover)-prev_current_count)/(current_time-prev_current_time);
+    } else {
+      omega = float ((current_count+rollerover)-prev_current_count)/(current_time-prev_current_time);
+    }
+  } else {
+    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+  }
+
+  prev_current_count = current_count;
+  prev_current_time = current_time;
+
+  return omega*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
+
+}
+
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -134,6 +221,18 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
+  // left
+  pinMode(a_channelL, INPUT_PULLUP);
+  pinMode(b_channelL, INPUT);
+
+  attachInterrupt(a_channelL, encoderL, RISING);
+
+  // right
+  pinMode(a_channelR, INPUT_PULLUP);
+  pinMode(b_channelR, INPUT);
+
+  attachInterrupt(a_channelR, encoderR, RISING);
+
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
@@ -149,6 +248,16 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
+
+  speedL = calcSpeed(encoderLCount);
+
+  Serial.print("millis,");
+  Serial.print(millis());
+  Serial.print(",rpm,");
+  Serial.println(speedL);
+  
+  //speedR = calcSpeed(encoderRCount);
+
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
