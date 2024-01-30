@@ -112,10 +112,10 @@ void DriveMecanum::generateMotorValues() {
 }
 
 void DriveMecanum::emergencyStop() {
-    this->LF.writelow();
-    this->RF.writelow();
-    this->LR.writelow();
-    this->RR.writelow();
+    this->LF.write(0);
+    this->RF.write(0);
+    this->LR.write(0);
+    this->RR.write(0);
 }
 
 void DriveMecanum::update() {
