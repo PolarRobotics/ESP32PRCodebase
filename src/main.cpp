@@ -58,6 +58,8 @@ int encoderLCount = 0;
 int rollerover = 10000;
 int b_channel_stateL = 0;
 
+// encoder config: 1000 (up, dn, dn, dn)
+
 void encoderL() {
   
   b_channel_stateL = digitalRead(b_channelL);
@@ -138,32 +140,31 @@ int calcSpeedL(int current_count) {
 }
 
 
-int prev_current_countR = 0;
-unsigned long current_timeR = 0;
-unsigned long prev_current_timeR = 0; 
-float omegaR = 0;
+// int prev_current_countR = 0;
+// unsigned long current_timeR = 0;
+// unsigned long prev_current_timeR = 0; 
+// float omegaR = 0;
 
-int calcSpeedR(int current_count) {
+// int calcSpeedR(int current_count) {
   
-  current_timeR = millis();
+//   current_timeR = millis();
   
-  //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_countR) >= rolleroverthreshold) {
-    if ((current_count-rolleroverthreshold)>0) {
-      omegaR = float ((current_count-rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
-    } else {
-      omegaR = float ((current_count+rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
-    }
-  } else {
-    omegaR = float (current_count-prev_current_countR)/(current_timeR-prev_current_timeR);
-  }
+//   //first check if the curret count has rolled over
+//   if (abs(current_count - prev_current_countR) >= rolleroverthreshold) {
+//     if ((current_count-rolleroverthreshold)>0) {
+//       omegaR = float ((current_count-rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
+//     } else {
+//       omegaR = float ((current_count+rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
+//     }
+//   } else {
+//     omegaR = float (current_count-prev_current_countR)/(current_timeR-prev_current_timeR);
+//   }
 
-  prev_current_countR = current_count;
-  prev_current_timeR = current_timeR;
+//   prev_current_countR = current_count;
+//   prev_current_timeR = current_timeR;
 
-  return omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
-
-}
+//   return omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
+// }
 
 /*
    ____    _____   _____   _   _   ____
@@ -190,6 +191,17 @@ void setup() {
   // gearRatio = config.getGearRatio();
   // wheelBase = config.getWheelBase();
 
+// left
+  pinMode(a_channelL, INPUT_PULLUP);
+  pinMode(b_channelL, INPUT);
+
+  attachInterrupt(a_channelL, encoderL, RISING);
+
+  // // right
+  // pinMode(a_channelR, INPUT_PULLUP);
+  // pinMode(b_channelR, INPUT);
+
+  // attachInterrupt(a_channelR, encoderR, RISING);
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
@@ -249,18 +261,6 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
-  // left
-  pinMode(a_channelL, INPUT_PULLUP);
-  pinMode(b_channelL, INPUT);
-
-  attachInterrupt(a_channelL, encoderL, RISING);
-
-  // // right
-  // pinMode(a_channelR, INPUT_PULLUP);
-  // pinMode(b_channelR, INPUT);
-
-  // attachInterrupt(a_channelR, encoderR, RISING);
-
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
@@ -275,15 +275,22 @@ void setup() {
 */
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
+
+unsigned long previous_time = 0;
+
 void loop() {
+  // calculate the RPM every 5ms, this means we will have enough counts for meaningful data
+  if (millis() - previous_time >= 5) {
+    speedL = calcSpeedL(encoderLCount);
+    
+    Serial.print("millis,");
+    Serial.print(millis());
+    Serial.print(",rpm,");
+    Serial.println(speedL);
 
-  speedL = calcSpeedL(encoderLCount);
+    previous_time = millis();
+  }
 
-  Serial.print("millis,");
-  Serial.print(millis());
-  Serial.print(",rpm,");
-  Serial.println(speedL);
-  
   //speedR = calcSpeed(encoderRCount);
 
   if (ps5.isConnected()) {
@@ -336,7 +343,7 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();
