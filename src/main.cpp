@@ -107,36 +107,62 @@ void encoderR() {
   }
 }
 
-int prev_current_count = 0;
+int prev_current_countL = 0;
 int rolleroverthreshold = 2000; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
-unsigned long current_time = 0;
-unsigned long prev_current_time = 0; 
-float omega = 0;
+unsigned long current_timeL = 0;
+unsigned long prev_current_timeL = 0; 
+float omegaL = 0;
 
 float commanded_power = 0;
 
-int calcSpeed(int current_count) {
+int calcSpeedL(int current_count) {
   
-  current_time = millis();
+  current_timeL = millis();
   
   //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_count) >= rolleroverthreshold) {
+  if (abs(current_count - prev_current_countL) >= rolleroverthreshold) {
     if ((current_count-rolleroverthreshold)>0) {
-      omega = float ((current_count-rollerover)-prev_current_count)/(current_time-prev_current_time);
+      omegaL = float ((current_count-rollerover)-prev_current_countL)/(current_timeL-prev_current_timeL);
     } else {
-      omega = float ((current_count+rollerover)-prev_current_count)/(current_time-prev_current_time);
+      omegaL = float ((current_count+rollerover)-prev_current_countL)/(current_timeL-prev_current_timeL);
     }
   } else {
-    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+    omegaL = float (current_count-prev_current_countL)/(current_timeL-prev_current_timeL);
   }
 
-  prev_current_count = current_count;
-  prev_current_time = current_time;
+  prev_current_countL = current_count;
+  prev_current_timeL = current_timeL;
 
-  return omega*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
+  return omegaL*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
 
 }
 
+int prev_current_countR = 0;
+unsigned long current_timeR = 0;
+unsigned long prev_current_timeR = 0; 
+float omegaR = 0;
+
+int calcSpeedR(int current_count) {
+  
+  current_timeR = millis();
+  
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_countR) >= rolleroverthreshold) {
+    if ((current_count-rolleroverthreshold)>0) {
+      omegaR = float ((current_count-rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
+    } else {
+      omegaR = float ((current_count+rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
+    }
+  } else {
+    omegaR = float (current_count-prev_current_countR)/(current_timeR-prev_current_timeR);
+  }
+
+  prev_current_countR = current_count;
+  prev_current_timeR = current_timeR;
+
+  return omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
+
+}
 
 /*
    ____    _____   _____   _   _   ____
@@ -254,9 +280,9 @@ void setup() {
 void loop() {
   //Serial.print(encoderACount);
   // Alter
-  speedL = calcSpeed(encoderLCount);
+  speedL = calcSpeedL(encoderLCount);
   // Added
-  speedR = calcSpeed(encoderRCount);
+  speedR = calcSpeedR(encoderRCount);
 
   
   //drive->update(speed);
