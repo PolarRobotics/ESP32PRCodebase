@@ -160,7 +160,7 @@ int calcSpeedR(int current_count) {
   prev_current_countR = current_count;
   prev_current_timeR = current_timeR;
 
-  return omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
+  return -omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
 
 }
 
