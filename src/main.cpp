@@ -117,17 +117,19 @@ void setup() {
       drive->setupMotors(M1_PIN, M2_PIN);
   }
 
-  drive->printSetup();
+  // drive->printSetup();
 
+  // Set up and initialize lights for pairing process
   lights.setupLEDS();
   lights.setLEDStatus(Lights::PAIRING);
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
+  // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
   
-
+  // Kicker safety enable once paired
   if (robotType == kicker) {
     ((Kicker*) robot)->enable();
   }
@@ -166,10 +168,15 @@ void loop() {
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
       drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && robotType == runningback) {
-      drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
+    } else if (ps5.R2() && motorType == falcon) {
+      // used to calibrate the max pwm signal for the falcon 500 motors
+      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
     } else {
       drive->setBSN(Drive::NORMAL);
+    }
+
+    if (ps5.Share()) {
+      lights.setLEDStatus(Lights::DISCO);
     }
 
     // Manual LED State Toggle (Defense/Offense)
@@ -177,16 +184,15 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
+    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
-        lights.tackled = true;
       } 
       // debounce the tackle sensor input
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
         lights.setLEDStatus(Lights::OFFENSE);
-        lights.tackled = false;
       }
     }
 
@@ -195,6 +201,8 @@ void loop() {
     drive->update();
     drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
+    if (lights.returnStatus() == lights.DISCO)
+      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       

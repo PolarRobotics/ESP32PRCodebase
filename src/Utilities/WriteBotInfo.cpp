@@ -16,7 +16,7 @@ void setup() {
   //! If you want to use a predefined robot from BotTypes.h, declare the index here:
   // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
   //! Please reset to zero when you are done uploading to avoid merge conflicts.
-  uint8_t index = 9; // also handles bot name index
+  uint8_t index = 0; // also handles bot name index
 
   //* CUSTOM BOT CONFIGURATION
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:

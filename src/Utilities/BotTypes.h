@@ -60,24 +60,47 @@ typedef struct BotConfig {
 
 #define NUM_BOTS 13
 
+// Bot Aliases
+#define BOT_IPP         0
+#define BOT_I_PLUS_PLUS 0
+#define BOT_SQRT_NEG_1  1
+#define BOT_PI          2
+#define BOT_RHO         3
+#define BOT_2_72        4
+#define BOT_SMILEY      5
+#define BOT_GEQ         6
+#define BOT_32_2        7
+#define BOT_9_8         8
+#define BOT_C           9
+#define BOT_RB          9
+#define BOT_PHI         10
+#define BOT_CENTER      10
+#define BOT_INF         11
+#define BOT_QB          11
+#define BOT_THETA       12
+#define BOT_KICKER      12
+
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
 // idx  bot_name    bot_type     motor_type      gear_ratio wheel_base r_min   r_max
-  { 0,  "i++",      lineman,     small_ampflow,  { 0.6f,      12.25f,  9.00f,  36.00f }},  // 0:  i++
-  { 1,  "sqrt(-1)", lineman,     big_ampflow,    { 0.53333f,  11.25f,  9.00f,  36.00f }},  // 1:  sqrt(-1)
-  { 2,  "pi",       lineman,     small_ampflow,  { 0.46667f,  11.00f,  9.00f,  36.00f }},  // 2:  pi
-  { 3,  "rho",      lineman,     big_ampflow,    { 0.6f,      11.25f,  9.00f,  36.00f }},  // 3:  ρ
-  { 4,  "2.72",     lineman,     big_ampflow,    { 0.4f,      11.25f,  9.00f,  36.00f }},  // 4:  2.72
-  { 5,  ":)",       lineman,     small_ampflow,  { 1.0f,      9.75f ,  9.00f,  36.00f }},  // 5:  :)
-  { 6,  ">=",       lineman,     big_ampflow,    { 1.0f,      10.00f,  6.00f,  27.00f }},  // 6:  >=
-  { 7,  "32.2",     receiver,    small_ampflow,  { 0.5f,      11.50f,  9.00f,  36.00f }},  // 7:  32.2
-  { 8,  "9.8",      receiver,    big_ampflow,    { 0.5f,      11.50f,  9.00f,  36.00f }},  // 8:  9.8
-  { 9,  "c",        runningback, falcon,         { 0.5f,      8.00f ,  9.00f,  36.00f }},  // 9:  c
-  { 10, "phi",      center,      small_ampflow,  { 0.6f,      11.50f,  9.00f,  36.00f }},  // 10: Φ
-  { 11, "inf",      quarterback, small_ampflow,  { 0.5625f,   11.50f,  9.00f,  36.00f }},  // 11: ∞
-  { 12, "theta",    kicker,      small_ampflow,  { 0.34375f,  10.00f,  9.00f,  36.00f }}   // 12: Θ
+  { 0,  "i++",      lineman,     small_ampflow,  { 0.6f,      12.25f,  9.00f,  36.00f }},  //* 0:  i++
+  { 1,  "sqrt(-1)", lineman,     big_ampflow,    { 0.53333f,  11.25f,  9.00f,  36.00f }},  //* 1:  sqrt(-1)
+  { 2,  "pi",       receiver,    small_ampflow,  { 0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
+  { 3,  "rho",      lineman,     big_ampflow,    { 0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
+  { 4,  "2.72",     lineman,     big_ampflow,    { 0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
+  { 5,  ":)",       lineman,     small_ampflow,  { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
+  { 6,  ">=",       lineman,     big_ampflow,    { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
+  { 7,  "32.2",     receiver,    small_ampflow,  { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 7:  32.2
+  { 8,  "9.8",      lineman,     big_ampflow,    { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 8:  9.8
+  { 9,  "c",        runningback, falcon,         { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
+  { 10, "phi",      center,      small_ampflow,  { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
+  { 11, "inf",      quarterback, small_ampflow,  { 0.5625f,   11.50f,  9.00f,  36.00f }},  //* 11: ∞
+  { 12, "theta",    kicker,      small_ampflow,  { 0.34375f,  10.00f,  9.00f,  36.00f }}   //* 12: Θ
 };
+
+//! Do not decrease r_min to less than half of the wheelbase, or the math might break
+//! (robot will try to turn around a point inside the wheelbase)
 
 const char * getBotTypeString(BotType type);
 const char * getBotName(uint8_t index);
