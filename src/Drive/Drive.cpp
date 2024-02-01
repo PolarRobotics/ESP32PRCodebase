@@ -389,7 +389,26 @@ void Drive::printDebugInfo() {
 
     Serial.print(F("\n"));
 }
-
+/**
+ * @brief Prints variables to the serial monitor in a csv format
+ * This function is important for data acquisition
+ * The options below are configurable, change them as you need
+ * Remember to adhere to printing guidelines under PR-Docs
+ * @author Corbin Hibler
+ * Updated: 2023-10-30
+*/
+void Drive::printCsvInfo() {
+    Serial.print(F("header1,")); // name of value to be used as header
+    Serial.print(1);             // variable you want to track
+    Serial.print(F(",header2,")); 
+    Serial.print(2);
+    Serial.print(F(",header3,"));
+    Serial.print(3);
+    Serial.print(F(",header4,"));
+    Serial.print(4);
+    Serial.print(F(",header5,"));
+    Serial.println(5); // last line is -ALWAYS- println or else the python script will break
+}
 /**
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the

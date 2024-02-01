@@ -122,6 +122,7 @@ class Drive {
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
+    virtual void printCsvInfo();
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0
