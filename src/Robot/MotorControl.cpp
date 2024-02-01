@@ -137,3 +137,60 @@ float MotorControl::ramp(float requestedPower,  float accelRate) {
     return requestedRPM;
 
 }
+
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+ * 
+ * called on an interrupt
+ * 
+ * when the encoder interrupt is called, read the b pin to see what state it is in
+ * this eliminates the need for two seperate interrupts
+ * 
+*/
+void MotorControl::readEncoder() {
+
+  b_channel_state = digitalRead(this->enc_b_pin);
+
+  if (b_channel_state == 1) {
+    if (encoderACount >= rollover) {
+      encoderACount = 0;
+    } else {
+      encoderACount = encoderACount + 1;
+    }
+
+  } else {
+    if (encoderACount == 0) {
+      encoderACount = rollover;
+    } else {
+      encoderACount = encoderACount - 1;
+    }  
+  }
+}
+
+/**
+ * @brief 
+ * @author Grant Brautigam
+ * Updated 9-11-2023
+*/
+int MotorControl::calcSpeed(int current_count) {  
+  current_time = millis();
+
+  //first check if the curret count has rolled over
+  if (abs(current_count - prev_current_count) >= rollover_threshold) {
+    if ((current_count-rollover_threshold)>0) {
+      omega = float ((current_count-rollover)-prev_current_count)/(current_time-prev_current_time);
+    } else {
+      omega = float ((current_count+rollover)-prev_current_count)/(current_time-prev_current_time);
+    }
+  } else {
+    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
+  }
+
+  prev_current_count = current_count;
+  prev_current_time = current_time;
+
+  return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+}
+

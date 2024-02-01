@@ -27,6 +27,18 @@ private:
   uint8_t encoderIndex;
   uint8_t enc_a_pin, enc_b_pin;
 
+  // for use in void readEncoder()
+  int encoderACount;
+  int b_channel_state;
+  int rollover;
+
+  // For use in int calcSpeed()
+  int prev_current_count;
+  int rollover_threshold;
+  unsigned long current_time;
+  unsigned long prev_current_time;
+  float omega;
+
 public:
   int max_rpm;          // the motor max rpm * the gear ratio 
   MotorControl();
@@ -39,4 +51,8 @@ public:
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
+
+   // Encoder Related Functions
+  void readEncoder();
+  int calcSpeed(int current_count);
 };
