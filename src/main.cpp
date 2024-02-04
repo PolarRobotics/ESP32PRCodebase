@@ -81,40 +81,40 @@ void setup() {
     //* Each case should have the following:
     // An initialization of `robot` as a new Robot subclass
     // An initialization of `drive` as a new Drive subclass
-    // A call to drive->setServos (or downcast and call to override)
+    // A call to drive->setupMotors (or downcast and call to override)
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
       drive = new Drive(kicker, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
       drive = new Drive(quarterback, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
       //! TODO: compensate for MecanumCenter.setup()
       drive = new DriveMecanum();
-      ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+      ((DriveMecanum*) drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new Drive(center, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case runningback:
       robot = new Lineman();
       drive = new DriveQuick(driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case receiver:
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
   }
 
   // drive->printSetup();
