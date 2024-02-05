@@ -25,6 +25,7 @@ public:
     OFFENSE,     // blue and green
     DEFENSE,     // green
     TACKLED,     // turn red when tackled
+    DISCO,       // go crazy
     OFF
   };
   static Lights& getInstance() {
@@ -41,10 +42,8 @@ public:
   void pairState(bool state);
 
   // LED Variables
-  bool tackled = false;
   unsigned long tackleTime = 0;
   const int switchTime = 1000; //! KEEP THIS HERE!!!
-  int ledStatus = 0;
 };
 
 #endif // LIGHTS_H

@@ -39,7 +39,7 @@ Drive::Drive(BotType botType, MotorType motorType) {
   Drive(botType, motorType, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
@@ -78,7 +78,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     // max_RPM = M1.max_rpm;
 
     // initialize turn sensitivity variables
-    enableTurnSensitivity = 2; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
     turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
     power = 0;
@@ -87,7 +87,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
 
 }
 
-void Drive::setServos(uint8_t lpin, uint8_t rpin) {
+void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     // this->M1 = new MotorControl(motorType, false, this->gearRatio);
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
@@ -98,12 +98,12 @@ void Drive::setServos(uint8_t lpin, uint8_t rpin) {
 }
 
 /**
- * setServos
+ * setupMotors
  * @brief to be called when setting up a motor with an encoder
  * 
  * 
 */
-void Drive::setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
+void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
     //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
     // this->M1 = new MotorControl(motorType, true, this->gearRatio);
     // this->M2 = new MotorControl(motorType, true, this->gearRatio);
@@ -210,16 +210,16 @@ float Drive::getBSN() {
  * @authors Grant Brautigam, Rhys Davies, Max Phillips
  * Created: 9-12-2022
 */
-void Drive::generateMotionValues() {
+void Drive::generateMotionValues(float tankModePct) {
     if (fabs(stickForwardRev) < STICK_DEADZONE) { // fwd stick is zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             requestedMotorPower[0] = 0, requestedMotorPower[1] = 0; // not moving, set motors to zero
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
-            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
-            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
+            requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * tankModePct;
+            requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * tankModePct;
         } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward muchso use tank mode
-            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * TANK_MODE_PCT;
-            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * TANK_MODE_PCT;
+            requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * tankModePct;
+            requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * tankModePct;
         } // no general else since encountered infinite loop
     } else { // fwd stick is not zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
@@ -390,8 +390,26 @@ void Drive::printDebugInfo() {
 
     Serial.print(F("\n"));
 }
-
-
+/**
+ * @brief Prints variables to the serial monitor in a csv format
+ * This function is important for data acquisition
+ * The options below are configurable, change them as you need
+ * Remember to adhere to printing guidelines under PR-Docs
+ * @author Corbin Hibler
+ * Updated: 2023-10-30
+*/
+void Drive::printCsvInfo() {
+    Serial.print(F("header1,")); // name of value to be used as header
+    Serial.print(1);             // variable you want to track
+    Serial.print(F(",header2,")); 
+    Serial.print(2);
+    Serial.print(F(",header3,"));
+    Serial.print(3);
+    Serial.print(F(",header4,"));
+    Serial.print(4);
+    Serial.print(F(",header5,"));
+    Serial.println(5); // last line is -ALWAYS- println or else the python script will break
+}
 /**
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the

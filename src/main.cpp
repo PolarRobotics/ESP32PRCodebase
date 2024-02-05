@@ -195,53 +195,55 @@ void setup() {
     //* Each case should have the following:
     // An initialization of `robot` as a new Robot subclass
     // An initialization of `drive` as a new Drive subclass
-    // A call to drive->setServos (or downcast and call to override)
+    // A call to drive->setupMotors (or downcast and call to override)
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
       drive = new Drive(kicker, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
       drive = new Drive(quarterback, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
       //! TODO: compensate for MecanumCenter.setup()
       drive = new DriveMecanum();
-      ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+      ((DriveMecanum*) drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new Drive(center, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case runningback:
       robot = new Lineman();
       drive = new DriveQuick(driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case receiver:
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
   }
 
-  drive->printSetup();
+  // drive->printSetup();
 
+  // Set up and initialize lights for pairing process
   lights.setupLEDS();
   lights.setLEDStatus(Lights::PAIRING);
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
+  // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
   
-
+  // Kicker safety enable once paired
   if (robotType == kicker) {
     ((Kicker*) robot)->enable();
   }
@@ -306,10 +308,15 @@ void loop() {
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
       drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && robotType == runningback) {
-      drive->setBSNValue(FALCON_NORMAL_TREVOR_PCT);
+    } else if (ps5.R2() && motorType == falcon) {
+      // used to calibrate the max pwm signal for the falcon 500 motors
+      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
     } else {
       drive->setBSN(Drive::NORMAL);
+    }
+
+    if (ps5.Share()) {
+      lights.setLEDStatus(Lights::DISCO);
     }
 
     // Manual LED State Toggle (Defense/Offense)
@@ -317,16 +324,15 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman && lights.returnStatus() == lights.OFFENSE) { // && robotType != runningback
+    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
       if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
-        lights.tackled = true;
       } 
       // debounce the tackle sensor input
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && lights.tackled == true) {
+      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
         lights.setLEDStatus(Lights::OFFENSE);
-        lights.tackled = false;
       }
     }
 
@@ -339,6 +345,8 @@ void loop() {
 
     //drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
+    if (lights.returnStatus() == lights.DISCO)
+      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       
