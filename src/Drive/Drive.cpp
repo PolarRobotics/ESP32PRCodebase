@@ -318,9 +318,6 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
 }
 
 void Drive::emergencyStop() {
-    // M1->writelow(), M2->writelow();
-    // M1.writelow(), M2.writelow();
-
     M1.write(0); 
     M2.write(0);
 }

@@ -75,23 +75,15 @@ public:
   void stop();
   void setTargetSpeed(int target_rpm);
   void setCurrentSpeed(int speed);
-  // Encoder Related Functions
-  void readEncoder();
-  int calcSpeed(int current_count);
 
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
 
   int ramp(int requestedPower, float accelRate);
 
-  // Encoder Related Functions
-  void readEncoder();
-  int calcSpeed(int current_count);
-
   // Closed Loop related functions
   int PILoop(int target_speed);
   int getCurrentSpeed();
-  int trapIntagral(int current_error);
   int integrate(int current_error);
   void integrateReset();
 };
