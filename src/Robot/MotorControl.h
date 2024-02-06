@@ -72,9 +72,6 @@ public:
   void stop();
   void setTargetSpeed(int target_rpm);
   void setCurrentSpeed(int speed);
-  // Encoder Related Functions
-  void readEncoder();
-  int calcSpeed(int current_count);
 
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
@@ -86,8 +83,4 @@ public:
   int getCurrentSpeed();
   int integrate(int current_error);
   void integrateReset();
-
-  // Encoder Related Functions
-  void readEncoder();
-  int calcSpeed(int current_count);
 };
