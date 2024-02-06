@@ -38,61 +38,72 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 class QuarterbackTurret : public Robot {
   private: 
     // motor pins
+    uint8_t assemblyPin; // not sure if this is needed
+    uint8_t cradlePin;
     uint8_t flywheelPin;
     uint8_t turretPin;
-    uint8_t cradlePin;
 
     // motor instances
+    MotorControl cradleMotor;
     MotorControl flywheelMotor;
     MotorControl turretMotor;
-    MotorControl cradleMotor;
 
     // state
     bool enabled = false; // default false, set to true upon homing/reset
 
     // assembly
     AssemblyAngle currentAssemblyAngle; // initial state unknown, will reset to straight
-    AssemblyAngle targetAssemblyAngle = straight; // default straight
-    bool assemblyMoving = false; // default false
+    AssemblyAngle targetAssemblyAngle; // default straight
+    bool assemblyMoving; // default false
+
+    // cradle
+    CradleState currentCradleState; // initial state unknown, will reset to back
+    CradleState targetCradleState; // default back
+    bool cradleMoving; // default false
 
     // mode
-    TurretMode mode = manual; // default manual
-    TargetReceiver target = receiver_1; // default receiver_1
+    TurretMode mode; // default manual
+    TargetReceiver target; // default receiver_1
 
     // flywheel
-    FlywheelSpeed currentFlywheelStage = stopped; // default stopped
-    FlywheelSpeed targetFlywheelStage = stopped;  // default stopped
+    FlywheelSpeed currentFlywheelStage; // default stopped
+    FlywheelSpeed targetFlywheelStage;  // default stopped
 
-    float currentFlywheelSpeed = 0; // default 0
-    float targetFlywheelSpeed = 0;  // default 0
+    float currentFlywheelSpeed; // default 0
+    float targetFlywheelSpeed;  // default 0
 
-    bool flywheelManualOverride = false; // default false, true when stick controlling flywheel
+    bool flywheelManualOverride; // default false, true when stick controlling flywheel
 
     // turret
-    float currentTurretSpeed = 0; // default 0
-    float targetTurretSpeed = 0;  // default 0
+    float currentTurretSpeed; // default 0
+    float targetTurretSpeed;  // default 0
 
-    int currentTurretHeading = 0; // default 0
-    int targetTurretHeading = 0;  // default 0
+    int currentTurretHeading; // default 0
+    int targetTurretHeading;  // default 0
     
   public:
-    QuarterbackTurret();
+    QuarterbackTurret(
+      uint8_t flywheelPin,
+      uint8_t turretPin,
+      uint8_t cradlePin
+    );
+
     void action() override; //! robot subclass must override action
 
     //* base/internal functions
-    void moveTurret(float power); // moves turret at specified power (open loop)
+    void setTurretSpeed(float absoluteSpeed); // moves turret at specified speed (open loop)
 
     void moveTurret(int heading); // moves turret/turntable to specific heading. currently relative to robot, not field.
                                   // will not be implemented until MotorControl is stabilized
-
-    void setFlywheelSpeed(double absoluteSpeed); // also accessible via manual stick override
-
-    void setFlywheelSpeedStage(FlywheelSpeed stage); // directly set flywheel speed to a stage
 
     void aimAssembly(AssemblyAngle angle); // aims the assembly holding the flywheels and cradle (two states).
 
     void moveCradle(CradleState state); // moves the linear actuator connected to the cradle to one of two states.
     // used to fire the ball in both manual and automatic modes
+
+    void setFlywheelSpeed(double absoluteSpeed); // also accessible via manual stick override
+
+    void setFlywheelSpeedStage(FlywheelSpeed stage); // directly set flywheel speed to a stage
 
     //* derived functions (general)
     void adjustFlywheelSpeedStage(SpeedStatus speed);
@@ -107,7 +118,7 @@ class QuarterbackTurret : public Robot {
 
     //* setup and safety functions
     void setEnabled(bool enabled); // toggles turret and flywheel movement
-    void emergencyStop(); 
+    void emergencyStop();
     void zeroTurret(); // calibrates turret/moves turret to home/zero (cnc/3d printer style)
     void reset(); // zero turret, aim down (straight), and set flywheels to slow intake
     
