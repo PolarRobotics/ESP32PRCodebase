@@ -70,6 +70,8 @@ class QuarterbackTurret : public Robot {
     float currentFlywheelSpeed = 0; // default 0
     float targetFlywheelSpeed = 0;  // default 0
 
+    bool flywheelManualOverride = false; // default false, true when stick controlling flywheel
+
     // turret
     float currentTurretSpeed = 0; // default 0
     float targetTurretSpeed = 0;  // default 0
