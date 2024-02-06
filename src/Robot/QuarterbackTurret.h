@@ -23,9 +23,17 @@ enum TargetReceiver {
   receiver_1, receiver_2
 };
 
+#define QB_TURRET_NUM_SPEEDS 7
+
 enum FlywheelSpeed {
   slow_inwards, stopped, slow_outwards, lvl1_outwards, lvl2_outwards, lvl3_outwards, maximum
 };
+
+// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {
+//   0,
+  
+// };
+
 
 /**
  * @brief Quarterback Turret Subclass Header
