@@ -44,7 +44,7 @@ class QuarterbackTurret : public Robot {
     uint8_t turretPin;
 
     // motor instances
-    MotorControl cradleMotor;
+    MotorControl cradleActuator;
     MotorControl flywheelMotor;
     MotorControl turretMotor;
 
