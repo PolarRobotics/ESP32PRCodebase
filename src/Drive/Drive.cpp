@@ -168,6 +168,7 @@ void Drive::setBSN(Speed bsn) {
                 case MotorType::small_ampflow: { BSNscalar = SMALL_BOOST_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_BOOST_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_BOOST_PCT; break; }
+                case MotorType::small_12v: { BSNscalar = SMALL_12V_BOOST_PCT; break; }
             }
             break;
         }
@@ -177,6 +178,7 @@ void Drive::setBSN(Speed bsn) {
                 case MotorType::small_ampflow: { BSNscalar = SMALL_NORMAL_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_NORMAL_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_NORMAL_PCT; break; }
+                case MotorType::small_12v: { BSNscalar = SMALL_12V_NORMAL_PCT; break; }
             }
             break;
         }
@@ -186,6 +188,7 @@ void Drive::setBSN(Speed bsn) {
                 case MotorType::small_ampflow: { BSNscalar = SMALL_SLOW_PCT; break; }
                 case MotorType::mecanum: { BSNscalar = MECANUM_SLOW_PCT; break; }
                 case MotorType::falcon: { BSNscalar = FALCON_SLOW_PCT; break; }
+                case MotorType::small_12v: { BSNscalar = SMALL_12V_SLOW_PCT; break; }
             }
             break;
         }
