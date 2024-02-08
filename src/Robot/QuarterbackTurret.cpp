@@ -69,17 +69,16 @@ void QuarterbackTurret::moveCradle(CradleState state) {
     if (targetCradleState != currentCradleState) {
       if (targetCradleState == forward) {
         // move appropriate direction (forwards?)
-        // write 1
+        cradleActuator.write(1.0);
       } else if (targetCradleState == back) {
         // move other direction
-        // write -1
+        cradleActuator.write(-1.0);
       }
       currentCradleState = targetCradleState; //! for now, will probably need to change later, like an interrupt
     } else {
-      // write 0
+      cradleActuator.write(0);
     }
   } else {
-    // write 0
     cradleActuator.write(0);
   }
 }
