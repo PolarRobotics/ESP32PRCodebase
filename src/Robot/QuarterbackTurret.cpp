@@ -107,6 +107,23 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed) {
   setFlywheelSpeedStage(static_cast<FlywheelSpeed>(idx));
 }
 
+void QuarterbackTurret::switchMode(TurretMode mode) {
+  // todo
+}
+
+void QuarterbackTurret::switchTarget(TargetReceiver target) {
+  // todo
+}
+
+void QuarterbackTurret::loadFromCenter() {
+  // todo
+}
+
+void QuarterbackTurret::handoff() {
+  // todo
+}
+
+
 void QuarterbackTurret::setEnabled(bool enabled) {
   this->enabled = enabled;
 }
