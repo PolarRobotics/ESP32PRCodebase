@@ -17,6 +17,9 @@ private:
   // Servo:
   MotorInterface Motor;
 
+  // write()
+  float pct;
+
   // for ramp
   float requestedRPM;     
   float lastRampTime;
@@ -67,7 +70,7 @@ public:
   uint8_t setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
 
   //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
-  void write(float pct);
+  void write(int rpm);
   
   void stop();
   void setTargetSpeed(int target_rpm);
