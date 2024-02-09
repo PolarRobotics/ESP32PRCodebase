@@ -45,7 +45,7 @@ MotorControl::MotorControl() {
   requestedRPM = 0;
   lastRampTime = millis();
 
-  CL_enable = false;
+  CL_enable = true;
   k_p = 2;
   k_i = 0.15;
   //k_i = 0.05;
@@ -89,7 +89,14 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float
  * @brief write, wrapper function for MotorInterface, to be removed in future
  * !TODO: remove in future
 */
-void MotorControl::write(float pct) {
+void MotorControl::write(int rpm) {
+
+  // curve fit for only big ampflow
+  if (rpm < 0)
+     pct = copysign(.0012f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.7895f), rpm);
+
+  pct = copysign(.0087f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.5616f), rpm);
+
   Motor.write(pct);
 }
 
@@ -165,7 +172,7 @@ void MotorControl::setTargetSpeed(int target_rpm) {
   else 
     set_speed = ramped_speed;
 
-  this->write(RPM2Percent(set_speed)); //convert speed to the coresponding motor power and write to the motor 
+  this->write(set_speed); //convert speed to the coresponding motor power and write to the motor 
 
 }
 
@@ -215,7 +222,7 @@ void MotorControl::integrateReset() {
 */
 int MotorControl::PILoop(int target_speed) {
   
-  deadZone = 0.1; // for 10% motor power, the power level at witch the motor no longer turns
+  deadZone = 0.003; // for 10% motor power, the power level at witch the motor no longer turns //! move to befor ramp
 
   if (abs(target_speed) <= Percent2RPM(deadZone)) { // the motor wants to stop, skip and reset the PI loop  
     adjusted_speed = 0;
