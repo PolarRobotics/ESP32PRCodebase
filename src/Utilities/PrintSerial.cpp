@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include "PrintSerial.h"
 
-
+PrintSerial::PrintSerial() {
+}
 PrintSerial& PrintSerial::getInstance()
     {
         // If the instance doesn't exist, create it
@@ -64,7 +65,7 @@ void PrintSerial::printDebugInfo() {
  * @author Corbin Hibler
  * Updated: 2024-02-12
 */
-void PrintSerial::printCsvInfo(float value1, float value2, float value3, float value4, float value5) {
+void PrintSerial::printCsvInfo(const std::vector<float>& values) {
     Serial.print(header1); // name of value to be used as header
     Serial.print(value1);  // variable you want to track
     Serial.print(header2); 

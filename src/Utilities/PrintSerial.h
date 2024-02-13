@@ -6,6 +6,7 @@
 #define GET_VARIABLE_NAME(Variable) (#Variable)
 
 #include <PolarRobotics.h>
+#include <vector>
 
 /**
  * @author Corbin Hibler
@@ -30,7 +31,7 @@ class PrintSerial {
         static PrintSerial* instance;
     public:
         static PrintSerial& getInstance();
-        void printCsvInfo(float value1, float value2, float value3, float value4, float value5);
+        void printCsvInfo(const std::vector<float>& values);
         void printDebugInfo();
 };
 
