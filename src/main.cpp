@@ -14,6 +14,7 @@
 #include <PolarRobotics.h>
 #include <Pairing/pairing.h>
 #include <Utilities/ConfigManager.h>
+#include <Utilities/PrintSerial.h>
 
 // Robot Includes
 #include <Robot/Lights.h>
@@ -33,6 +34,7 @@
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
 Lights& lights = Lights::getInstance();
+PrintSerial& printserial = PrintSerial::getInstance();
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -200,7 +202,7 @@ void loop() {
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+    printserial->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();
