@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include <vector>
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
@@ -201,8 +202,11 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-    printserial.printCsvInfo((float)1.0); // prints info to serial monitor in a csv (comma separated value) format
+
+    // Data Acquisition
+    std::vector<float> serialValues = {1.0, 2.0, 3.0, 4.0, 5.0}; // include your values that you want to monitor in serial
+    // printserial.printDebugInfo(serialValues); // prints info to serial monitor in a clean format (not usable by scripts)
+    printserial.printCsvInfo(serialValues); // prints info to serial monitor in a csv (comma separated value) format
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();
