@@ -2,6 +2,11 @@
 #include "PrintSerial.h"
 
 PrintSerial::PrintSerial() {
+    HEADER1 = "HEADER1,";
+    HEADER2 = ",HEADER2,";
+    HEADER3 = ",HEADER3,";
+    HEADER4 = ",HEADER4,";
+    HEADER5 = ",HEADER5,";
 }
 
 /**
@@ -60,14 +65,14 @@ void PrintSerial::printDebugInfo() {
  * Updated: 2024-02-12
 */
 void PrintSerial::printCsvInfo(const std::vector<float>& values) {
-    Serial.print(header1); // name of value to be used as header
+    Serial.print(HEADER1); // name of value to be used as header
     Serial.print(values[0]);  // variable you want to track
-    Serial.print(header2); 
+    Serial.print(HEADER2); 
     Serial.print(values[1]);
-    Serial.print(header3);
+    Serial.print(HEADER3);
     Serial.print(values[2]);
-    Serial.print(header4);
+    Serial.print(HEADER4);
     Serial.print(values[3]);
-    Serial.print(header5);
+    Serial.print(HEADER5);
     Serial.println(values[4]); // last line is -ALWAYS- println or else the python script will break
 }

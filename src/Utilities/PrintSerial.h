@@ -21,11 +21,11 @@ class PrintSerial {
         float value3;
         float value4;
         float value5;
-        char* header1;
-        char* header2;
-        char* header3;
-        char* header4;
-        char* header5; 
+        const char* HEADER1;
+        const char* HEADER2;
+        const char* HEADER3;
+        const char* HEADER4;
+        const char* HEADER5; 
     public:
         static PrintSerial& getInstance() {
             static PrintSerial instance;
