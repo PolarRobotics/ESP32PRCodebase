@@ -217,6 +217,8 @@ void loop() {
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
       lights.setLEDStatus(Lights::UNPAIRED);
+    } else {
+      ((QuarterbackTurret*) robot)->emergencyStop();
     }
   }
 }
@@ -225,12 +227,18 @@ void loop() {
  * @brief onConnection: Function to be called on controller connect
  */
 void onConnection() {
-  if(ps5.isConnected()) {
+  if (ps5.isConnected()) {
     Serial.println(F("Controller Connected."));
     // ps5.setLed(0, 255, 0);   // set LED green
     lights.setLEDStatus(Lights::PAIRED);
   }
-  drive->emergencyStop();
+
+  // TODO: perm sln
+  if (robotType != quarterback_turret) {
+    drive->emergencyStop();
+  } else {
+    ((QuarterbackTurret*) robot)->emergencyStop();
+  }
 }
 
 /**
@@ -239,5 +247,11 @@ void onConnection() {
  */
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
-    drive->emergencyStop();
+
+    // TODO: perm sln
+    if (robotType != quarterback_turret) {
+      drive->emergencyStop();
+    } else {
+      ((QuarterbackTurret*) robot)->emergencyStop();
+    }
 }
