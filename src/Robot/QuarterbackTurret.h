@@ -38,15 +38,18 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 class QuarterbackTurret : public Robot {
   private: 
     // motor pins
-    uint8_t assemblyPin; // not sure if this is needed
+    uint8_t assemblyPin;
     uint8_t cradlePin;
-    uint8_t flywheelPin;
     uint8_t turretPin;
+    uint8_t flywheelLeftPin;
+    uint8_t flywheelRightPin;
+    
 
     // motor instances
     MotorControl cradleActuator;
-    MotorControl flywheelMotor;
     MotorControl turretMotor;
+    MotorControl flywheelLeftMotor;
+    MotorControl flywheelRightMotor;
 
     // joystick inputs
     float stickTurret;   // used to normalize stick input from [0, 255] to [-1.0, 1.0]
@@ -90,9 +93,10 @@ class QuarterbackTurret : public Robot {
   public:
     QuarterbackTurret(
       uint8_t assemblyPin,
-      uint8_t flywheelPin,
+      uint8_t cradlePin,
       uint8_t turretPin,
-      uint8_t cradlePin
+      uint8_t flywheelLeftPin,
+      uint8_t flywheelRightPin
     );
 
     void action() override; //! robot subclass must override action

@@ -110,7 +110,7 @@ void setup() {
       drive->setServos(M1_PIN, M2_PIN);
       break;
     case quarterback_turret:
-      robot = new QuarterbackTurret(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4);
+      robot = new QuarterbackTurret(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, M1_PIN, M2_PIN);
       break;
     case quarterback_base:
     case receiver:

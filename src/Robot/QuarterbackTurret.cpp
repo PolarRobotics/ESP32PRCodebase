@@ -2,9 +2,10 @@
 
 QuarterbackTurret::QuarterbackTurret(
   uint8_t assemblyPin,
-  uint8_t flywheelPin,
+  uint8_t cradlePin,
   uint8_t turretPin,
-  uint8_t cradlePin
+  uint8_t flywheelLeftPin,
+  uint8_t flywheelRightPin
 ) {
   
   // set all state variables to default values,
@@ -38,6 +39,12 @@ QuarterbackTurret::QuarterbackTurret(
   this->stickFlywheel = 0;
   this->stickTurret = 0;
 
+  // initiate motor objects
+  // TODO: initiate assembly/tilter stepper motor with lib
+  cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
+  turretMotor.setup(turretPin, falcon); // TODO: add encoder
+  flywheelLeftMotor.setup(flywheelLeftPin, falcon);
+  flywheelRightMotor.setup(flywheelRightPin, falcon);
 }
 
 void QuarterbackTurret::action() {
@@ -171,10 +178,12 @@ void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
   // Update the motors if they are spinning for the new speed
   if (enabled) {
     targetFlywheelSpeed = constrain(absoluteSpeed, -1.0, 1.0);
-    flywheelMotor.write(targetFlywheelSpeed);
+    flywheelLeftMotor.write(targetFlywheelSpeed);
+    flywheelRightMotor.write(-targetFlywheelSpeed);
     currentFlywheelSpeed = targetFlywheelSpeed; //! for now, will probably need to change later, like an interrupt
   } else {
-    flywheelMotor.write(0);
+    flywheelLeftMotor.write(0);
+    flywheelRightMotor.write(0);
   }
 }
 
