@@ -16,7 +16,6 @@
 class PrintSerial {
     private:
         PrintSerial();
-        ~PrintSerial();
         float value1;
         float value2;
         float value3;
@@ -27,10 +26,13 @@ class PrintSerial {
         char* header3;
         char* header4;
         char* header5; 
-    protected:
-        static PrintSerial* instance;
     public:
-        static PrintSerial& getInstance();
+        static PrintSerial& getInstance() {
+            static PrintSerial instance;
+            return instance;
+        }
+        PrintSerial(const PrintSerial& obj) = delete; // delete copy constructor
+        void operator=(PrintSerial const&)  = delete; // delete set operator
         void printCsvInfo(const std::vector<float>& values);
         void printDebugInfo();
 };

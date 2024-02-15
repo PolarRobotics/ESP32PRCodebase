@@ -128,7 +128,7 @@ void setup() {
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
-
+  
   // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
   

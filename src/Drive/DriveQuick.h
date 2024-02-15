@@ -14,7 +14,6 @@ class DriveQuick : public Drive {
     DriveQuick(drive_param_t driveParams); // This is the prototype, see DriveQuick.cpp for implementation
     // void generateMotionValues();
     void update() override;
-    void printDebugInfo() override;
 };
 
 #endif // DRIVE_QUICK_H

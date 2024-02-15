@@ -3,14 +3,7 @@
 
 PrintSerial::PrintSerial() {
 }
-PrintSerial& PrintSerial::getInstance()
-    {
-        // If the instance doesn't exist, create it
-        if (!instance) {
-            instance = new PrintSerial();
-        }
-        return *instance;
-    }
+
 /**
  * @brief prints the internal variables to the serial monitor in a clean and easy to read format
  * @author Everybody
@@ -62,18 +55,19 @@ void PrintSerial::printDebugInfo() {
  * This function is important for data acquisition
  * The options below are configurable, change them as you need
  * Remember to adhere to printing guidelines under PR-Docs
+ * @param values A vector of float values that will be sent to serial monitor 
  * @author Corbin Hibler
  * Updated: 2024-02-12
 */
 void PrintSerial::printCsvInfo(const std::vector<float>& values) {
     Serial.print(header1); // name of value to be used as header
-    Serial.print(value1);  // variable you want to track
+    Serial.print(values[0]);  // variable you want to track
     Serial.print(header2); 
-    Serial.print(value2);
+    Serial.print(values[1]);
     Serial.print(header3);
-    Serial.print(value3);
+    Serial.print(values[2]);
     Serial.print(header4);
-    Serial.print(value4);
+    Serial.print(values[3]);
     Serial.print(header5);
-    Serial.println(value5); // last line is -ALWAYS- println or else the python script will break
+    Serial.println(values[4]); // last line is -ALWAYS- println or else the python script will break
 }
