@@ -128,6 +128,8 @@ void QuarterbackTurret::action() {
       }
     }
   }
+
+  printDebug();
 }
 
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
@@ -250,4 +252,8 @@ void QuarterbackTurret::reset() {
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_inwards);
   zeroTurret();
+}
+
+void QuarterbackTurret::printDebug() {
+  // Serial.print(F())
 }

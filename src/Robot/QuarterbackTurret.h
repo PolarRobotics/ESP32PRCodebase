@@ -134,6 +134,7 @@ class QuarterbackTurret : public Robot {
     void zeroTurret(); // calibrates turret/moves turret to home/zero (cnc/3d printer style)
     void reset(); // zero turret, aim down (straight), and set flywheels to slow intake
     
+    void printDebug();
 };
 
 #endif // QUARTERBACK_TURRET_H
