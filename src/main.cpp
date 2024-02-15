@@ -23,6 +23,7 @@
 #include <Robot/MecanumCenter.h>
 #include <Robot/Kicker.h>
 #include <Robot/Quarterback.h>
+#include <Robot/QuarterbackTurret.h>
 
 // Drive Includes
 #include <Drive/Drive.h>
@@ -95,7 +96,6 @@ void setup() {
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
-      //! TODO: compensate for MecanumCenter.setup()
       drive = new DriveMecanum();
       ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
@@ -109,6 +109,10 @@ void setup() {
       drive = new DriveQuick(driveParams);
       drive->setServos(M1_PIN, M2_PIN);
       break;
+    case quarterback_turret:
+      robot = new QuarterbackTurret(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4);
+      break;
+    case quarterback_base:
     case receiver:
     case lineman:
     default: // Assume lineman
@@ -152,64 +156,68 @@ void loop() {
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
+    
+    //* QBv3 Turret doesn't have drive, so this is a temporary measure to avoid NPEs and chaos
+    // TODO: find better solution
+    if (robotType != quarterback_turret) {
 
-    if (robotType == mecanum_center) {
-      ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-    } else {
-      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-    }
-
-    // determine BSN percentage (boost, slow, or normal)
-    if (ps5.Touchpad()){
-      drive->emergencyStop();
-      drive->setBSN(Drive::BRAKE);
-    } else if (ps5.R1()) {
-      drive->setBSN(Drive::BOOST);
-      // ps5.setLed(0, 255, 0);   // set LED red
-    } else if (ps5.L1()) {
-      drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && motorType == falcon) {
-      // used to calibrate the max pwm signal for the falcon 500 motors
-      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
-    } else {
-      drive->setBSN(Drive::NORMAL);
-    }
-
-    if (ps5.Share()) {
-      lights.setLEDStatus(Lights::DISCO);
-    }
-
-    // Manual LED State Toggle (Defense/Offense)
-    if (ps5.Options()) {
-      lights.togglePosition();
-    }
-
-    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
-      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-        lights.setLEDStatus(Lights::TACKLED);
-        lights.tackleTime = millis();
-      } 
-      // debounce the tackle sensor input
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
-          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
-        lights.setLEDStatus(Lights::OFFENSE);
+      if (robotType == mecanum_center) {
+        ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
+      } else {
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
       }
+
+      // determine BSN percentage (boost, slow, or normal)
+      if (ps5.Touchpad()){
+        drive->emergencyStop();
+        drive->setBSN(Drive::BRAKE);
+      } else if (ps5.R1()) {
+        drive->setBSN(Drive::BOOST);
+        // ps5.setLed(0, 255, 0);   // set LED red
+      } else if (ps5.L1()) {
+        drive->setBSN(Drive::SLOW);
+      } else if (ps5.R2() && motorType == falcon) {
+        // used to calibrate the max pwm signal for the falcon 500 motors
+        drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
+      } else {
+        drive->setBSN(Drive::NORMAL);
+      }
+
+      if (ps5.Share()) {
+        lights.setLEDStatus(Lights::DISCO);
+      }
+
+      // Manual LED State Toggle (Defense/Offense)
+      if (ps5.Options()) {
+        lights.togglePosition();
+      }
+
+      if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
+        if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+          lights.setLEDStatus(Lights::TACKLED);
+          lights.tackleTime = millis();
+        } 
+        // debounce the tackle sensor input
+        else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+            lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
+          lights.setLEDStatus(Lights::OFFENSE);
+        }
+      }
+
+      if (lights.returnStatus() == lights.DISCO)
+        lights.updateLEDS();
+
     }
 
-    //* Update the motors based on the inputs from the controller
-    //* Can change functionality depending on subclass, like robot.action()
-    drive->update();
-    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-
-    if (lights.returnStatus() == lights.DISCO)
-      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       
   } else { // no response from PS5 controller within last 300 ms, so stop
+    if (robotType != quarterback_turret) {
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
       lights.setLEDStatus(Lights::UNPAIRED);
+    }
   }
 }
 

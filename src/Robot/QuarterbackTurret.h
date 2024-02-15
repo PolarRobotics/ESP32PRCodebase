@@ -48,8 +48,14 @@ class QuarterbackTurret : public Robot {
     MotorControl flywheelMotor;
     MotorControl turretMotor;
 
+    // joystick inputs
+    float stickTurret;   // used to normalize stick input from [0, 255] to [-1.0, 1.0]
+    float stickFlywheel; // same as above
+
     // state
-    bool enabled = false; // default false, set to true upon homing/reset
+    bool enabled = false; // default false, set to true upon homing/reset, but toggleable via function
+    bool initialized = false; // default false, set to true upon homing/reset. once true, stays true
+                              // determines whether or not to initiate entire startup/reset routine or just zero the turret
 
     // assembly
     AssemblyAngle currentAssemblyAngle; // initial state unknown, will reset to straight
@@ -83,6 +89,7 @@ class QuarterbackTurret : public Robot {
     
   public:
     QuarterbackTurret(
+      uint8_t assemblyPin,
       uint8_t flywheelPin,
       uint8_t turretPin,
       uint8_t cradlePin
@@ -110,6 +117,7 @@ class QuarterbackTurret : public Robot {
 
     //* derived functions (automatic targeting)
     void switchMode(TurretMode mode); // switch between manual and automatic targeting
+    void switchMode(); // same as above but toggles automatically instead of explicitly
     void switchTarget(TargetReceiver target); // switch between targeted receivers. switches to automatic targeting if not already set.
 
     //* derived functions (manual macros)

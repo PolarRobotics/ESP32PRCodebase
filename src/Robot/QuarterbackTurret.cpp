@@ -1,6 +1,7 @@
 #include "QuarterbackTurret.h"
 
 QuarterbackTurret::QuarterbackTurret(
+  uint8_t assemblyPin,
   uint8_t flywheelPin,
   uint8_t turretPin,
   uint8_t cradlePin
@@ -11,6 +12,7 @@ QuarterbackTurret::QuarterbackTurret(
   // the positions of these mechanisms are initially unknown and assigned upon reset/homing
 
   this->enabled = false; // initially disable robot for safety
+  this->initialized = false;
   this->targetAssemblyAngle = straight; // while the initial state is unknown, we want it to be straight
   this->assemblyMoving = false; // it is safe to assume the assembly is not moving
 
@@ -33,10 +35,92 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->targetTurretHeading = 0; // while the initial heading is unknown, we want the heading to be zero
 
+  this->stickFlywheel = 0;
+  this->stickTurret = 0;
+
 }
 
 void QuarterbackTurret::action() {
-  // todo
+  //! Control Schema
+  //* Touchpad: Emergency Stop
+  if (ps5.Touchpad()) {
+    emergencyStop();
+  }
+  //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
+  else if (ps5.Square()) {
+    if (!enabled) {
+      setEnabled(true);
+    } else {
+      setEnabled(false);
+    }
+  }
+  //* Circle: Startup and Home (Reset or Zero Turret)
+  else if (ps5.Circle()) {
+    // TODO: add a hold condition to this (hold for 1 sec to reset or something)
+    if (!initialized) {
+      reset();
+    } else {
+      zeroTurret();
+    }
+  }
+  //* Triangle: Macro 1 - load from center
+  else if (ps5.Triangle()) {
+    loadFromCenter();
+  }
+  //* Cross: Macro 2 - handoff to runningback
+  else if (ps5.Cross()) {
+    handoff();
+  } 
+  //* Manual and Automatic Controls
+  else {
+    //* Right Trigger (R2): Fire (cradle/grabber forward)
+    if (ps5.R2()) {
+      moveCradle(forward);
+    } else {
+      moveCradle(back);
+    }
+
+    //* Options (Button): Switch Mode (toggle between auto/manual targeting)
+    if (ps5.Options()) {
+      switchMode();
+    }
+    //* Left Button (L1): Switch Target to Receiver 1
+    else if (ps5.L1()) {
+      switchTarget(receiver_1);
+    }
+    //* Right Button (R1): Switch Target to Receiver 2
+    else if (ps5.R1()) {
+      switchTarget(receiver_2);
+    }
+    //* Manual Controls
+    else {
+      stickFlywheel = (ps5.LStickY() / 127.5f);
+      stickTurret = (ps5.RStickX() / 127.5f);  
+
+      // TODO: Implement proper heading-based turret control
+      //* Right Stick X: Turret Control
+      // Left = CCW, Right = CW
+      if (fabs(stickTurret) < STICK_DEADZONE) {
+        setTurretSpeed(stickTurret);
+      } else {
+        setTurretSpeed(0);
+      }
+
+      //* Left Stick Y: Flywheel Override
+      if (fabs(stickFlywheel) < STICK_DEADZONE) {
+        setFlywheelSpeed(stickFlywheel);
+      } else {
+        //* D-Pad Up: Increase flywheel speed by one stage
+        if (ps5.Up()) {
+          adjustFlywheelSpeedStage(INCREASE);
+        } 
+        //* D-Pad Down: Decrease flywheel speed by one stage
+        else if (ps5.Down()) {
+          adjustFlywheelSpeedStage(DECREASE);
+        }
+      }
+    }
+  }
 }
 
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
@@ -111,8 +195,16 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed) {
   setFlywheelSpeedStage(static_cast<FlywheelSpeed>(idx));
 }
 
+void QuarterbackTurret::switchMode() {
+  if (mode == manual) {
+    switchMode(automatic);
+  } else if (mode == automatic) {
+    switchMode(manual);
+  }
+}
+
 void QuarterbackTurret::switchMode(TurretMode mode) {
-  // todo
+  this->mode = mode;
 }
 
 void QuarterbackTurret::switchTarget(TargetReceiver target) {
