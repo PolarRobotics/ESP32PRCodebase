@@ -231,7 +231,7 @@ void Drive::generateMotionValues(float tankModePct) {
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
             requestedMotorPower[0] = BSNscalar * abs(stickTurn)  * tankModePct;
             requestedMotorPower[1] = -BSNscalar * abs(stickTurn) * tankModePct;
-        } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward muchso use tank mode
+        } else if (stickTurn < -STICK_DEADZONE) { // turning left, but not moving forward much so use tank mode
             requestedMotorPower[0] = -BSNscalar * abs(stickTurn) * tankModePct;
             requestedMotorPower[1] = BSNscalar * abs(stickTurn)  * tankModePct;
         } // no general else since encountered infinite loop
