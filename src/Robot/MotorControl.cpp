@@ -118,7 +118,7 @@ void MotorControl::stop() {
 */
 void MotorControl::setTargetSpeed(int target_rpm) {
  //Serial.println("here");
-  ramped_speed = ramp(target_rpm, 5.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+  ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
   // if there are working encoders its safe to use the PL loop, 
   // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
@@ -225,7 +225,8 @@ float MotorControl::RPM2Percent(int rpm) {
  * @return int
  */
 int MotorControl::ramp(int requestedPower,  float accelRate) {
-    timeElapsed = millis() - lastRampTime;
+    timeElapsed = (millis() - lastRampTime)*.001;
+    int abs_requestedPower = abs(requestedPower);
     // Serial.print("  time elapsed: ");
     // Serial.print(timeElapsed);
 
@@ -241,19 +242,19 @@ int MotorControl::ramp(int requestedPower,  float accelRate) {
     // Serial.print("\n");
 
     lastRampTime = millis();
-    if (requestedPower > requestedRPM) // need to speed up
+    if (abs_requestedPower > requestedRPM) // need to speed up
     {
         requestedRPM = requestedRPM + accelRate * timeElapsed;
-        if (requestedRPM > requestedPower) 
-            requestedRPM = requestedPower; // to prevent you from speeding up past the requested speed
+        if (requestedRPM > abs_requestedPower) 
+            requestedRPM = abs_requestedPower; // to prevent you from speeding up past the requested speed
     }
     else // need to slow down
     {
-        requestedRPM = requestedRPM - accelRate * timeElapsed; 
-        if (requestedRPM < requestedPower) 
-            requestedRPM = requestedPower; // to prevent you from slowing down below the requested speed
+        requestedRPM = requestedRPM - accelRate * timeElapsed *2; 
+        if (requestedRPM < abs_requestedPower) 
+            requestedRPM = abs_requestedPower; // to prevent you from slowing down below the requested speed
     }
     
-    return requestedRPM;
+    return copysign(requestedRPM, requestedPower);
 
 }
