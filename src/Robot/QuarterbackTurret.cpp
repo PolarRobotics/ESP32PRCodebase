@@ -107,7 +107,7 @@ void QuarterbackTurret::action() {
       // TODO: Implement proper heading-based turret control
       //* Right Stick X: Turret Control
       // Left = CCW, Right = CW
-      if (fabs(stickTurret) < STICK_DEADZONE) {
+      if (fabs(stickTurret) > STICK_DEADZONE) {
         setTurretSpeed(stickTurret);
       } else {
         setTurretSpeed(0);
@@ -129,7 +129,7 @@ void QuarterbackTurret::action() {
     }
   }
 
-  printDebug();
+  // printDebug();
 }
 
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
@@ -255,5 +255,12 @@ void QuarterbackTurret::reset() {
 }
 
 void QuarterbackTurret::printDebug() {
-  // Serial.print(F())
+  Serial.print(F("enabled: "));
+  Serial.print(enabled);
+  Serial.print(F(" | stickTurret: "));
+  Serial.print(stickTurret);
+  Serial.print(F(" | stickFlywheel: "));
+  Serial.print(stickFlywheel);
+  Serial.print(" | currentTurretSpeed: ");
+  Serial.println(currentTurretSpeed);
 }
