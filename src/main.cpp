@@ -29,6 +29,14 @@
 #include <Drive/DriveMecanum.h>
 #include <Drive/DriveQuick.h>
 
+// Gyro Includes
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+// Gyroscope
+Adafruit_MPU6050 mpu;
+
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
@@ -260,6 +268,20 @@ void setup() {
 
   attachInterrupt(a_channelR, encoderR, RISING);
 
+  // Gyro paired?
+    if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
+  Serial.print("Gyro range set to: " + String(mpu.getGyroRange()));
+    
+  mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
+  Serial.print("Filter bandwidth set to: " + String(mpu.getFilterBandwidth()));
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -284,7 +306,13 @@ void loop() {
   // Added
   speedR = calcSpeedR(encoderRCount);
 
-  
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.println(" rad/s");
+
   //drive->update(speed);
 
   delay(5);
