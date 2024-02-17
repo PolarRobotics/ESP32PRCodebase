@@ -38,36 +38,42 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 class QuarterbackTurret : public Robot {
   private: 
 
-    // motor instances
+    //* motor instances
     MotorControl cradleActuator;
     MotorControl turretMotor;
     MotorControl flywheelLeftMotor;
     MotorControl flywheelRightMotor;
 
-    // joystick inputs
+    //* joystick inputs
     float stickTurret;   // used to normalize stick input from [0, 255] to [-1.0, 1.0]
     float stickFlywheel; // same as above
-
-    // state
-    bool enabled = false; // default false, set to true upon homing/reset, but toggleable via function
-    bool initialized = false; // default false, set to true upon homing/reset. once true, stays true
-                              // determines whether or not to initiate entire startup/reset routine or just zero the turret
-
-    // assembly
-    AssemblyAngle currentAssemblyAngle; // initial state unknown, will reset to straight
-    AssemblyAngle targetAssemblyAngle; // default straight
-    bool assemblyMoving; // default false
-
-    // cradle
-    CradleState currentCradleState; // initial state unknown, will reset to back
-    CradleState targetCradleState; // default back
-    bool cradleMoving; // default false
 
     // mode
     TurretMode mode; // default manual
     TargetReceiver target; // default receiver_1
 
-    // flywheel
+    //* state
+    // default false, set to true upon homing/reset, but toggleable via function
+    bool enabled; 
+
+    // default false, set to true upon homing/reset. once true, stays true
+    // determines whether or not to initiate entire startup/reset routine or just zero the turret
+    bool initialized; 
+
+    // default false, set to true while a macro (loadFromCenter or handoff) is running
+    bool runningMacro;
+
+    //* assembly
+    AssemblyAngle currentAssemblyAngle; // initial state unknown, will reset to straight
+    AssemblyAngle targetAssemblyAngle; // default straight
+    bool assemblyMoving; // default false
+
+    //* cradle
+    CradleState currentCradleState; // initial state unknown, will reset to back
+    CradleState targetCradleState; // default back
+    bool cradleMoving; // default false
+
+    //* flywheel
     FlywheelSpeed currentFlywheelStage; // default stopped
     FlywheelSpeed targetFlywheelStage;  // default stopped
 
@@ -76,7 +82,7 @@ class QuarterbackTurret : public Robot {
 
     bool flywheelManualOverride; // default false, true when stick controlling flywheel
 
-    // turret
+    //* turret
     float currentTurretSpeed; // default 0
     float targetTurretSpeed;  // default 0
 
