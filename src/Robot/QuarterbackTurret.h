@@ -97,7 +97,7 @@ class QuarterbackTurret : public Robot {
       uint8_t flywheelRightPin,
       uint8_t turretEncoderPinA,
       uint8_t turretEncoderPinB,
-      uint8_t turretZeroSensorPin
+      uint8_t turretLaserPin
     );
 
     void action() override; //! robot subclass must override action

@@ -8,7 +8,7 @@ QuarterbackTurret::QuarterbackTurret(
   uint8_t flywheelRightPin,
   uint8_t turretEncoderPinA,
   uint8_t turretEncoderPinB,
-  uint8_t turretZeroSensorPin
+  uint8_t turretLaserPin
 ) {
   
   // set all state variables to default values,
@@ -158,7 +158,7 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
 void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
   // todo
   if (relativeToRobot) {
-
+    // todo: use encoder + laser to determine position
   } else { // relative to field
     // todo: use magnetometer
   }
