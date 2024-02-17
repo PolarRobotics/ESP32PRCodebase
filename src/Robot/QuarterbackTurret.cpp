@@ -65,6 +65,7 @@ void QuarterbackTurret::action() {
       setEnabled(false);
     }
   }
+  //! Ignore non-emergency inputs if running a macro
   else if (!runningMacro) {
     //* Circle: Startup and Home (Reset or Zero Turret)
     if (ps5.Circle()) {
@@ -177,7 +178,6 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
 }
 
 void QuarterbackTurret::moveCradle(CradleState state) {
-  // todo
   if (enabled) {
     targetCradleState = state;
     if (targetCradleState != currentCradleState) {
@@ -251,19 +251,22 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 }
 
 void QuarterbackTurret::loadFromCenter() {
+  this->runningMacro = true;
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_inwards);
   moveCradle(back);
   zeroTurret();
+  this->runningMacro = false;
 }
 
 void QuarterbackTurret::handoff() {
+  this->runningMacro = true;
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_outwards);
   //TODO: Rotate 180
   moveCradle(forward);
+  this->runningMacro = false;
 }
-
 
 void QuarterbackTurret::setEnabled(bool enabled) {
   this->enabled = enabled;
@@ -276,12 +279,16 @@ void QuarterbackTurret::emergencyStop() {
 }
 
 void QuarterbackTurret::zeroTurret() {
-  //TODO actually home to zero
+  this->runningMacro = true;
+  // TODO: actually home to zero
+  this->runningMacro = false;
 }
 
 void QuarterbackTurret::reset() {
   this->enabled = true;
+  this->runningMacro = true;
   loadFromCenter();
+  this->runningMacro = false;
 }
 
 void QuarterbackTurret::printDebug() {
