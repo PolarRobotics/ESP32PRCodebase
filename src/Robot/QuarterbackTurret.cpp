@@ -251,11 +251,17 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 }
 
 void QuarterbackTurret::loadFromCenter() {
-  // todo
+  aimAssembly(straight);
+  setFlywheelSpeedStage(slow_inwards);
+  moveCradle(back);
+  zeroTurret();
 }
 
 void QuarterbackTurret::handoff() {
-  // todo
+  aimAssembly(straight);
+  setFlywheelSpeedStage(slow_outwards);
+  //TODO: Rotate 180
+  moveCradle(forward);
 }
 
 
@@ -275,9 +281,7 @@ void QuarterbackTurret::zeroTurret() {
 
 void QuarterbackTurret::reset() {
   this->enabled = true;
-  aimAssembly(straight);
-  setFlywheelSpeedStage(slow_inwards);
-  zeroTurret();
+  loadFromCenter();
 }
 
 void QuarterbackTurret::printDebug() {
