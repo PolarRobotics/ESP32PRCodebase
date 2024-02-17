@@ -85,6 +85,15 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     lastTime = 0;
   } 
 
+  CL_enable = false;
+  k_p = 40;
+  k_i = 1.5;
+  //k_i = 0.05;
+
+  integral_sum = 0;
+  prev_current_error = 0;
+  prev_integral_time = 0;
+
 }
 
 void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
@@ -464,7 +473,55 @@ void Drive::update(int speed) {
     // M2.write(requestedMotorPower[1]);
 }
 
+void Drive::setCurrentAngelSpeed(float speed) {
+  currentAngleSpeed = speed;
+}
 
+/**
+ * @brief NEEDS SPELLCHECK integrate uses trapizodial intgration to calculate the running integral sum for the PI controller
+ * 
+*/
+int Drive::integrate(int current_error) {
+
+  integral_sum = integral_sum + (current_error + prev_current_error); //*(millis()-prev_integral_time)/100;
+  prev_integral_time = millis();
+  prev_current_error = current_error;
+  
+  return integral_sum; 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrateReset resets the varibles in integral
+ * 
+*/
+void Drive::integrateReset() {
+  integral_sum = 0;
+  prev_current_error = 0;
+  prev_integral_time = millis();
+}
+
+/**
+ * @brief NEEDS SPELLCHECK PILoop is the closed loop controller. this is the main function for CL  
+ * @author Grant Brautigam
+ * Updated 11-19-2023
+ * 
+*/
+int Drive::PILoop() {  
+
+  if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) {// the motor wants to stop, skip and reset the PI loop  
+    
+    motorDiffCorrection = k_p*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
+    
+  } else {
+
+    motorDiffCorrection = 0;
+    integrateReset();
+
+  }
+
+  return motorDiffCorrection; 
+
+}
 
 void Drive::update2(int speedL, int speedR) {
 
@@ -472,17 +529,25 @@ void Drive::update2(int speedL, int speedR) {
 
     M1.setCurrentSpeed(speedL);
     M2.setCurrentSpeed(speedR);
+
+    if (CL_enable) {
+        motorDiff = PILoop()*.5;
+        Serial.print(motorDiff);
+        Serial.print("  ");
+    } else {
+        motorDiff = 0;
+    }
     //M1.write(-.3);
     //M1.setTargetSpeed(-900);
-    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
-    M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
+    M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
 
     if ((millis() - lastTime) >= 100) {
         power = power - 0.05;
         //power = M1.RPM2Percent(speed);
         lastTime = millis();
     }
-    // 2 target and 2 actual and millis
+    //2 target and 2 actual and millis
     Serial.print("millis,");
     Serial.print(millis());
     Serial.print(",left encoder target speed,");
@@ -493,4 +558,6 @@ void Drive::update2(int speedL, int speedR) {
     Serial.print(M2.Percent2RPM(requestedMotorPower[1]));
     Serial.print(",right encoder actual speed,");
     Serial.println(speedR);
+
+    
 }

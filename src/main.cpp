@@ -309,15 +309,17 @@ void loop() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  Serial.print("Rotation X: ");
-  Serial.print(g.gyro.x);
-  Serial.println(" rad/s");
+  // Serial.print("Rotation X: ");
+  // Serial.print(g.gyro.x);
+  // Serial.println(" rad/s");
+
+  drive->setCurrentAngelSpeed(g.gyro.x);
 
   //drive->update(speed);
 
   delay(5);
 
-  if (ps5.isConnected()) {
+  if (ps5.isConnected()) { 
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
 
