@@ -70,6 +70,8 @@
 
 #define BRAKE_BUTTON_PCT 0
 
+//#define ERROR_THRESHOLD 0.5f; 
+
 
 class Drive {
   private:
@@ -94,6 +96,28 @@ class Drive {
     float power;
 
     void calcTurning(float stickTrn, float fwdLinPwr);
+
+    //PILoop
+    int motorDiffCorrection;
+    float k_p;
+    float k_i;
+    const float ERROR_THRESHOLD = 0.1;
+    
+
+    //setTargetSpeed
+    int ramped_speed;
+    int set_speed;
+    bool CL_enable;
+
+    //integrate
+    int prev_current_error;
+    int integral_sum;
+    unsigned long prev_integral_time;
+
+    float currentAngleSpeed;
+
+    int motorDiff;
+    
 
   protected:
     // MotorControl* M1;
@@ -148,4 +172,10 @@ class Drive {
     
     // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
     float BIG_SLOW_PCT;
+
+    // Closed Loop related functions
+    int PILoop();
+    void setCurrentAngelSpeed(float angelSpeed);
+    int integrate(int current_error);
+    void integrateReset();
 };
