@@ -37,13 +37,6 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
  */
 class QuarterbackTurret : public Robot {
   private: 
-    // motor pins
-    uint8_t assemblyPin;
-    uint8_t cradlePin;
-    uint8_t turretPin;
-    uint8_t flywheelLeftPin;
-    uint8_t flywheelRightPin;
-    
 
     // motor instances
     MotorControl cradleActuator;
@@ -87,8 +80,13 @@ class QuarterbackTurret : public Robot {
     float currentTurretSpeed; // default 0
     float targetTurretSpeed;  // default 0
 
-    int currentTurretHeading; // default 0
-    int targetTurretHeading;  // default 0
+    // robot-relative headings
+    int currentRelativeHeading; // default 0
+    int targetRelativeHeading;  // default 0
+
+    // world-relative headings
+    int currentAbsoluteHeading; // default 0
+    int targetAbsoluteHeading;  // default 0
     
   public:
     QuarterbackTurret(
@@ -96,33 +94,47 @@ class QuarterbackTurret : public Robot {
       uint8_t cradlePin,
       uint8_t turretPin,
       uint8_t flywheelLeftPin,
-      uint8_t flywheelRightPin
+      uint8_t flywheelRightPin,
+      uint8_t turretEncoderPinA,
+      uint8_t turretEncoderPinB,
+      uint8_t turretZeroSensorPin
     );
 
     void action() override; //! robot subclass must override action
 
     //* base/internal functions
-    void setTurretSpeed(float absoluteSpeed); // moves turret at specified speed (open loop)
+    // moves turret at specified speed (open loop)
+    void setTurretSpeed(float absoluteSpeed); 
 
-    void moveTurret(int heading); // moves turret/turntable to specific heading. currently relative to robot, not field.
-                                  // will not be implemented until MotorControl is stabilized
+    // moves turret/turntable to specific heading. currently relative to robot, not field.
+    // will not be implemented until MotorControl is stabilized
+    void moveTurret(int heading, bool relativeToRobot = false); 
+      
+    // aims the assembly holding the flywheels and cradle (two states).
+    void aimAssembly(AssemblyAngle angle); 
 
-    void aimAssembly(AssemblyAngle angle); // aims the assembly holding the flywheels and cradle (two states).
-
-    void moveCradle(CradleState state); // moves the linear actuator connected to the cradle to one of two states.
+    // moves the linear actuator connected to the cradle to one of two states.
     // used to fire the ball in both manual and automatic modes
+    void moveCradle(CradleState state); 
+    
+    // also accessible via manual stick override
+    void setFlywheelSpeed(double absoluteSpeed); 
 
-    void setFlywheelSpeed(double absoluteSpeed); // also accessible via manual stick override
-
-    void setFlywheelSpeedStage(FlywheelSpeed stage); // directly set flywheel speed to a stage
+    // directly set flywheel speed to a stage
+    void setFlywheelSpeedStage(FlywheelSpeed stage); 
 
     //* derived functions (general)
     void adjustFlywheelSpeedStage(SpeedStatus speed);
 
     //* derived functions (automatic targeting)
-    void switchMode(TurretMode mode); // switch between manual and automatic targeting
-    void switchMode(); // same as above but toggles automatically instead of explicitly
-    void switchTarget(TargetReceiver target); // switch between targeted receivers. switches to automatic targeting if not already set.
+    // switch between manual and automatic targeting
+    void switchMode(TurretMode mode); 
+
+    // same as above but toggles automatically instead of explicitly
+    void switchMode(); 
+
+    // switch between targeted receivers. switches to automatic targeting if not already set.
+    void switchTarget(TargetReceiver target); 
 
     //* derived functions (manual macros)
     void loadFromCenter(); // prepares qb to intake ball from center

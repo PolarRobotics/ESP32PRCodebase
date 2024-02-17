@@ -5,11 +5,14 @@ QuarterbackTurret::QuarterbackTurret(
   uint8_t cradlePin,
   uint8_t turretPin,
   uint8_t flywheelLeftPin,
-  uint8_t flywheelRightPin
+  uint8_t flywheelRightPin,
+  uint8_t turretEncoderPinA,
+  uint8_t turretEncoderPinB,
+  uint8_t turretZeroSensorPin
 ) {
   
   // set all state variables to default values,
-  // except currentAssemblyAngle, currentCradleState, and currentTurretHeading;
+  // except currentAssemblyAngle, currentCradleState, and currentRelativeHeading;
   // the positions of these mechanisms are initially unknown and assigned upon reset/homing
 
   this->enabled = false; // initially disable robot for safety
@@ -34,7 +37,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->currentTurretSpeed = 0; // it is safe to assume the turret is stopped
   this->targetTurretSpeed = 0;
 
-  this->targetTurretHeading = 0; // while the initial heading is unknown, we want the heading to be zero
+  this->targetRelativeHeading = 0; // while the initial heading is unknown, we want the heading to be zero
 
   this->stickFlywheel = 0;
   this->stickTurret = 0;
@@ -99,6 +102,11 @@ void QuarterbackTurret::action() {
     else if (ps5.R1()) {
       switchTarget(receiver_2);
     }
+    //* Auto Mode
+    else if (mode == automatic) {
+      // TODO: Implement auto mode
+      // do something based on current value of 'targetReceiver'
+    }
     //* Manual Controls
     else {
       stickFlywheel = (ps5.LStickY() / 127.5f);
@@ -114,16 +122,21 @@ void QuarterbackTurret::action() {
       }
 
       //* Left Stick Y: Flywheel Override
-      if (fabs(stickFlywheel) < STICK_DEADZONE) {
+      if (fabs(stickFlywheel) > STICK_DEADZONE) {
         setFlywheelSpeed(stickFlywheel);
       } else {
         //* D-Pad Up: Increase flywheel speed by one stage
         if (ps5.Up()) {
+          // todo: debounce
           adjustFlywheelSpeedStage(INCREASE);
         } 
         //* D-Pad Down: Decrease flywheel speed by one stage
         else if (ps5.Down()) {
+          // todo: debounce
           adjustFlywheelSpeedStage(DECREASE);
+        }
+        else {
+          setFlywheelSpeedStage(currentFlywheelStage);
         }
       }
     }
@@ -142,8 +155,13 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
   }
 }
 
-void QuarterbackTurret::moveTurret(int heading) {
+void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
   // todo
+  if (relativeToRobot) {
+
+  } else { // relative to field
+    // todo: use magnetometer
+  }
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
@@ -177,12 +195,15 @@ void QuarterbackTurret::moveCradle(CradleState state) {
 }
 
 void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
-  // Update the motors if they are spinning for the new speed
+  // update the motors so they are spinning at the new speed
   if (enabled) {
-    targetFlywheelSpeed = constrain(absoluteSpeed, -1.0, 1.0);
-    flywheelLeftMotor.write(targetFlywheelSpeed);
-    flywheelRightMotor.write(-targetFlywheelSpeed);
-    currentFlywheelSpeed = targetFlywheelSpeed; //! for now, will probably need to change later, like an interrupt
+    // if current speed is not the passed speed, change the motor speed. this is only to avoid unnecessary writes
+    if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE) { 
+      targetFlywheelSpeed = constrain(absoluteSpeed, -1.0, 1.0);
+      flywheelLeftMotor.write(targetFlywheelSpeed);
+      flywheelRightMotor.write(-targetFlywheelSpeed);
+      currentFlywheelSpeed = targetFlywheelSpeed; //! for now, will probably need to change later, like an interrupt
+    }
   } else {
     flywheelLeftMotor.write(0);
     flywheelRightMotor.write(0);
@@ -190,7 +211,9 @@ void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
 }
 
 void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage) {
-  setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(stage)]);
+  targetFlywheelStage = stage;
+  setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
+  currentFlywheelStage = targetFlywheelStage;
 }
 
 void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed) {
@@ -219,7 +242,9 @@ void QuarterbackTurret::switchMode(TurretMode mode) {
 }
 
 void QuarterbackTurret::switchTarget(TargetReceiver target) {
-  // todo
+  switchMode(automatic);
+  this->target = target;
+  // todo: not sure if this needs more functionality?
 }
 
 void QuarterbackTurret::loadFromCenter() {
