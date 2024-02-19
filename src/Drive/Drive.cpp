@@ -32,17 +32,17 @@
 */
 
 Drive::Drive() {
-  Drive(lineman, big_ampflow, {1, 9, 6, 36});
+  Drive(lineman, {big_ampflow, 1, 9, 6, 36});
 }
 
 Drive::Drive(BotType botType, MotorType motorType) {
-  Drive(botType, motorType, {1, 9, 6, 36});
+  Drive(botType, {motorType, 1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
+Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
   this->botType = botType;
-  this->motorType = motorType;
   this->hasEncoders = hasEncoders;
+  this->motorType = driveParams.motor_type;
   this->gearRatio = driveParams.gear_ratio;
   this->wheelBase = driveParams.wheel_base;
   this->R_Min = driveParams.r_min;

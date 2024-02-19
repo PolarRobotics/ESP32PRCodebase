@@ -8,6 +8,7 @@
  * used in Drive and RobotConfig
 */
 typedef struct drive_param {
+    MotorType motor_type;
     float gear_ratio;
     float wheel_base;
     float r_min;

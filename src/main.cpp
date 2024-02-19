@@ -39,7 +39,6 @@ Lights& lights = Lights::getInstance();
 
 // Robot Information from EEPROM/Preferences
 BotType robotType;
-MotorType motorType;
 drive_param_t driveParams;
 
 // Config
@@ -70,11 +69,7 @@ void setup() {
   config.read();
   Serial.println(config.toString());
   robotType = config.getBotType();
-  motorType = config.getMotorType();
   driveParams = config.getDriveParams();
-  // gearRatio = config.getGearRatio();
-  // wheelBase = config.getWheelBase();
-
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
@@ -85,12 +80,12 @@ void setup() {
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
-      drive = new Drive(kicker, motorType, driveParams);
+      drive = new Drive(kicker, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback, motorType, driveParams);
+      drive = new Drive(quarterback, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
@@ -101,7 +96,7 @@ void setup() {
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
-      drive = new Drive(center, motorType, driveParams);
+      drive = new Drive(center, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case runningback:
@@ -113,7 +108,7 @@ void setup() {
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      drive = new Drive(lineman, motorType, driveParams);
+      drive = new Drive(lineman, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
   }
 
@@ -168,7 +163,7 @@ void loop() {
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
       drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && motorType == falcon) {
+    } else if (ps5.R2() && driveParams.motor_type == falcon) {
       // used to calibrate the max pwm signal for the falcon 500 motors
       drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
     } else {
