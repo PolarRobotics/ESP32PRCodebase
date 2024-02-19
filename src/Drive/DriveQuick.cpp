@@ -49,7 +49,7 @@ DriveQuick::DriveQuick(drive_param_t driveParams) : Drive(BotType::runningback, 
  * turning and scaling motor values, the intention of this is so the
  * programmer doesnt have to call all the functions, this just handles it,
  * reducing clutter in the main file.
- * DO NOT CALL THIS FUNCTION UNTIL setStickPwr and setBSN have been called
+ * DO NOT CALL THIS FUNCTION UNTIL setStickPwr and setSpeedScalar have been called
  * @author Rhys Davies
  * Created: 9-12-2022
  * Updated: 10-11-2020

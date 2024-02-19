@@ -32,46 +32,31 @@
 #define STICK_DEADZONE 0.035 //0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
-
-// MOTOR MAX SPEED DEFINES;
-// this is 1.0, the maximum power possible to the motors.
-// #if BOT_TYPE == 4
-// #define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-// #define BIG_NORMAL_PCT 0.3 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
-// #define BIG_SLOW_PCT 0.2
-// #else
-// #define BIG_BOOST_PCT 0.7  // default: 0.6, this is the typical percentage of power out of the motors' range that is used (to ensure they don't do seven wheelies)
-// #define BIG_NORMAL_PCT 0.6 // should be a value less than BIG_NORMAL_PCT, to slow down for precision maneuvering, QB needs this to be 0.3
-// #define BIG_SLOW_PCT 0.3   // the value for brake button to slow down the motors at the button press
-// #endif
-
-// BSN for Short/Small Motors
-#define SMALL_BOOST_PCT  0.85f
-#define SMALL_NORMAL_PCT 0.7f
-#define SMALL_SLOW_PCT   0.4f
-
-// BSN for the 12v motors used on the new center
-#define MECANUM_BOOST_PCT  0.8f
-#define MECANUM_NORMAL_PCT 0.6f
-#define MECANUM_SLOW_PCT   0.3f
-
-// BSN for the falcon motors used on the runningback
+// Motor Percent Defines
 #define FALCON_CALIBRATION_FACTOR 1.0f
-#define FALCON_BOOST_PCT          0.6f
-#define FALCON_NORMAL_PCT         0.4f // 0.5
-#define FALCON_SLOW_PCT           0.15f
 
 #define BRAKE_BUTTON_PCT 0
 
+// !TODO: not sure if this is the correct location for this array
+// This array must follow the same order as MotorType to be used effectively
+constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
+// Boost   Normal  Slow
+  {0.70f,  0.60f,  0.30f}, // index 0: Big Ampflow Motor
+  {0.85f,  0.70f,  0.40f}, // index 1: Small Ampflow Motor
+  {0.70f,  0.60f,  0.30f}, // index 2: Pancake Ampflow Motor
+  {0.80f,  0.60f,  0.40f}, // index 3: Mecanum Motor (Torquenado)
+  {0.60f,  0.40f,  0.15f}, // index 4: Falcon500 motors
+  {0.15f,  0.10f,  0.05f}  // index 5: Small 12v motors (old robots)
+};
 
 class Drive {
   private:
+    BotType botType;
     MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
-    BotType botType; // TODO: I added this to private only because motorType was private.
     float gearRatio;
     bool hasEncoders;
 
-    float BSNscalar;
+    float speedScalar;
     float wheelBase;
     int omega;
     int omega_L, omega_R;
@@ -99,8 +84,8 @@ class Drive {
 
   public:
     enum Speed {
-        NORMAL,
         BOOST,
+        NORMAL,
         SLOW,
         BRAKE
     };
@@ -114,9 +99,9 @@ class Drive {
     void setStickPwr(int8_t leftY, int8_t rightX);
     float getForwardPower();
     float getTurnPower();
-    void setBSN(Speed bsn); //(float powerMultiplier);
-    void setBSNValue(float bsn_pct);
-    float getBSN();
+    void setSpeedScalar(Speed bns);
+    void setSpeedValue(float speed_pct);
+    float getSpeedScalar();
     void emergencyStop();
     void generateMotionValues(float tankModePct = TANK_MODE_PCT);
     virtual void update();

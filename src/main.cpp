@@ -157,17 +157,17 @@ void loop() {
     // determine BSN percentage (boost, slow, or normal)
     if (ps5.Touchpad()){
       drive->emergencyStop();
-      drive->setBSN(Drive::BRAKE);
+      drive->setSpeedScalar(Drive::BRAKE);
     } else if (ps5.R1()) {
-      drive->setBSN(Drive::BOOST);
+      drive->setSpeedScalar(Drive::BOOST);
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
-      drive->setBSN(Drive::SLOW);
+      drive->setSpeedScalar(Drive::SLOW);
     } else if (ps5.R2() && driveParams.motor_type == falcon) {
       // used to calibrate the max pwm signal for the falcon 500 motors
-      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
+      drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
     } else {
-      drive->setBSN(Drive::NORMAL);
+      drive->setSpeedScalar(Drive::NORMAL);
     }
 
     if (ps5.Share()) {
