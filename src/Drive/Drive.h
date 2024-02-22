@@ -102,6 +102,8 @@ class Drive {
     float k_p;
     float k_i;
     const float ERROR_THRESHOLD = 0.1;
+
+    bool drivingStraight;
     
 
     //setTargetSpeed

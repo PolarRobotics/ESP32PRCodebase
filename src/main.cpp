@@ -269,12 +269,12 @@ void setup() {
   attachInterrupt(a_channelR, encoderR, RISING);
 
   // Gyro paired?
-    if (!mpu.begin()) {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
-  }
+  //   if (!mpu.begin()) {
+  //   Serial.println("Failed to find MPU6050 chip");
+  //   while (1) {
+  //     delay(10);
+  //   }
+  // }
   Serial.println("MPU6050 Found!");
 
   mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
