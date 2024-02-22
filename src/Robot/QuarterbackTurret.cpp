@@ -43,12 +43,17 @@ QuarterbackTurret::QuarterbackTurret(
   this->stickFlywheel = 0;
   this->stickTurret = 0;
 
+  this->turretLaserPin = turretLaserPin;
+  this->turretLaserState = 0;
+
   // initiate motor objects
   // TODO: initiate assembly/tilter stepper motor with lib
   cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
   turretMotor.setup(turretPin, falcon); // TODO: add encoder
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
+
+  pinMode(turretLaserPin, INPUT_PULLUP);
 }
 
 void QuarterbackTurret::action() {
@@ -146,7 +151,7 @@ void QuarterbackTurret::action() {
     }
   }
 
-  // printDebug();
+  printDebug();
 }
 
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
@@ -263,7 +268,7 @@ void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_outwards);
-  //TODO: Rotate 180
+  // TODO: Rotate 180
   moveCradle(forward);
   this->runningMacro = false;
 }
@@ -292,12 +297,16 @@ void QuarterbackTurret::reset() {
 }
 
 void QuarterbackTurret::printDebug() {
+  /*
   Serial.print(F("enabled: "));
   Serial.print(enabled);
   Serial.print(F(" | stickTurret: "));
   Serial.print(stickTurret);
   Serial.print(F(" | stickFlywheel: "));
   Serial.print(stickFlywheel);
-  Serial.print(" | currentTurretSpeed: ");
+  Serial.print(F(" | currentTurretSpeed: "));
   Serial.println(currentTurretSpeed);
+  */
+  Serial.print(F("turretLaserState: "));
+  Serial.println(digitalRead(turretLaserPin));
 }

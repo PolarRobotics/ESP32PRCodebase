@@ -43,6 +43,8 @@ class QuarterbackTurret : public Robot {
     MotorControl turretMotor;
     MotorControl flywheelLeftMotor;
     MotorControl flywheelRightMotor;
+    
+    uint8_t turretLaserPin;
 
     //* joystick inputs
     float stickTurret;   // used to normalize stick input from [0, 255] to [-1.0, 1.0]
@@ -93,6 +95,8 @@ class QuarterbackTurret : public Robot {
     // world-relative headings
     int currentAbsoluteHeading; // default 0
     int targetAbsoluteHeading;  // default 0
+
+    uint8_t turretLaserState;
     
   public:
     QuarterbackTurret(
