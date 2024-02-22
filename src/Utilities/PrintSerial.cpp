@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include "PrintSerial.h"
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 PrintSerial::PrintSerial() {
     HEADER1 = "HEADER1,";
     HEADER2 = ",HEADER2,";
@@ -64,15 +67,23 @@ void PrintSerial::printDebugInfo() {
  * @author Corbin Hibler
  * Updated: 2024-02-12
 */
-void PrintSerial::printCsvInfo(const std::vector<float>& values) {
-    Serial.print(HEADER1); // name of value to be used as header
-    Serial.print(values[0]);  // variable you want to track
-    Serial.print(HEADER2); 
-    Serial.print(values[1]);
-    Serial.print(HEADER3);
-    Serial.print(values[2]);
-    Serial.print(HEADER4);
-    Serial.print(values[3]);
-    Serial.print(HEADER5);
-    Serial.println(values[4]); // last line is -ALWAYS- println or else the python script will break
+void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vector<char*>& headers) {
+    for (int i = 0; i < values.size(); i++) {
+        char* header = "";
+        if (i == 0) {
+            header = strcat(headers[i], ",");
+            Serial.print(F(header));
+            Serial.print(values[i]);
+        }
+        else if (i == (values.size() - 1)) {
+            header = strcat(strcat(",", headers[i]), ",");
+            Serial.print(F(header));
+            Serial.println(values[i]);
+        }
+        else {
+            header = strcat(strcat(",", headers[i]), ",");
+            Serial.print(F(header));
+            Serial.print(values[i]);
+        }
+    }
 }

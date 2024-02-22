@@ -26,6 +26,8 @@ class PrintSerial {
         const char* HEADER3;
         const char* HEADER4;
         const char* HEADER5; 
+        std::vector<float> serialValues;
+        std::vector<char*> serialHeaders;
     public:
         static PrintSerial& getInstance() {
             static PrintSerial instance;
@@ -33,8 +35,8 @@ class PrintSerial {
         }
         PrintSerial(const PrintSerial& obj) = delete; // delete copy constructor
         void operator=(PrintSerial const&)  = delete; // delete set operator
-        void printCsvInfo(const std::vector<float>& values);
         void printDebugInfo();
+        void printCsvInfo(const std::vector<float>& values, const std::vector<char*>& headers);
 };
 
 #endif // PRINTSERIAL_H
