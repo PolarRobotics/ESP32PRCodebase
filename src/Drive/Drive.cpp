@@ -221,6 +221,7 @@ float Drive::getBSN() {
 */
 void Drive::generateMotionValues(float tankModePct) {
     if (fabs(stickForwardRev) < STICK_DEADZONE) { // fwd stick is zero
+        drivingStraight = false;
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             requestedMotorPower[0] = 0, requestedMotorPower[1] = 0; // not moving, set motors to zero
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
@@ -233,6 +234,7 @@ void Drive::generateMotionValues(float tankModePct) {
     } else { // fwd stick is not zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             // just move forward directly
+            drivingStraight = true;
             requestedMotorPower[0] = BSNscalar * stickForwardRev;
             requestedMotorPower[1] = BSNscalar * stickForwardRev;
         } else { // moving forward and turning
@@ -243,6 +245,7 @@ void Drive::generateMotionValues(float tankModePct) {
             to turn right. The left motor should get set to 1 and the right motor should get set to
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
+           drivingStraight = false;
             if(stickTurn > STICK_DEADZONE) { // turn Right
                 // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
                 //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
@@ -539,8 +542,13 @@ void Drive::update2(int speedL, int speedR) {
     }
     //M1.write(-.3);
     //M1.setTargetSpeed(-900);
-    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
-    M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+    if (drivingStraight){
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+    } else {
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+    }
 
     if ((millis() - lastTime) >= 100) {
         power = power - 0.05;
@@ -557,7 +565,9 @@ void Drive::update2(int speedL, int speedR) {
     Serial.print(",right encoder target speed,");
     Serial.print(M2.Percent2RPM(requestedMotorPower[1]));
     Serial.print(",right encoder actual speed,");
-    Serial.println(speedR);
+    Serial.print(speedR);
+    Serial.print(",BSN");
+    Serial.println(BSNscalar);
 
     
 }
