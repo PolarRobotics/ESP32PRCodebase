@@ -49,6 +49,9 @@ QuarterbackTurret::QuarterbackTurret(
   turretMotor.setup(turretPin, falcon); // TODO: add encoder
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
+
+  // initialize debouncers
+  this->dbDpadUp = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 }
 
 void QuarterbackTurret::action() {
@@ -128,8 +131,11 @@ void QuarterbackTurret::action() {
         if (fabs(stickFlywheel) > STICK_DEADZONE) {
           setFlywheelSpeed(stickFlywheel);
         } else {
+
+          dbDpadUpState = dbDpadUp->debounce(ps5.Up());
+
           //* D-Pad Up: Increase flywheel speed by one stage
-          if (ps5.Up()) {
+          if (dbDpadUpState) {
             // todo: debounce
             adjustFlywheelSpeedStage(INCREASE);
           } 
@@ -146,7 +152,7 @@ void QuarterbackTurret::action() {
     }
   }
 
-  // printDebug();
+  printDebug();
 }
 
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
@@ -292,12 +298,15 @@ void QuarterbackTurret::reset() {
 }
 
 void QuarterbackTurret::printDebug() {
-  Serial.print(F("enabled: "));
-  Serial.print(enabled);
-  Serial.print(F(" | stickTurret: "));
-  Serial.print(stickTurret);
-  Serial.print(F(" | stickFlywheel: "));
-  Serial.print(stickFlywheel);
-  Serial.print(" | currentTurretSpeed: ");
-  Serial.println(currentTurretSpeed);
+  // Serial.print(F("enabled: "));
+  // Serial.print(enabled);
+  // Serial.print(F(" | stickTurret: "));
+  // Serial.print(stickTurret);
+  // Serial.print(F(" | stickFlywheel: "));
+  // Serial.print(stickFlywheel);
+  // Serial.print(F(" | currentTurretSpeed: "));
+  // Serial.print(currentTurretSpeed);
+
+  // Serial.print(F(" | dbDpadUpState: "));
+  // Serial.println(dbDpadUpState);
 }
