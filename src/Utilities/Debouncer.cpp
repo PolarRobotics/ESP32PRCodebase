@@ -1,5 +1,7 @@
 #include "Debouncer.h"
 
+// based on: https://arduinogetstarted.com/tutorials/arduino-button-debounce
+
 // Input: debounce delay (milliseconds)
 Debouncer::Debouncer(unsigned long delay, bool activeLow) {
   if (activeLow) {
@@ -11,28 +13,27 @@ Debouncer::Debouncer(unsigned long delay, bool activeLow) {
   }
 
   // Initialize Variables
-  this->currentState = BASE_STATE;
-  this->lastState = BASE_STATE;
+  this->lastStableState = BASE_STATE;
+  this->lastUnstableState = BASE_STATE;
   this->lastToggleTime = 0;
   this->debounceDelay = delay;
-  this->outputState = BASE_STATE;
 
 }
 
 // takes only input of 0 or 1, and outputs 0 or 1
-uint8_t Debouncer::debounce(uint8_t newState) {
-  Serial.print(F("start: last:"));
-  Serial.print(lastState);
-  Serial.print(F(", curr: "));
-  Serial.print(currentState);
-  Serial.print(F(", new: "));
-  Serial.print(newState);
-  Serial.print(F(", out: "));
-  Serial.print(outputState);
+// @param inputState: "current" call to debounce 
+uint8_t Debouncer::debounce(uint8_t inputState) {
+  Serial.print(F("start: l_stab:"));
+  Serial.print(lastStableState);
+  Serial.print(F(", l_unst: "));
+  Serial.print(lastUnstableState);
+  Serial.print(F(", input: "));
+  Serial.print(inputState);
 
   // if the switch was toggled, update the last toggle time
-  if (newState != lastState) {
+  if (inputState != lastUnstableState) {
     lastToggleTime = millis();
+    lastUnstableState = inputState;
   }
 
   Serial.print(F(" | over delay?: "));
@@ -41,34 +42,25 @@ uint8_t Debouncer::debounce(uint8_t newState) {
   // test if the delay has been exceeded
   if ((millis() - lastToggleTime) > debounceDelay) {
 
-    Serial.print(F(" | state changed?: "));
-    Serial.print(newState != currentState);
+    Serial.print(F(" | stab_st changed?: "));
+    Serial.print(lastStableState != inputState);
 
     // if the state has changed, update it
-    if (newState != currentState) {
-      currentState = newState;
+    if (lastStableState != inputState) {
+      lastStableState = inputState;
 
-      Serial.print(F(" | currentState == ACTIVE_STATE: "));
-      Serial.print(currentState == ACTIVE_STATE);
+      Serial.print(F(" | inputState == ACTIVE_STATE: "));
+      Serial.print(inputState == ACTIVE_STATE);
 
-      if (currentState == ACTIVE_STATE) {
-        outputState = !outputState;
-      }
     }
   }
 
-  // save new states
-  lastState = currentState;
-  currentState = newState;
+  Serial.print(F(" | end: l_stab:"));
+  Serial.print(lastStableState);
+  Serial.print(F(", l_unst: "));
+  Serial.print(lastUnstableState);
+  Serial.print(F(", input: "));
+  Serial.println(inputState);
 
-  Serial.print(F(" | end: last:"));
-  Serial.print(lastState);
-  Serial.print(F(", curr: "));
-  Serial.print(currentState);
-  Serial.print(F(", new: "));
-  Serial.print(newState);
-  Serial.print(F(", out: "));
-  Serial.println(outputState);
-
-  return outputState;
+  return lastStableState;
 }
