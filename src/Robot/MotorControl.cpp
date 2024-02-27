@@ -45,7 +45,7 @@ MotorControl::MotorControl() {
   requestedRPM = 0;
   lastRampTime = millis();
 
-  CL_enable = true;
+  CL_enable = false;
   k_p = 2;
   k_i = 0.15;
   //k_i = 0.05;
@@ -163,6 +163,8 @@ void MotorControl::stop() {
 */
 void MotorControl::setTargetSpeed(int target_rpm) {
  //Serial.println("here");
+ if (target_rpm > 0.001 || target_rpm < 0.001)
+ {
   ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
   // if there are working encoders its safe to use the PL loop, 
@@ -173,6 +175,10 @@ void MotorControl::setTargetSpeed(int target_rpm) {
     set_speed = ramped_speed;
 
   this->write(set_speed); //convert speed to the coresponding motor power and write to the motor 
+ }
+ else
+  this->stop();
+
 
 }
 
