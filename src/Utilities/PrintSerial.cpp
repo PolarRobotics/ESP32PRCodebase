@@ -69,21 +69,20 @@ void PrintSerial::printDebugInfo() {
 */
 void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vector<char*>& headers) {
     for (int i = 0; i < values.size(); i++) {
-        char* header = "";
-        if (i == 0) {
-            header = strcat(headers[i], ",");
-            Serial.print(F(header));
-            Serial.print(values[i]);
-        }
-        else if (i == (values.size() - 1)) {
-            header = strcat(strcat(",", headers[i]), ",");
-            Serial.print(F(header));
+        //if (i == 0) {
+            String header = String(headers[i]) + ","; 
+            Serial.print(header.c_str());
             Serial.println(values[i]);
-        }
-        else {
-            header = strcat(strcat(",", headers[i]), ",");
-            Serial.print(F(header));
-            Serial.print(values[i]);
-        }
+        //}
+        //else if (i == (values.size() - 1)) {
+        //    header = strcat(strcat(",", headers[i]), ",");
+        //    Serial.print(F(header));
+        //    Serial.println(values[i]);
+        //}
+        //else {
+        //    header = strcat(strcat(",", headers[i]), ",");
+        //    Serial.print(F(header));
+        //    Serial.print(values[i]);
+        //}
     }
 }
