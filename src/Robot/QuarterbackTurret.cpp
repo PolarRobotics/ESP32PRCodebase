@@ -132,11 +132,12 @@ void QuarterbackTurret::action() {
           setFlywheelSpeed(stickFlywheel);
         } else {
 
-          dbDpadUpState = dbDpadUp->debounce(ps5.Up());
+          // dbDpadUpState = dbDpadUp->debounce(ps5.Up());
 
           //* D-Pad Up: Increase flywheel speed by one stage
-          if (dbDpadUpState) {
+          if (dbDpadUp->debounceAndSwitched(ps5.Up(), active)) {
             // todo: debounce
+            Serial.println(F("increasing flywheel speed"));
             adjustFlywheelSpeedStage(INCREASE);
           } 
           //* D-Pad Down: Decrease flywheel speed by one stage
