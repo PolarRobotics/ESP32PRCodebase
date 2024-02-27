@@ -6,6 +6,7 @@
 #include <Robot/Robot.h>
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include <Utilities/Debouncer.h>
 
 enum TurretMode {
   manual, automatic
@@ -30,6 +31,8 @@ enum FlywheelSpeed {
 };
 
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7, 1};
+
+#define QB_BASE_DEBOUNCE_DELAY 50L
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -97,6 +100,13 @@ class QuarterbackTurret : public Robot {
     int targetAbsoluteHeading;  // default 0
 
     uint8_t turretLaserState;
+
+    // debouncers
+    Debouncer* dbOptions;
+    Debouncer* dbSquare;
+    Debouncer* dbDpadUp;
+    Debouncer* dbDpadDown;
+    Debouncer* dbCircle;
     
   public:
     QuarterbackTurret(
