@@ -32,7 +32,9 @@ enum FlywheelSpeed {
 
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7, 1};
 
-#define QB_BASE_DEBOUNCE_DELAY 50L
+#define QB_BASE_DEBOUNCE_DELAY 50L // 50 millseconds for button debouncing by default
+
+#define QB_CRADLE_TRAVEL_DELAY 750L // ~0.75 seconds to fully extend or compress linear actuator
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -77,6 +79,8 @@ class QuarterbackTurret : public Robot {
     CradleState currentCradleState; // initial state unknown, will reset to back
     CradleState targetCradleState; // default back
     bool cradleMoving; // default false
+    unsigned long cradleStartTime;
+
 
     //* flywheel
     FlywheelSpeed currentFlywheelStage; // default stopped

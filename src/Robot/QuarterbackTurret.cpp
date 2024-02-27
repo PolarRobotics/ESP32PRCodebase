@@ -21,8 +21,10 @@ QuarterbackTurret::QuarterbackTurret(
   this->targetAssemblyAngle = straight; // while the initial state is unknown, we want it to be straight
   this->assemblyMoving = false; // it is safe to assume the assembly is not moving
 
+  this->currentCradleState = back;
   this->targetCradleState = back;
   this->cradleMoving = false;
+  this->cradleStartTime = 0;
 
   this->mode = manual; // start in manual mode by default, auto mode can be enabled by selecting a target
   this->target = receiver_1; // the default target is receiver 1, but this has no effect until the mode is switched to automatic
@@ -61,6 +63,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbDpadUp = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbDpadDown = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbCircle = new Debouncer(750L);
+
 }
 
 void QuarterbackTurret::action() {
@@ -190,22 +193,56 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
 
 void QuarterbackTurret::moveCradle(CradleState state) {
   if (enabled) {
-    targetCradleState = state;
-    if (targetCradleState != currentCradleState) {
-      if (targetCradleState == forward) {
-        // move appropriate direction (forwards?)
-        cradleActuator.write(1.0);
-      } else if (targetCradleState == back) {
-        // move other direction
-        cradleActuator.write(-1.0);
+    if (!cradleMoving) {
+      targetCradleState = state;
+
+      // Serial.print(F("current state: "));
+      // if (currentCradleState == forward) {
+      //   Serial.print(F("forward  | "));
+      // } else if (currentCradleState == back) {
+      //   Serial.print(F("backward  | "));
+      // }
+
+      // Serial.print(F("target state: "));
+      // if (targetCradleState == forward) {
+      //   Serial.print(F("forward  | "));
+      // } else if (targetCradleState == back) {
+      //   Serial.print(F("backward  | "));
+      // }
+
+      if (targetCradleState != currentCradleState) {
+        // Serial.print(F("target neq current  | "));
+        if (targetCradleState == forward) {
+          // move forwards
+          cradleActuator.write(1.0);
+          cradleStartTime = millis();
+          cradleMoving = true;
+          // Serial.print(F("cradle moving forward  | "));
+        } else if (targetCradleState == back) {
+          // move backwards
+          cradleActuator.write(-1.0);
+          cradleStartTime = millis();
+          cradleMoving = true;
+          // Serial.print(F("cradle moving backward  | "));
+        }
+        
       }
-      currentCradleState = targetCradleState; //! for now, will probably need to change later, like an interrupt
-    } else {
+
+      // Serial.print(F("past delay? "));
+      // Serial.print((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY);
+      // Serial.print(F(" | "));
+
+    } else if ((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY) {
+      currentCradleState = targetCradleState;
+      cradleMoving = false;
       cradleActuator.write(0);
+      // Serial.print(F("cradle stopped  | "));
     }
   } else {
     cradleActuator.write(0);
   }
+
+  // Serial.println();
 }
 
 void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
@@ -313,6 +350,6 @@ void QuarterbackTurret::printDebug() {
   Serial.print(F(" | currentTurretSpeed: "));
   Serial.println(currentTurretSpeed);
   */
-  Serial.print(F("turretLaserState: "));
-  Serial.println(digitalRead(turretLaserPin));
+  // Serial.print(F("turretLaserState: "));
+  // Serial.println(digitalRead(turretLaserPin));
 }
