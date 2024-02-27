@@ -98,11 +98,11 @@ class QuarterbackTurret : public Robot {
     int targetAbsoluteHeading;  // default 0
 
     // debouncers
+    Debouncer* dbOptions;
+    Debouncer* dbSquare;
     Debouncer* dbDpadUp;
-    bool dbDpadUpState;
-
+    Debouncer* dbDpadDown;
     Debouncer* dbCircle;
-    bool dbCircleState;
     
   public:
     QuarterbackTurret(

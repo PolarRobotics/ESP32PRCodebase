@@ -88,7 +88,11 @@ uint8_t Debouncer::wasSwitchedToState(DebouncerState state) {
   return false;
 }
 
-uint8_t Debouncer::debounceAndSwitched(uint8_t inputState, DebouncerState targetState) {
+uint8_t Debouncer::debounceAndSwitchedTo(uint8_t inputState, DebouncerState targetState) {
   this->debounce(inputState);
   return this->wasSwitchedToState(targetState);
+}
+
+uint8_t Debouncer::debounceAndPressed(uint8_t inputState) {
+  return this->debounceAndSwitchedTo(inputState, active);
 }

@@ -51,7 +51,11 @@ QuarterbackTurret::QuarterbackTurret(
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
   // initialize debouncers
+  this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
+  this->dbSquare = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbDpadUp = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
+  this->dbDpadDown = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
+  this->dbCircle = new Debouncer(750L);
 }
 
 void QuarterbackTurret::action() {
@@ -61,7 +65,7 @@ void QuarterbackTurret::action() {
     emergencyStop();
   }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  else if (ps5.Square()) {
+  else if (dbSquare->debounceAndPressed(ps5.Square())) {
     if (!enabled) {
       setEnabled(true);
     } else {
@@ -71,7 +75,7 @@ void QuarterbackTurret::action() {
   //! Ignore non-emergency inputs if running a macro
   else if (!runningMacro) {
     //* Circle: Startup and Home (Reset or Zero Turret)
-    if (ps5.Circle()) {
+    if (dbCircle->debounceAndPressed(ps5.Circle())) {
       // TODO: add a hold condition to this (hold for 1 sec to reset or something)
       if (!initialized) {
         reset();
@@ -97,7 +101,7 @@ void QuarterbackTurret::action() {
       }
 
       //* Options (Button): Switch Mode (toggle between auto/manual targeting)
-      if (ps5.Options()) {
+      if (dbOptions->debounceAndPressed(ps5.Options())) {
         switchMode();
       }
       //* Left Button (L1): Switch Target to Receiver 1
@@ -131,18 +135,13 @@ void QuarterbackTurret::action() {
         if (fabs(stickFlywheel) > STICK_DEADZONE) {
           setFlywheelSpeed(stickFlywheel);
         } else {
-
-          // dbDpadUpState = dbDpadUp->debounce(ps5.Up());
-
           //* D-Pad Up: Increase flywheel speed by one stage
-          if (dbDpadUp->debounceAndSwitched(ps5.Up(), active)) {
-            // todo: debounce
+          if (dbDpadUp->debounceAndPressed(ps5.Up())) {
             Serial.println(F("increasing flywheel speed"));
             adjustFlywheelSpeedStage(INCREASE);
           } 
           //* D-Pad Down: Decrease flywheel speed by one stage
-          else if (ps5.Down()) {
-            // todo: debounce
+          else if (dbDpadDown->debounceAndPressed(ps5.Down())) {
             adjustFlywheelSpeedStage(DECREASE);
           }
           else {

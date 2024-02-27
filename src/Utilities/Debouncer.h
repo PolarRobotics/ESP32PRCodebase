@@ -38,7 +38,10 @@ class Debouncer {
 
     // use to execute an action when switched to a specific state *after debouncing*
     // calls both debounce() and wasSwitchedToState() consecutively to avoid potential misses
-    uint8_t debounceAndSwitched(uint8_t inputState, DebouncerState targetState);
+    uint8_t debounceAndSwitchedTo(uint8_t inputState, DebouncerState targetState);
+
+    // shorthand for debounceAndSwitchesTo(inputState, active)
+    uint8_t debounceAndPressed(uint8_t inputState);
 };
 
 #endif // DEBOUNCER_H
