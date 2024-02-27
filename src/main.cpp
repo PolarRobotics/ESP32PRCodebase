@@ -31,7 +31,7 @@
 
 // Gyro Includes
 #include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
+// #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
 // Gyroscope
@@ -269,12 +269,12 @@ void setup() {
   attachInterrupt(a_channelR, encoderR, RISING);
 
   // Gyro paired?
-  //   if (!mpu.begin()) {
-  //   Serial.println("Failed to find MPU6050 chip");
-  //   while (1) {
-  //     delay(10);
-  //   }
-  // }
+    if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
   Serial.println("MPU6050 Found!");
 
   mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
@@ -309,15 +309,15 @@ void loop() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  // Serial.print("Rotation X: ");
-  // Serial.print(g.gyro.x);
-  // Serial.println(" rad/s");
+  Serial.print("Rotation Z: ");
+  Serial.print(g.gyro.z);
+  Serial.print(" rad/s");
 
-  drive->setCurrentAngelSpeed(g.gyro.x);
+  drive->setCurrentAngelSpeed(g.gyro.z);
 
   //drive->update(speed);
 
-  delay(5);
+  // delay(5);
 
   if (ps5.isConnected()) { 
     // Serial.print(F("\r\nConnected"));

@@ -53,8 +53,8 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     this->BIG_NORMAL_PCT = 0.4; 
     this->BIG_SLOW_PCT = 0.3;
   } else {
-    this->BIG_BOOST_PCT = 0.5;  
-    this->BIG_NORMAL_PCT = 0.2; 
+    this->BIG_BOOST_PCT = 0.1;  
+    this->BIG_NORMAL_PCT = 0.1; 
     this->BIG_SLOW_PCT = 0.1;
   }
 
@@ -85,7 +85,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     lastTime = 0;
   } 
 
-  CL_enable = false;
+  CL_enable = true;
   k_p = 40;
   k_i = 1.5;
   //k_i = 0.05;
