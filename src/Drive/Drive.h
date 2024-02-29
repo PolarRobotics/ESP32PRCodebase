@@ -94,7 +94,7 @@ class Drive {
     int motorDiffCorrection;
     float k_p;
     float k_i;
-    const float ERROR_THRESHOLD = 0.1;
+    const float ERROR_THRESHOLD = 0.02;
 
     bool drivingStraight;
     

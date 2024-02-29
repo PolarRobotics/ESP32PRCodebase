@@ -86,8 +86,8 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   } 
 
   CL_enable = true;
-  k_p = 40;
-  k_i = 1.5;
+  k_p = 1500;
+  k_i = 0;
   //k_i = 0.05;
 
   integral_sum = 0;
@@ -559,11 +559,11 @@ void Drive::update2(int speedL, int speedR) {
     Serial.print("millis,");
     Serial.print(millis());
     Serial.print(",left encoder target speed,");
-    Serial.print(M1.Percent2RPM(requestedMotorPower[0]));
+    Serial.print(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff);
     Serial.print(",left encoder actual speed,");
     Serial.print(speedL);
     Serial.print(",right encoder target speed,");
-    Serial.print(M2.Percent2RPM(requestedMotorPower[1]));
+    Serial.print(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff);
     Serial.print(",right encoder actual speed,");
     Serial.print(speedR);
     Serial.print(",BSN");

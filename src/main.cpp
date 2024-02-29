@@ -310,10 +310,10 @@ void loop() {
   mpu.getEvent(&a, &g, &temp);
 
   Serial.print("Rotation Z: ");
-  Serial.print(g.gyro.z);
+  Serial.print(g.gyro.z - 0.03);
   Serial.print(" rad/s");
 
-  drive->setCurrentAngelSpeed(g.gyro.z);
+  drive->setCurrentAngelSpeed(g.gyro.z - 0.03);
 
   //drive->update(speed);
 
