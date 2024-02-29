@@ -55,7 +55,7 @@ QuarterbackTurret::QuarterbackTurret(
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
-  pinMode(turretLaserPin, INPUT_PULLUP);
+  pinMode(turretLaserPin, INPUT_PULLDOWN);
   
   // initialize debouncers
   this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
