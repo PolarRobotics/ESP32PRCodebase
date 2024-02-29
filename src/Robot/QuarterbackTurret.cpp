@@ -350,6 +350,6 @@ void QuarterbackTurret::printDebug() {
   Serial.print(F(" | currentTurretSpeed: "));
   Serial.println(currentTurretSpeed);
   */
-  // Serial.print(F("turretLaserState: "));
-  // Serial.println(digitalRead(turretLaserPin));
+  Serial.print(F("turretLaserState: "));
+  Serial.println(digitalRead(turretLaserPin));
 }
