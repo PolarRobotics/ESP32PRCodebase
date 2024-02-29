@@ -333,6 +333,10 @@ void QuarterbackTurret::emergencyStop() {
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   // TODO: actually home to zero
+  while (turretLaserPin == HIGH) {
+    setTurretSpeed(0.15);
+  }
+  setTurretSpeed(0);
   this->runningMacro = false;
 }
 
