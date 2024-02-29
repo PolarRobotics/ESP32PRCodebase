@@ -202,9 +202,10 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
+    
     // Data Acquisition
     std::vector<float> serialValues = {1.0, 2.0, 3.0, 4.0, 5.0}; // include your values that you want to monitor in serial
-    std::vector<char*> serialHeaders = {"header1","header2","header3","header4","header5"}; // include headers of the values to be at the top of CSV
+    std::vector<String> serialHeaders = {"header1","header2","header3","header4","header5"}; // include headers of the values to be at the top of CSV
     // printserial.printDebugInfo(serialValues); // prints info to serial monitor in a clean format (not usable by scripts)
     printserial.printCsvInfo(serialValues, serialHeaders); // prints info to serial monitor in a csv (comma separated value) format
 

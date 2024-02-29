@@ -16,16 +16,6 @@
 class PrintSerial {
     private:
         PrintSerial();
-        float value1;
-        float value2;
-        float value3;
-        float value4;
-        float value5;
-        const char* HEADER1;
-        const char* HEADER2;
-        const char* HEADER3;
-        const char* HEADER4;
-        const char* HEADER5; 
         std::vector<float> serialValues;
         std::vector<char*> serialHeaders;
     public:
@@ -36,7 +26,7 @@ class PrintSerial {
         PrintSerial(const PrintSerial& obj) = delete; // delete copy constructor
         void operator=(PrintSerial const&)  = delete; // delete set operator
         void printDebugInfo();
-        void printCsvInfo(const std::vector<float>& values, const std::vector<char*>& headers);
+        void printCsvInfo(const std::vector<float>& values, const std::vector<String>& headers);
 };
 
 #endif // PRINTSERIAL_H

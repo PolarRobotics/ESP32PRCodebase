@@ -1,15 +1,7 @@
 #include <Arduino.h>
 #include "PrintSerial.h"
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
-PrintSerial::PrintSerial() {
-    HEADER1 = "HEADER1,";
-    HEADER2 = ",HEADER2,";
-    HEADER3 = ",HEADER3,";
-    HEADER4 = ",HEADER4,";
-    HEADER5 = ",HEADER5,";
+PrintSerial::PrintSerial() { // null constructor
 }
 
 /**
@@ -58,31 +50,33 @@ void PrintSerial::printDebugInfo() {
 
     // Serial.print(F("\n"));
 }
+
 /**
  * @brief Prints variables to the serial monitor in a csv format
  * This function is important for data acquisition
  * The options below are configurable, change them as you need
  * Remember to adhere to printing guidelines under PR-Docs
  * @param values A vector of float values that will be sent to serial monitor 
+ * @param headers A vector of header strings that will be sent to serial monitor
  * @author Corbin Hibler
  * Updated: 2024-02-12
 */
-void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vector<char*>& headers) {
+void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vector<String>& headers) {
     for (int i = 0; i < values.size(); i++) {
-        //if (i == 0) {
-            String header = String(headers[i]) + ","; 
+        if (i == 0) {
+            String header = headers[i] + ","; 
             Serial.print(header.c_str());
             Serial.println(values[i]);
-        //}
-        //else if (i == (values.size() - 1)) {
-        //    header = strcat(strcat(",", headers[i]), ",");
-        //    Serial.print(F(header));
-        //    Serial.println(values[i]);
-        //}
-        //else {
-        //    header = strcat(strcat(",", headers[i]), ",");
-        //    Serial.print(F(header));
-        //    Serial.print(values[i]);
-        //}
+        }
+        else if (i == (values.size() - 1)) {
+            String header = "," + headers[i] + ",";
+            Serial.print(header.c_str());
+            Serial.println(values[i]);
+        }
+        else {
+            String header = "," + headers[i] + ",";
+            Serial.print(header.c_str());
+            Serial.println(values[i]);
+        }
     }
 }
