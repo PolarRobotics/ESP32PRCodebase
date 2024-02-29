@@ -66,12 +66,12 @@ void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vect
         if (i == 0) {
             String header = headers[i] + ","; 
             Serial.print(header.c_str());
-            Serial.println(values[i]);
+            Serial.print(values[i]);
         }
-        else if (i == (values.size() - 1)) {
+        else if (i < (values.size() - 1)) {
             String header = "," + headers[i] + ",";
             Serial.print(header.c_str());
-            Serial.println(values[i]);
+            Serial.print(values[i]);
         }
         else {
             String header = "," + headers[i] + ",";
