@@ -102,7 +102,8 @@ void QuarterbackTurret::action() {
     //* Manual and Automatic Controls
     else {
       //* Right Trigger (R2): Fire (cradle/grabber forward)
-      if (ps5.R2()) {
+      // Do not fire unless moving forward (do not fire when intaking or stopped)
+      if (currentFlywheelSpeed > STICK_DEADZONE && ps5.R2()) {
         moveCradle(forward);
       } else {
         moveCradle(back);
@@ -249,8 +250,11 @@ void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
   // update the motors so they are spinning at the new speed
   if (enabled) {
     // if current speed is not the passed speed, change the motor speed. this is only to avoid unnecessary writes
-    if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE) { 
-      targetFlywheelSpeed = constrain(absoluteSpeed, -1.0, 1.0);
+    if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE) {
+      // constrain to the first and last values of the flywheel speed array.
+      // the first value should be the slow intake speed -- the flywheels should NEVER spin more quickly *inwards* than this.
+      // the last value should be the maximum speed (ordinarily 1, but we may change this).
+      targetFlywheelSpeed = constrain(absoluteSpeed, flywheelSpeeds[0], flywheelSpeeds[QB_TURRET_NUM_SPEEDS - 1]);
       flywheelLeftMotor.write(targetFlywheelSpeed);
       flywheelRightMotor.write(-targetFlywheelSpeed);
       currentFlywheelSpeed = targetFlywheelSpeed; //! for now, will probably need to change later, like an interrupt
