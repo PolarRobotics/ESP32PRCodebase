@@ -7,6 +7,7 @@
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
+#include <Stepper.h>
 
 enum TurretMode {
   manual, automatic

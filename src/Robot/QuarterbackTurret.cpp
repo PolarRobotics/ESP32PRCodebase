@@ -183,10 +183,24 @@ void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
-  // todo 
+  // todo: find correct wiring for stepper motor, find motor direction, find stpes per revolution, find zero
+  // I am assuming that 0 is the parralel with the ground, and StepsPerRevolution is 200 for now.
+  // I will figure it out once we have it wired
+  // straight vs. angled
+  // Step size = 1.8?
+  const int stepsPerRevolution = 200; // 1.8 * 200 = 360
+  const int angle = 25;               // 360 / 45 = 8    200 / 8 = 25
+  const int straight = 0;
+  int stepCount;
+  int currentPosition = 0;
+  
+  // initialize the stepper library on pins 8 through 11:
+  Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11); 
   if (enabled) {
-    // go to angle
+    myStepper.step(angle);
+    stepCount = angle;
   } else {
+
     // write 0
   }
 }
