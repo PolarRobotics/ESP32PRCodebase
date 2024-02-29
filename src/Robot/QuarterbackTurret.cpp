@@ -333,10 +333,14 @@ void QuarterbackTurret::emergencyStop() {
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   // TODO: actually home to zero
-  while (turretLaserPin == HIGH) {
+  // Serial.println(F("zero called"));
+  while (digitalRead(turretLaserPin) == LOW) {
+    // Serial.print(F("zeroing, read = "));
+    Serial.println(digitalRead(turretLaserPin));
     setTurretSpeed(0.15);
   }
   setTurretSpeed(0);
+  // Serial.println(F("zeroed"));
   this->runningMacro = false;
 }
 
@@ -344,6 +348,7 @@ void QuarterbackTurret::reset() {
   this->enabled = true;
   this->runningMacro = true;
   loadFromCenter();
+  this->initialized = true;
   this->runningMacro = false;
 }
 
