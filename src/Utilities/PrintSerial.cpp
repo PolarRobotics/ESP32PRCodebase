@@ -1,7 +1,10 @@
 #include <Arduino.h>
+#include <Drive/Drive.h>
 #include "PrintSerial.h"
 
-PrintSerial::PrintSerial() { // null constructor
+PrintSerial::PrintSerial() {
+    PrintSerial::serialHeaders = {"header1","header2","header3","header4","header5"};
+    PrintSerial::serialValues = {1.0, 2.0, 3.0, 4.0, 5.0};
 }
 
 /**
@@ -62,21 +65,21 @@ void PrintSerial::printDebugInfo() {
  * Updated: 2024-02-12
 */
 void PrintSerial::printCsvInfo(const std::vector<float>& values, const std::vector<String>& headers) {
-    for (int i = 0; i < values.size(); i++) {
+    for (int i = 0; i < serialValues.size(); i++) {
         if (i == 0) {
-            String header = headers[i] + ","; 
+            String header = serialHeaders[i] + ","; 
             Serial.print(header.c_str());
-            Serial.print(values[i]);
+            Serial.print(serialValues[i]);
         }
-        else if (i < (values.size() - 1)) {
-            String header = "," + headers[i] + ",";
+        else if (i < (serialValues.size() - 1)) {
+            String header = "," + serialHeaders[i] + ",";
             Serial.print(header.c_str());
-            Serial.print(values[i]);
+            Serial.print(serialValues[i]);
         }
         else {
-            String header = "," + headers[i] + ",";
+            String header = "," + serialHeaders[i] + ",";
             Serial.print(header.c_str());
-            Serial.println(values[i]);
+            Serial.println(serialValues[i]);
         }
     }
 }

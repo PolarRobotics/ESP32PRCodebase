@@ -3,8 +3,6 @@
 #ifndef PRINTSERIAL_H
 #define PRINTSERIAL_H
 
-#define GET_VARIABLE_NAME(Variable) (#Variable)
-
 #include <PolarRobotics.h>
 #include <vector>
 
@@ -17,7 +15,7 @@ class PrintSerial {
     private:
         PrintSerial();
         std::vector<float> serialValues;
-        std::vector<char*> serialHeaders;
+        std::vector<String> serialHeaders;
     public:
         static PrintSerial& getInstance() {
             static PrintSerial instance;
