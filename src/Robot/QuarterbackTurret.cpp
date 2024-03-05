@@ -197,10 +197,13 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
   // initialize the stepper library on pins 8 through 11:
   Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11); 
   if (enabled) {
-    myStepper.step(angle);
-    stepCount = angle;
+    myStepper.step(angle); // Move to "Angled" Position
+    stepCount = angle; // Take count of how many steps that was so we know how far to move back down when finished
   } else {
-
+    // We need to move back down, I will have to find out if I can use "-stepcount" or use a different value to go back down to 0
+    myStepper.step(-angle);
+    stepCount = -angle;
+    
     // write 0
   }
 }
