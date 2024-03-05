@@ -38,6 +38,16 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_HOME_PCT 0.13
 
+#define QB_COUNTS_PER_ENCODER_REV 1000
+// 27:1 from falcon to output (1 rev of falcon is 1/27th of turret)
+// 5:1 from falcon to encoder gear (12t on falcon, 60t on encoder)
+// big gear on encoder needs to spin 5.4 (27/5) times for the turret to make one revolution
+// 1 revolution on big gear is the same as 1 revolution on the encoder
+// so 5:27 is encoder:turret, and:
+// 5/27ths of a revolution of the turret for 1 revolution of the encoder
+#define QB_COUNTS_PER_TURRET_REV 5400
+#define QB_COUNTS_PER_TURRET_DEGREE QB_COUNTS_PER_TURRET_REV/360
+
 /**
  * @brief Quarterback Turret Subclass Header
  * @authors Maxwell Phillips
@@ -51,6 +61,9 @@ class QuarterbackTurret : public Robot {
     MotorControl flywheelLeftMotor;
     MotorControl flywheelRightMotor;
     
+    //* pins that must be persistent
+    static uint8_t turretEncoderPinA;
+    static uint8_t turretEncoderPinB;
     uint8_t turretLaserPin;
 
     //* joystick inputs
@@ -173,6 +186,11 @@ class QuarterbackTurret : public Robot {
     void reset(); // zero turret, aim down (straight), and set flywheels to slow intake
     
     void printDebug();
+
+    // * encoder
+    static int64_t turretEncoderCount;
+    static uint8_t turretEncoderStateB; // A channel will be 1 when interrupt triggers
+    static void turretEncoderISR();
 };
 
 #endif // QUARTERBACK_TURRET_H

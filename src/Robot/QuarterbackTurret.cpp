@@ -1,5 +1,21 @@
 #include "QuarterbackTurret.h"
 
+// "define" static members to satisfy linker
+uint8_t QuarterbackTurret::turretEncoderPinA;
+uint8_t QuarterbackTurret::turretEncoderPinB;
+uint8_t QuarterbackTurret::turretEncoderStateB;
+int64_t QuarterbackTurret::turretEncoderCount;
+
+void QuarterbackTurret::turretEncoderISR() {
+  turretEncoderStateB = digitalRead(turretEncoderPinB);
+
+  if (turretEncoderStateB == 1) {
+    turretEncoderCount++;
+  } else if (turretEncoderStateB == 0) {
+    turretEncoderCount--;
+  }
+}
+
 QuarterbackTurret::QuarterbackTurret(
   uint8_t assemblyPin,
   uint8_t cradlePin,
@@ -45,8 +61,18 @@ QuarterbackTurret::QuarterbackTurret(
   this->stickFlywheel = 0;
   this->stickTurret = 0;
 
+  // turret laser setup
   this->turretLaserPin = turretLaserPin;
   this->turretLaserState = 0;
+  pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
+
+  // encoder setup
+  QuarterbackTurret::turretEncoderPinA = turretEncoderPinA;
+  QuarterbackTurret::turretEncoderPinB = turretEncoderPinB;
+  QuarterbackTurret::turretEncoderCount = 0;
+  pinMode(turretEncoderPinA, INPUT_PULLUP);
+  pinMode(turretEncoderPinB, INPUT);
+  attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
   // initiate motor objects
   // TODO: initiate assembly/tilter stepper motor with lib
@@ -55,7 +81,7 @@ QuarterbackTurret::QuarterbackTurret(
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
-  pinMode(turretLaserPin, INPUT_PULLUP);
+  
   
   // initialize debouncers
   this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
@@ -365,4 +391,6 @@ void QuarterbackTurret::printDebug() {
   */
   // Serial.print(F("turretLaserState: "));
   // Serial.println(digitalRead(turretLaserPin));
+  Serial.print(F("turretEncoderCount: "));
+  Serial.println(turretEncoderCount);
 }
