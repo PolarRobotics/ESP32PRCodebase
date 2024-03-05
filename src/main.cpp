@@ -137,6 +137,8 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
+  printserial.setDriveObj(drive);
+
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
@@ -205,12 +207,13 @@ void loop() {
 
     //* Data Acquisition *//
     // Include values you want to monitor
-    std::vector<float> serialValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+    //std::vector<float> serialValues = {1.0, 2.0, 3.0, 4.0, 5.0};
     // Include headers of the values
-    std::vector<String> serialHeaders = {"header1","header2","header3","header4","header5"}; 
+    //std::vector<String> serialHeaders = {"header1","header2","header3","header4","header5"}; 
 
     // printserial.printDebugInfo(serialValues); // prints info to serial monitor in a clean format (not usable by scripts)
-    printserial.printCsvInfo(serialValues, serialHeaders); // prints info to serial monitor in a csv (comma separated value) format
+    printserial.updateValues();
+    printserial.printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();

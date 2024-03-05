@@ -4,6 +4,7 @@
 #define PRINTSERIAL_H
 
 #include <PolarRobotics.h>
+#include <Drive/Drive.h>
 #include <vector>
 
 /**
@@ -14,6 +15,7 @@
 class PrintSerial {
     private:
         PrintSerial();
+        Drive* drive;
         std::vector<float> serialValues;
         std::vector<String> serialHeaders;
     public:
@@ -23,8 +25,10 @@ class PrintSerial {
         }
         PrintSerial(const PrintSerial& obj) = delete; // delete copy constructor
         void operator=(PrintSerial const&)  = delete; // delete set operator
+        void setDriveObj(Drive* driveObj);
+        void updateValues();
         void printDebugInfo();
-        void printCsvInfo(const std::vector<float>& values, const std::vector<String>& headers);
+        void printCsvInfo();
 };
 
 #endif // PRINTSERIAL_H
