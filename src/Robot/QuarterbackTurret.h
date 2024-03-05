@@ -36,6 +36,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_CRADLE_TRAVEL_DELAY 750L // ~0.75 seconds to fully extend or compress linear actuator
 
+#define QB_HOME_PCT 0.13
+
 /**
  * @brief Quarterback Turret Subclass Header
  * @authors Maxwell Phillips

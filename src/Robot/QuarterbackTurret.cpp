@@ -55,7 +55,7 @@ QuarterbackTurret::QuarterbackTurret(
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
-  pinMode(turretLaserPin, INPUT_PULLDOWN);
+  pinMode(turretLaserPin, INPUT_PULLUP);
   
   // initialize debouncers
   this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
@@ -135,7 +135,7 @@ void QuarterbackTurret::action() {
         //* Right Stick X: Turret Control
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
-          setTurretSpeed(stickTurret);
+          setTurretSpeed(0.5 * stickTurret);
         } else {
           setTurretSpeed(0);
         }
@@ -167,7 +167,7 @@ void QuarterbackTurret::action() {
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
   if (enabled) {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
-    turretMotor.write(targetTurretSpeed);
+    turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
   } else {
     turretMotor.write(0);
@@ -332,15 +332,15 @@ void QuarterbackTurret::emergencyStop() {
 
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
-  // TODO: actually home to zero
-  // Serial.println(F("zero called"));
+  Serial.println(F("zero called"));
+  // pin will only read high if the main power is on and the laser sensor is triggered
   while (digitalRead(turretLaserPin) == LOW) {
-    // Serial.print(F("zeroing, read = "));
+    Serial.print(F("zeroing, read = "));
     Serial.println(digitalRead(turretLaserPin));
-    setTurretSpeed(0.15);
+    setTurretSpeed(QB_HOME_PCT);
   }
   setTurretSpeed(0);
-  // Serial.println(F("zeroed"));
+  Serial.println(F("zeroed"));
   this->runningMacro = false;
 }
 
@@ -363,6 +363,6 @@ void QuarterbackTurret::printDebug() {
   Serial.print(F(" | currentTurretSpeed: "));
   Serial.println(currentTurretSpeed);
   */
-  Serial.print(F("turretLaserState: "));
-  Serial.println(digitalRead(turretLaserPin));
+  // Serial.print(F("turretLaserState: "));
+  // Serial.println(digitalRead(turretLaserPin));
 }
