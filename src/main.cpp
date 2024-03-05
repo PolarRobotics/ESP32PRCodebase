@@ -268,6 +268,7 @@ void setup() {
 
   attachInterrupt(a_channelR, encoderR, RISING);
 
+  delay(800);
   // Gyro paired?
     if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
@@ -309,9 +310,9 @@ void loop() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  Serial.print("Rotation Z: ");
+  Serial.print("Rotation Z,");
   Serial.print(g.gyro.z - 0.03);
-  Serial.print(" rad/s");
+  Serial.print(",rad/s,");
 
   drive->setCurrentAngelSpeed(g.gyro.z - 0.03);
 
