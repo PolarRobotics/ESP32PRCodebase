@@ -93,6 +93,8 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
   this->dbCross = new Debouncer(QB_CROSS_HOLD_DELAY);
 
+  this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
+
 }
 
 void QuarterbackTurret::action() {
@@ -204,9 +206,14 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
 }
 
 void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
+  moveTurret(heading, degrees, relativeToRobot);
+}
+
+void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relativeToRobot) {
   // todo
   if (relativeToRobot) {
     // todo: use encoder + laser to determine position
+
   } else { // relative to field
     // todo: use magnetometer
   }
@@ -380,6 +387,7 @@ void QuarterbackTurret::emergencyStop() {
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   Serial.println(F("zero called"));
+  targetRelativeHeading = 0;
   // pin will only read high if the main power is on and the laser sensor is triggered
   while (digitalRead(turretLaserPin) == LOW && !ps5.Touchpad()) {
     Serial.print(F("zeroing, read = "));
@@ -387,6 +395,7 @@ void QuarterbackTurret::zeroTurret() {
     setTurretSpeed(QB_HOME_PCT);
   }
   setTurretSpeed(0);
+  currentRelativeHeading = 0;
   Serial.println(F("zeroed"));
   this->runningMacro = false;
 }

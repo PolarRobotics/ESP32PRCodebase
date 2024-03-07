@@ -12,6 +12,10 @@ enum TurretMode {
   manual, automatic
 };
 
+enum TurretUnits {
+  degrees, counts
+};
+
 enum AssemblyAngle {
   straight, angled
 };
@@ -39,6 +43,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_CIRCLE_HOLD_DELAY 750L
 #define QB_TRIANGLE_HOLD_DELAY 500L
 #define QB_CROSS_HOLD_DELAY 500L
+
+#define QB_TURRET_INTERPOLATION_DELAY 5L
 
 #define QB_HOME_PCT 0.13
 
@@ -137,6 +143,7 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbCircle;
     Debouncer* dbTriangle;
     Debouncer* dbCross;
+    Debouncer* dbTurretInterpolator;
 
     void moveCradleSubroutine();
     
@@ -159,7 +166,7 @@ class QuarterbackTurret : public Robot {
     void setTurretSpeed(float absoluteSpeed); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
-    // will not be implemented until MotorControl is stabilized
+    void moveTurret(int heading, TurretUnits units = degrees, bool relativeToRobot = false); 
     void moveTurret(int heading, bool relativeToRobot = false); 
       
     // aims the assembly holding the flywheels and cradle (two states).
