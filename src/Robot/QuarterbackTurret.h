@@ -45,6 +45,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_CROSS_HOLD_DELAY 500L
 
 #define QB_TURRET_INTERPOLATION_DELAY 5L
+#define QB_TURRET_THRESHOLD 200
 
 #define QB_HOME_PCT 0.13
 
@@ -124,8 +125,13 @@ class QuarterbackTurret : public Robot {
     float targetTurretSpeed;  // default 0
 
     // robot-relative headings
-    int currentRelativeHeading; // default 0
-    int targetRelativeHeading;  // default 0
+    int16_t currentRelativeHeading; // default undefined
+    int16_t targetRelativeHeading;  // default 0
+
+    int64_t currentRelativeTurretCount; // default undefined
+    int64_t targetTurretEncoderCount; // default 0
+
+    bool turretMoving;
 
     // world-relative headings
     int currentAbsoluteHeading; // default 0
@@ -145,7 +151,15 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbCross;
     Debouncer* dbTurretInterpolator;
 
+    // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
+
+    // moves turret/turntable to specific heading. currently relative to robot, not field.
+    //* private helper function
+    void moveTurret(int heading, TurretUnits units, bool relativeToRobot = true); 
+
+    //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
+    void updateTurretMotionStatus();
     
   public:
     QuarterbackTurret(
@@ -166,8 +180,7 @@ class QuarterbackTurret : public Robot {
     void setTurretSpeed(float absoluteSpeed); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
-    void moveTurret(int heading, TurretUnits units = degrees, bool relativeToRobot = false); 
-    void moveTurret(int heading, bool relativeToRobot = false); 
+    void moveTurret(int heading, bool relativeToRobot = true); 
       
     // aims the assembly holding the flywheels and cradle (two states).
     void aimAssembly(AssemblyAngle angle); 
@@ -209,7 +222,7 @@ class QuarterbackTurret : public Robot {
     void printDebug();
 
     // * encoder
-    static int64_t turretEncoderCount;
+    static int64_t currentTurretEncoderCount;
     static uint8_t turretEncoderStateB; // A channel will be 1 when interrupt triggers
     static void turretEncoderISR();
 };

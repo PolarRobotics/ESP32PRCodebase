@@ -4,15 +4,15 @@
 uint8_t QuarterbackTurret::turretEncoderPinA;
 uint8_t QuarterbackTurret::turretEncoderPinB;
 uint8_t QuarterbackTurret::turretEncoderStateB;
-int64_t QuarterbackTurret::turretEncoderCount;
+int64_t QuarterbackTurret::currentTurretEncoderCount;
 
 void QuarterbackTurret::turretEncoderISR() {
   turretEncoderStateB = digitalRead(turretEncoderPinB);
 
   if (turretEncoderStateB == 1) {
-    turretEncoderCount++;
+    currentTurretEncoderCount++;
   } else if (turretEncoderStateB == 0) {
-    turretEncoderCount--;
+    currentTurretEncoderCount--;
   }
 }
 
@@ -28,7 +28,7 @@ QuarterbackTurret::QuarterbackTurret(
 ) {
   
   // set all state variables to default values,
-  // except currentAssemblyAngle, currentCradleState, and currentRelativeHeading;
+  // except currentAssemblyAngle, currentRelativeHeading, currentRelativeTurretCount
   // the positions of these mechanisms are initially unknown and assigned upon reset/homing
 
   this->enabled = false; // initially disable robot for safety
@@ -57,6 +57,9 @@ QuarterbackTurret::QuarterbackTurret(
   this->targetTurretSpeed = 0;
 
   this->targetRelativeHeading = 0; // while the initial heading is unknown, we want the heading to be zero
+  this->targetTurretEncoderCount = 0;
+  
+  this->turretMoving = false;
 
   this->stickFlywheel = 0;
   this->stickTurret = 0;
@@ -69,7 +72,7 @@ QuarterbackTurret::QuarterbackTurret(
   // encoder setup
   QuarterbackTurret::turretEncoderPinA = turretEncoderPinA;
   QuarterbackTurret::turretEncoderPinB = turretEncoderPinB;
-  QuarterbackTurret::turretEncoderCount = 0;
+  QuarterbackTurret::currentTurretEncoderCount = 0;
   pinMode(turretEncoderPinA, INPUT_PULLUP);
   pinMode(turretEncoderPinB, INPUT);
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
@@ -156,11 +159,19 @@ void QuarterbackTurret::action() {
         // TODO: Implement proper heading-based turret control
         //* Right Stick X: Turret Control
         // Left = CCW, Right = CW
+        // if (fabs(stickTurret) > STICK_DEADZONE) {
+        //   setTurretSpeed(0.5 * stickTurret);
+        // } else {
+        //   setTurretSpeed(0);
+        // }
+
         if (fabs(stickTurret) > STICK_DEADZONE) {
-          setTurretSpeed(0.5 * stickTurret);
+          moveTurret(currentRelativeHeading + (1 * copysign(1, stickTurret)));
         } else {
           setTurretSpeed(0);
         }
+
+        updateTurretMotionStatus();
 
         //* Left Stick Y: Flywheel Override
         if (fabs(stickFlywheel) > STICK_DEADZONE) {
@@ -201,12 +212,40 @@ void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
 }
 
 void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relativeToRobot) {
-  // todo
-  if (relativeToRobot) {
-    // todo: use encoder + laser to determine position
+  Serial.print(F("moveTurret called with heading ="));
+  Serial.print(heading);
+  Serial.print(F(", units = "));
+  if (units == degrees) { Serial.print(F("degrees, rel = ")); } else {Serial.print(F("counts, rel = ")); }
+  Serial.println(relativeToRobot);
+  if (enabled) {
 
-  } else { // relative to field
-    // todo: use magnetometer
+    // todo
+    if (relativeToRobot) {
+      // todo: use encoder + laser to determine position
+      targetRelativeHeading = heading;
+      if (units == degrees) {
+        moveTurret(heading, counts, relativeToRobot);
+      } else if (units == counts) {
+        targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
+        turretMoving = true;
+        setTurretSpeed(0.2 * copysign(1, stickTurret)); //! temp magic number, will eventually need to ramp, maybe look at stick (take max of min speed and 0.5 * stick val?)
+        // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
+      }
+      currentRelativeHeading = targetRelativeHeading;
+    } else { // relative to field
+      // todo: use magnetometer
+    }
+  } else {
+    setTurretSpeed(0);
+  }
+}
+
+void QuarterbackTurret::updateTurretMotionStatus() {
+  if (turretMoving && fabs(currentTurretEncoderCount - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
+    turretMoving = false;
+    if (fabs(stickTurret) < STICK_DEADZONE) {
+      setTurretSpeed(0);
+    }
   }
 }
 
@@ -366,15 +405,26 @@ void QuarterbackTurret::handoff() {
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   Serial.println(F("zero called"));
+  Serial.print(F("STARTING currentTurretEncoderCount: "));
+  Serial.println(currentTurretEncoderCount);
   targetRelativeHeading = 0;
-  // pin will only read high if the main power is on and the laser sensor is triggered
-  while (digitalRead(turretLaserPin) == LOW && !ps5.Touchpad()) {
-    Serial.print(F("zeroing, read = "));
-    Serial.println(digitalRead(turretLaserPin));
+  // pin will only read high if the main power is off or the laser sensor is triggered
+  while (
+    digitalRead(turretLaserPin) == LOW && // routine will exit when the laser sensor is triggered
+    currentTurretEncoderCount < (2 * QB_COUNTS_PER_TURRET_REV) && // routine will exit if it spins around twice without homing
+    !testForDisableOrStop() // routine will exit if emergency stop or disable buttons are triggered
+  ) {
+    // Serial.print(F("zeroing, read = "));
+    // Serial.println(digitalRead(turretLaserPin));
+    Serial.print(F("currentTurretEncoderCount: "));
+    Serial.println(currentTurretEncoderCount);
     setTurretSpeed(QB_HOME_PCT);
   }
+
+  // stop turret and tare everything
   setTurretSpeed(0);
   currentRelativeHeading = 0;
+  currentTurretEncoderCount = 0;
   Serial.println(F("zeroed"));
   this->runningMacro = false;
 }
@@ -392,18 +442,24 @@ bool QuarterbackTurret::testForDisableOrStop() {
   //* Touchpad: Emergency Stop
   if (ps5.Touchpad()) {
     emergencyStop();
+    Serial.println(F("emergency stopping"));
     return true;
   }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
   else if (dbSquare->debounceAndPressed(ps5.Square())) {
     if (!enabled) {
       setEnabled(true);
+      Serial.println(F("setting enabled"));
     } else {
       setEnabled(false);
+      Serial.println(F("setting disabled"));
     }
     return true;
   } 
-  else return false;
+  else {
+    // Serial.println(F("not disabling or stopping"));
+    return false;
+  }
 }
 
 void QuarterbackTurret::setEnabled(bool enabled) {
@@ -431,6 +487,6 @@ void QuarterbackTurret::printDebug() {
   */
   // Serial.print(F("turretLaserState: "));
   // Serial.println(digitalRead(turretLaserPin));
-  Serial.print(F("turretEncoderCount: "));
-  Serial.println(turretEncoderCount);
+  // Serial.print(F("currentTurretEncoderCount: "));
+  // Serial.println(currentTurretEncoderCount);
 }
