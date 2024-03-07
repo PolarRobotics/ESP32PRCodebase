@@ -100,19 +100,10 @@ QuarterbackTurret::QuarterbackTurret(
 void QuarterbackTurret::action() {
   //! Control Schema
   //* Touchpad: Emergency Stop
-  if (ps5.Touchpad()) {
-    emergencyStop();
-  }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  else if (dbSquare->debounceAndPressed(ps5.Square())) {
-    if (!enabled) {
-      setEnabled(true);
-    } else {
-      setEnabled(false);
-    }
-  }
+  // above two inputs are registered in `testForDisableOrStop()` since this is re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  else if (!runningMacro) {
+  if (!testForDisableOrStop() && !runningMacro) {
     //* Circle: Startup and Home (Reset or Zero Turret)
     if (dbCircle->debounceAndPressed(ps5.Circle())) {
       // TODO: add a hold condition to this (hold for 1 sec to reset or something)
@@ -273,7 +264,7 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force) {
       //* this should only be used on startup
       if (force) {
         // also allow emergency stop
-        while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY && !ps5.Touchpad()) {
+        while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY && !testForDisableOrStop()) {
           NOP();
         }
         currentCradleState = targetCradleState;
@@ -372,18 +363,6 @@ void QuarterbackTurret::handoff() {
   this->runningMacro = false;
 }
 
-void QuarterbackTurret::setEnabled(bool enabled) {
-  this->enabled = enabled;
-}
-
-void QuarterbackTurret::emergencyStop() {
-  this->enabled = false;
-  setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
-  setTurretSpeed(0);
-  cradleActuator.write(0);
-  // TODO: stop assembly stepper motor
-}
-
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   Serial.println(F("zero called"));
@@ -407,6 +386,36 @@ void QuarterbackTurret::reset() {
   loadFromCenter();
   this->initialized = true;
   this->runningMacro = false;
+}
+
+bool QuarterbackTurret::testForDisableOrStop() {
+  //* Touchpad: Emergency Stop
+  if (ps5.Touchpad()) {
+    emergencyStop();
+    return true;
+  }
+  //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
+  else if (dbSquare->debounceAndPressed(ps5.Square())) {
+    if (!enabled) {
+      setEnabled(true);
+    } else {
+      setEnabled(false);
+    }
+    return true;
+  } 
+  else return false;
+}
+
+void QuarterbackTurret::setEnabled(bool enabled) {
+  this->enabled = enabled;
+}
+
+void QuarterbackTurret::emergencyStop() {
+  this->enabled = false;
+  setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
+  setTurretSpeed(0);
+  cradleActuator.write(0);
+  // TODO: stop assembly stepper motor
 }
 
 void QuarterbackTurret::printDebug() {

@@ -200,10 +200,11 @@ class QuarterbackTurret : public Robot {
     void handoff(); // hands off ball to runningback
 
     //* setup and safety functions
-    void setEnabled(bool enabled); // toggles turret and flywheel movement
-    void emergencyStop();
     void zeroTurret(); // calibrates turret/moves turret to home/zero (cnc/3d printer style)
     void reset(); // zero turret, aim down (straight), and set flywheels to slow intake
+    void setEnabled(bool enabled); // toggles turret and flywheel movement
+    void emergencyStop();
+    bool testForDisableOrStop();
     
     void printDebug();
 
