@@ -37,7 +37,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->targetAssemblyAngle = straight; // while the initial state is unknown, we want it to be straight
   this->assemblyMoving = false; // it is safe to assume the assembly is not moving
 
-  this->currentCradleState = back;
+  this->currentCradleState = forward; // in case the startup state is strange, force the cradle to move back once on startup
   this->targetCradleState = back;
   this->cradleMoving = false;
   this->cradleStartTime = 0;
@@ -88,7 +88,10 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbSquare = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbDpadUp = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbDpadDown = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
-  this->dbCircle = new Debouncer(750L);
+
+  this->dbCircle = new Debouncer(QB_CIRCLE_HOLD_DELAY);
+  this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
+  this->dbCross = new Debouncer(QB_CROSS_HOLD_DELAY);
 
 }
 
@@ -118,11 +121,11 @@ void QuarterbackTurret::action() {
       }
     }
     //* Triangle: Macro 1 - load from center
-    else if (ps5.Triangle()) {
+    else if (dbTriangle->debounceAndPressed(ps5.Triangle())) {
       loadFromCenter();
     }
     //* Cross: Macro 2 - handoff to runningback
-    else if (ps5.Cross()) {
+    else if (dbCross->debounceAndPressed(ps5.Cross())) {
       handoff();
     } 
     //* Manual and Automatic Controls
@@ -136,19 +139,19 @@ void QuarterbackTurret::action() {
       }
 
       //* Options (Button): Switch Mode (toggle between auto/manual targeting)
-      if (dbOptions->debounceAndPressed(ps5.Options())) {
+      if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options())) {
         switchMode();
       }
       //* Left Button (L1): Switch Target to Receiver 1
-      else if (ps5.L1()) {
+      else if (QB_AUTO_ENABLED && ps5.L1()) {
         switchTarget(receiver_1);
       }
       //* Right Button (R1): Switch Target to Receiver 2
-      else if (ps5.R1()) {
+      else if (QB_AUTO_ENABLED && ps5.R1()) {
         switchTarget(receiver_2);
       }
       //* Auto Mode
-      else if (mode == automatic) {
+      else if (QB_AUTO_ENABLED && mode == automatic) {
         // TODO: Implement auto mode
         // do something based on current value of 'targetReceiver'
       }
@@ -218,7 +221,24 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
   }
 }
 
-void QuarterbackTurret::moveCradle(CradleState state) {
+void QuarterbackTurret::moveCradleSubroutine() {
+  // Serial.print(F("target neq current  | "));
+  if (targetCradleState == forward) {
+    // move forwards
+    cradleActuator.write(1.0);
+    cradleStartTime = millis();
+    cradleMoving = true;
+    // Serial.print(F("cradle moving forward  | "));
+  } else if (targetCradleState == back) {
+    // move backwards
+    cradleActuator.write(-1.0);
+    cradleStartTime = millis();
+    cradleMoving = true;
+    // Serial.print(F("cradle moving backward  | "));
+  }
+}
+
+void QuarterbackTurret::moveCradle(CradleState state, bool force) {
   if (enabled) {
     if (!cradleMoving) {
       targetCradleState = state;
@@ -237,22 +257,21 @@ void QuarterbackTurret::moveCradle(CradleState state) {
       //   Serial.print(F("backward  | "));
       // }
 
-      if (targetCradleState != currentCradleState) {
-        // Serial.print(F("target neq current  | "));
-        if (targetCradleState == forward) {
-          // move forwards
-          cradleActuator.write(1.0);
-          cradleStartTime = millis();
-          cradleMoving = true;
-          // Serial.print(F("cradle moving forward  | "));
-        } else if (targetCradleState == back) {
-          // move backwards
-          cradleActuator.write(-1.0);
-          cradleStartTime = millis();
-          cradleMoving = true;
-          // Serial.print(F("cradle moving backward  | "));
+      if (targetCradleState != currentCradleState || force) {
+        moveCradleSubroutine();
+      }
+
+      //* force is a blocking routine to ensure it works without interruption
+      //* do not use force frequently as it can strain the actuator
+      //* this should only be used on startup
+      if (force) {
+        // also allow emergency stop
+        while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY && !ps5.Touchpad()) {
+          NOP();
         }
-        
+        currentCradleState = targetCradleState;
+        cradleMoving = false;
+        cradleActuator.write(0);
       }
 
       // Serial.print(F("past delay? "));
@@ -354,13 +373,15 @@ void QuarterbackTurret::emergencyStop() {
   this->enabled = false;
   setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
   setTurretSpeed(0);
+  cradleActuator.write(0);
+  // TODO: stop assembly stepper motor
 }
 
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
   Serial.println(F("zero called"));
   // pin will only read high if the main power is on and the laser sensor is triggered
-  while (digitalRead(turretLaserPin) == LOW) {
+  while (digitalRead(turretLaserPin) == LOW && !ps5.Touchpad()) {
     Serial.print(F("zeroing, read = "));
     Serial.println(digitalRead(turretLaserPin));
     setTurretSpeed(QB_HOME_PCT);
@@ -373,6 +394,7 @@ void QuarterbackTurret::zeroTurret() {
 void QuarterbackTurret::reset() {
   this->enabled = true;
   this->runningMacro = true;
+  moveCradle(back, true); // force
   loadFromCenter();
   this->initialized = true;
   this->runningMacro = false;

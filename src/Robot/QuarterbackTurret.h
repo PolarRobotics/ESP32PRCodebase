@@ -36,6 +36,10 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_CRADLE_TRAVEL_DELAY 750L // ~0.75 seconds to fully extend or compress linear actuator
 
+#define QB_CIRCLE_HOLD_DELAY 750L
+#define QB_TRIANGLE_HOLD_DELAY 500L
+#define QB_CROSS_HOLD_DELAY 500L
+
 #define QB_HOME_PCT 0.13
 
 #define QB_COUNTS_PER_ENCODER_REV 1000
@@ -47,6 +51,9 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 // 5/27ths of a revolution of the turret for 1 revolution of the encoder
 #define QB_COUNTS_PER_TURRET_REV 5400
 #define QB_COUNTS_PER_TURRET_DEGREE QB_COUNTS_PER_TURRET_REV/360
+
+//* Enable or Disable Auto Mode for testing
+#define QB_AUTO_ENABLED false
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -125,7 +132,13 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbSquare;
     Debouncer* dbDpadUp;
     Debouncer* dbDpadDown;
+
+    // debouncers for delay
     Debouncer* dbCircle;
+    Debouncer* dbTriangle;
+    Debouncer* dbCross;
+
+    void moveCradleSubroutine();
     
   public:
     QuarterbackTurret(
@@ -154,7 +167,7 @@ class QuarterbackTurret : public Robot {
 
     // moves the linear actuator connected to the cradle to one of two states.
     // used to fire the ball in both manual and automatic modes
-    void moveCradle(CradleState state); 
+    void moveCradle(CradleState state, bool force = false); 
     
     // also accessible via manual stick override
     void setFlywheelSpeed(double absoluteSpeed); 
