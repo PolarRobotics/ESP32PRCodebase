@@ -92,7 +92,7 @@ void setup() {
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
       drive = new Drive(quarterback_old, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
