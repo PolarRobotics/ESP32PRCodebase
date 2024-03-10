@@ -61,6 +61,11 @@
 #define FALCON_NORMAL_PCT         0.4f // 0.5
 #define FALCON_SLOW_PCT           0.15f
 
+// BSN defines for the small 12v motors
+#define SMALL_12V_BOOST_PCT          0.15f
+#define SMALL_12V_NORMAL_PCT         0.1f // 0.5
+#define SMALL_12V_SLOW_PCT           0.05f
+
 #define BRAKE_BUTTON_PCT 0
 
 
