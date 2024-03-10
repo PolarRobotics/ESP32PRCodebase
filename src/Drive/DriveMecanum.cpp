@@ -31,7 +31,7 @@ DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum
   }
 }
 
-void DriveMecanum::setServos(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin) {
+void DriveMecanum::setupMotors(uint8_t lfpin, uint8_t rfpin, uint8_t lrpin, uint8_t rrpin) {
     this->LF.setup(lfpin);
     this->RF.setup(rfpin);
     this->LR.setup(lrpin);

@@ -82,12 +82,12 @@ void setup() {
     //* Each case should have the following:
     // An initialization of `robot` as a new Robot subclass
     // An initialization of `drive` as a new Drive subclass
-    // A call to drive->setServos (or downcast and call to override)
+    // A call to drive->setupMotors (or downcast and call to override)
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
       drive = new Drive(kicker, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
@@ -97,17 +97,17 @@ void setup() {
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new DriveMecanum();
-      ((DriveMecanum*) drive)->setServos(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+      ((DriveMecanum*) drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new Drive(center, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case runningback:
       robot = new Lineman();
       drive = new DriveQuick(driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, M1_PIN, M2_PIN, ENC1_CHA, ENC1_CHB, SPECBOT_PIN4);
@@ -118,7 +118,7 @@ void setup() {
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, motorType, driveParams);
-      drive->setServos(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_PIN, M2_PIN);
   }
 
   // drive->printSetup();
@@ -209,6 +209,14 @@ void loop() {
 
     }
 
+    //* Update the motors based on the inputs from the controller
+    //* Can change functionality depending on subclass, like robot.action()
+    drive->update();
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+
+    if (lights.returnStatus() == lights.DISCO)
+      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
       

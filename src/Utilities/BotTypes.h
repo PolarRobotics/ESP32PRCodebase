@@ -60,7 +60,7 @@ typedef struct BotConfig {
   // BotType secondary_type;
 } bot_config_t;
 
-#define NUM_BOTS 16
+#define NUM_BOTS 17
 
 // Bot Aliases
 #define BOT_IPP            0
@@ -88,6 +88,7 @@ typedef struct BotConfig {
 #define BOT_QB_BOTTOM      14
 #define BOT_QB_TURRET      15
 #define BOT_QB_TOP         15
+#define BOT_LINEMAN_V1     16
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
@@ -108,7 +109,8 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 12, "theta",      kicker,             small_ampflow,  { 0.34375f,  10.00f,  9.00f,  36.00f }},  //* 12: Θ
   { 13, "y=x",        mecanum_center,     mecanum,        { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 13: y=x
   { 14, "qb_base",    quarterback_base,   small_ampflow,  { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 14: unassigned
-  { 15, "qb_turret",  quarterback_turret, falcon,         { 0.5f,      11.50f,  9.00f,  36.00f }}   //* 15: unassigned
+  { 15, "qb_turret",  quarterback_turret, falcon,         { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 15: unassigned
+  { 16, "l-man-v1",   lineman,            small_12v,      { 1.0f,      11.00f,  9.00f,  36.00f }}   //* 16: generic lineman V1
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break
