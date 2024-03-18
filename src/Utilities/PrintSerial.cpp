@@ -6,12 +6,12 @@ PrintSerial::PrintSerial() {
     serialHeaders = {"forwardPower","turnPower","header3","header4","header5"};
 }
 
-void PrintSerial::setDriveObj(Drive* driveObj) {
-    PrintSerial::drive = driveObj;
-}
-
 void PrintSerial::updateValues() {
     PrintSerial::serialValues = {drive->getForwardPower(), 2.0, 3.0, 4.0, 5.0};
+}
+
+void PrintSerial::setDriveObj(Drive* driveObj) {
+    PrintSerial::drive = driveObj;
 }
 
 /**
