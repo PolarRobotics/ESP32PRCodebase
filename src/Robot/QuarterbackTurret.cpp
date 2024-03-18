@@ -156,17 +156,10 @@ void QuarterbackTurret::action() {
         stickFlywheel = (ps5.LStickY() / 127.5f);
         stickTurret = (ps5.RStickX() / 127.5f);  
 
-        // TODO: Implement proper heading-based turret control
         //* Right Stick X: Turret Control
         // Left = CCW, Right = CW
-        // if (fabs(stickTurret) > STICK_DEADZONE) {
-        //   setTurretSpeed(0.5 * stickTurret);
-        // } else {
-        //   setTurretSpeed(0);
-        // }
-
         if (fabs(stickTurret) > STICK_DEADZONE) {
-          moveTurret(currentRelativeHeading + (1 * copysign(1, stickTurret)));
+          setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
         } else {
           setTurretSpeed(0);
         }
@@ -397,7 +390,7 @@ void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_outwards);
-  // TODO: Rotate 180
+  moveTurret(180);
   moveCradle(forward);
   this->runningMacro = false;
 }

@@ -46,6 +46,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_TURRET_INTERPOLATION_DELAY 5L
 #define QB_TURRET_THRESHOLD 200
+#define QB_TURRET_STICK_SCALE_FACTOR 0.5
 
 #define QB_HOME_PCT 0.13
 
