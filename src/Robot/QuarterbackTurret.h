@@ -190,7 +190,7 @@ class QuarterbackTurret : public Robot {
     void moveCradle(CradleState state, bool force = false); 
     
     // also accessible via manual stick override
-    void setFlywheelSpeed(double absoluteSpeed); 
+    void setFlywheelSpeed(float absoluteSpeed); 
 
     // directly set flywheel speed to a stage
     void setFlywheelSpeedStage(FlywheelSpeed stage); 

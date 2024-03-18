@@ -328,7 +328,7 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force) {
   // Serial.println();
 }
 
-void QuarterbackTurret::setFlywheelSpeed(double absoluteSpeed) {
+void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed) {
   // update the motors so they are spinning at the new speed
   if (enabled) {
     // if current speed is not the passed speed, change the motor speed. this is only to avoid unnecessary writes
