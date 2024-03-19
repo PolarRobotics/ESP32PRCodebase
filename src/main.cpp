@@ -14,6 +14,7 @@
 #include <PolarRobotics.h>
 #include <Pairing/pairing.h>
 #include <Utilities/ConfigManager.h>
+#include <Utilities/Debouncer.h>
 
 // Robot Includes
 #include <Robot/Lights.h>
@@ -190,7 +191,7 @@ void loop() {
         lights.tackleTime = millis();
       } 
       // debounce the tackle sensor input
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+      else if (Debouncer::debounce() && 
           lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
         lights.setLEDStatus(Lights::OFFENSE);
       }
