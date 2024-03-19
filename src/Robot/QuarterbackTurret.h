@@ -182,6 +182,9 @@ class QuarterbackTurret : public Robot {
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     void moveTurret(int heading, bool relativeToRobot = true); 
+
+    // moves turret and loops/waits until heading is reached (BLOCKING/SYNCHRONOUS)
+    void moveTurretAndWait(int heading, bool relativeToRobot = true);
       
     // aims the assembly holding the flywheels and cradle (two states).
     void aimAssembly(AssemblyAngle angle); 

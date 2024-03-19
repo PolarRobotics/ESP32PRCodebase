@@ -233,6 +233,14 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
   }
 }
 
+void QuarterbackTurret::moveTurretAndWait(int heading, bool relativeToRobot) {
+  moveTurret(heading, relativeToRobot);
+  while (turretMoving) {
+    updateTurretMotionStatus();
+    delay(10);
+  }
+}
+
 void QuarterbackTurret::updateTurretMotionStatus() {
   if (turretMoving && fabs(currentTurretEncoderCount - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
@@ -390,7 +398,7 @@ void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_outwards);
-  moveTurret(180);
+  moveTurretAndWait(180);
   moveCradle(forward);
   this->runningMacro = false;
 }
