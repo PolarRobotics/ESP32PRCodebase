@@ -13,7 +13,7 @@
 #define MC_FLYWHEEL_STOP_SPEED 0
 
 // Conveyor defines
-#define MC_CONVEYOR_ON 1.0
+#define MC_CONVEYOR_ON 0.5
 #define MC_CONVEYOR_OFF 0
 
 // Debounce Vars
