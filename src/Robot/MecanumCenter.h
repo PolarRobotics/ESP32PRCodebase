@@ -40,6 +40,7 @@ class MecanumCenter : public Robot {
     void toggleFlywheels();
     void toggleConveyor();
     void changeFWSpeed(SpeedStatus speed);
+    void debug();
 };
 
 #endif // MECANUM_CENTER_H

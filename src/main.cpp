@@ -199,7 +199,7 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();

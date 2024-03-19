@@ -17,6 +17,10 @@ MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
 
   // Set the motor to zero so it doesnt spin on startup
   conveyorMotor.write(MC_CONVEYOR_OFF);
+  
+  // spin on startup for testing
+  // flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL);
+  // conveyorMotor.write(MC_CONVEYOR_ON);
 }
 
 void MecanumCenter::action() {
@@ -32,6 +36,8 @@ void MecanumCenter::action() {
     changeFWSpeed(SpeedStatus::INCREASE);
   else if (ps5.Cross())
     changeFWSpeed(SpeedStatus::DECREASE);
+
+  // debug();
 }
 
 
@@ -40,8 +46,10 @@ void MecanumCenter::toggleFlywheels() {
     // Toggle the flywheels and use the speed factor to know what speed
     if (!flywheelsOn){
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
+      // Serial.println(F("Write FW ON"));
     } else {
       flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
+      // Serial.println(F("Write FW OFF"));
     }
     // Toggle the bool so we know if its on or not
     flywheelsOn = !flywheelsOn;
@@ -56,8 +64,10 @@ void MecanumCenter::toggleConveyor() {
     // Toggle the conveyor between on or off
     if (!conveyorOn){
       conveyorMotor.write(MC_CONVEYOR_ON);
+      // Serial.println(F("Write CONV ON"));
     } else {
       conveyorMotor.write(MC_CONVEYOR_OFF);
+      // Serial.println(F("Write CONV OFF"));
     }
     // Toggle the bool so we know which mode it is in
     conveyorOn = !conveyorOn;
@@ -79,10 +89,19 @@ void MecanumCenter::changeFWSpeed(SpeedStatus speed) {
     // Update the motors if they are spinning for the new speed
     if (flywheelsOn) {
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
+      // Serial.println(F("Write FW SPEED CHANGE"));
     } else {
       flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
+      // Serial.println(F("Write FW STOP"));
     }
 
     lastDBFWChange = millis();
   }
+}
+
+void MecanumCenter::debug() {
+  Serial.print(F("fw on: "));
+  Serial.print(flywheelsOn);
+  Serial.print(F(", conv on: "));
+  Serial.println(conveyorOn);
 }
