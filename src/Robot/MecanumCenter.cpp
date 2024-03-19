@@ -23,7 +23,8 @@ void MecanumCenter::action() {
   // Toggle the Conveyor and Flywheels
   if (ps5.Square())
     toggleConveyor();
-  else if (ps5.Circle())
+  
+  if (ps5.Circle())
     toggleFlywheels();
   
   // Change the flywheel speed
@@ -76,7 +77,7 @@ void MecanumCenter::changeFWSpeed(SpeedStatus speed) {
     flywheelSpeedFactor = constrain(flywheelSpeedFactor, -0.15, 0.15);
 
     // Update the motors if they are spinning for the new speed
-    if (flywheelsOn){
+    if (flywheelsOn) {
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
     } else {
       flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
