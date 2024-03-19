@@ -164,7 +164,7 @@ void QuarterbackTurret::action() {
           setTurretSpeed(0);
         }
 
-        updateTurretMotionStatus();
+        // updateTurretMotionStatus();
 
         //* Left Stick Y: Flywheel Override
         if (fabs(stickFlywheel) > STICK_DEADZONE) {
@@ -221,7 +221,7 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
       } else if (units == counts) {
         targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
-        setTurretSpeed(0.2 * copysign(1, stickTurret)); //! temp magic number, will eventually need to ramp, maybe look at stick (take max of min speed and 0.5 * stick val?)
+        setTurretSpeed(0.2 * copysign(1, stickTurret)); //! temp magic number, will eventually need to ramp
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
       currentRelativeHeading = targetRelativeHeading;
