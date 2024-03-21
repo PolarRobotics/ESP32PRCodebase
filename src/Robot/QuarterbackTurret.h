@@ -50,6 +50,12 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_HOME_PCT 0.13
 
+//* Question: Why are there so many #defines commented out?
+//* Answer: Documentation purposes.
+
+//* Question: Why not just use the #defines as they are written to generate the values?
+//* Answer: I don't trust the preprocessor. -MP
+
 #define QB_COUNTS_PER_ENCODER_REV 1000
 // 27:1 from falcon to output (1 rev of falcon is 1/27th of turret)
 // 5:1 from falcon to encoder gear (12t on falcon, 60t on encoder)
@@ -57,8 +63,25 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 // 1 revolution on big gear is the same as 1 revolution on the encoder
 // so 5:27 is encoder:turret, and:
 // 5/27ths of a revolution of the turret for 1 revolution of the encoder
-#define QB_COUNTS_PER_TURRET_REV 5400
-#define QB_COUNTS_PER_TURRET_DEGREE QB_COUNTS_PER_TURRET_REV/360
+
+// #define QB_FALCON_TO_TURRET_RATIO 27 / 1
+// #define QB_ENCODER_TO_FALCON_RATIO 5 / 1
+// #define QB_ENCODER_TO_TURRET_RATIO /* = */ QB_FALCON_TO_TURRET_RATIO / QB_ENCODER_TO_FALCON_RATIO // (27 / 5) = 5.4
+// #define QB_COUNTS_PER_TURRET_REV /* = */ QB_ENCODER_TO_TURRET_RATIO * QB_COUNTS_PER_ENCODER_REV // 5400
+
+#define QB_COUNTS_PER_TURRET_REV /* = */ 5400
+
+// #define QB_COUNTS_PER_TURRET_DEGREE /* = */ QB_COUNTS_PER_TURRET_REV / 360
+#define QB_COUNTS_PER_TURRET_DEGREE 15
+
+// there is a large amount of mechanical slop when changing turret directions due to the large gear reduction
+// it takes about 10 gear teeth's worth of movement of the encoder gear before the turret actually begins moving again
+// for 1000 counts per encoder rev => 5400 counts per turret rev, 10 / 100 gear teeth * 5400 counts / turret = 540 counts
+
+// #define QB_TURRET_SLOP_GEAR_TEETH /* = */ 10 // slop is about 10 gear teeth
+// #define QB_TURRET_SLOP_PCT        /* = */ QB_DIRECTION_CHANGE_SLOP_GEAR_TEETH / 100
+// #define QB_TURRET_SLOP_COUNTS     /* = */ QB_DIRECTION_CHANGE_SLOP_PCT * QB_COUNTS_PER_TURRET_REV
+#define QB_TURRET_SLOP_COUNTS 540
 
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
@@ -109,7 +132,7 @@ class QuarterbackTurret : public Robot {
     CradleState currentCradleState; // initial state unknown, will reset to back
     CradleState targetCradleState; // default back
     bool cradleMoving; // default false
-    unsigned long cradleStartTime;
+    uint32_t cradleStartTime;
 
 
     //* flywheel
@@ -129,8 +152,9 @@ class QuarterbackTurret : public Robot {
     int16_t currentRelativeHeading; // default undefined
     int16_t targetRelativeHeading;  // default 0
 
-    int64_t currentRelativeTurretCount; // default undefined
-    int64_t targetTurretEncoderCount; // default 0
+    int32_t currentRelativeTurretCount; // default undefined
+    int32_t targetTurretEncoderCount; // default 0
+    int32_t errorEncoderCount; // error, i.e. |current - target|
 
     bool turretMoving;
 
