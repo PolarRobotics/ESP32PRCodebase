@@ -58,120 +58,6 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
-// Alter
-int speedL = 0;
-int a_channelL = 35;
-int b_channelL = 34;
-int encoderLCount = 0;
-int rollerover = 10000;
-int b_channel_stateL = 0;
-
-void encoderL() {
-  
-  b_channel_stateL = digitalRead(b_channelL);
-
-  if (b_channel_stateL == 1) {
-    if (encoderLCount >= rollerover) {
-      encoderLCount = 0;
-    } else {
-      encoderLCount = encoderLCount + 1;
-    }
-      
-  } else {
-    if (encoderLCount == 0) {
-      encoderLCount = rollerover;
-    } else {
-      encoderLCount = encoderLCount - 1;
-    }
-      
-  }
-}
-
-// Added
-int speedR = 0;
-int a_channelR = 36;    // Pin Label VP
-int b_channelR = 39;    // Pin Label VN
-int encoderRCount = 0;
-int b_channel_stateR = 0;
-
-void encoderR() {
-  
-  b_channel_stateR = digitalRead(b_channelR);
-
-  if (b_channel_stateR == 1) {
-    if (encoderRCount >= rollerover) {
-      encoderRCount = 0;
-    } else {
-      encoderRCount = encoderRCount + 1;
-    }
-      
-  } else {
-    if (encoderRCount == 0) {
-      encoderRCount = rollerover;
-    } else {
-      encoderRCount = encoderRCount - 1;
-    }
-      
-  }
-}
-
-int prev_current_countL = 0;
-int rolleroverthreshold = 2000; //this is bases on the fastes speed we expect, if the differace is going to be grater a rollover has likely accured
-unsigned long current_timeL = 0;
-unsigned long prev_current_timeL = 0; 
-float omegaL = 0;
-
-float commanded_power = 0;
-
-int calcSpeedL(int current_count) {
-  
-  current_timeL = millis();
-  
-  //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_countL) >= rolleroverthreshold) {
-    if ((current_count-rolleroverthreshold)>0) {
-      omegaL = float ((current_count-rollerover)-prev_current_countL)/(current_timeL-prev_current_timeL);
-    } else {
-      omegaL = float ((current_count+rollerover)-prev_current_countL)/(current_timeL-prev_current_timeL);
-    }
-  } else {
-    omegaL = float (current_count-prev_current_countL)/(current_timeL-prev_current_timeL);
-  }
-
-  prev_current_countL = current_count;
-  prev_current_timeL = current_timeL;
-
-  return omegaL*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
-
-}
-
-int prev_current_countR = 0;
-unsigned long current_timeR = 0;
-unsigned long prev_current_timeR = 0; 
-float omegaR = 0;
-
-int calcSpeedR(int current_count) {
-  
-  current_timeR = millis();
-  
-  //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_countR) >= rolleroverthreshold) {
-    if ((current_count-rolleroverthreshold)>0) {
-      omegaR = float ((current_count-rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
-    } else {
-      omegaR = float ((current_count+rollerover)-prev_current_countR)/(current_timeR-prev_current_timeR);
-    }
-  } else {
-    omegaR = float (current_count-prev_current_countR)/(current_timeR-prev_current_timeR);
-  }
-
-  prev_current_countR = current_count;
-  prev_current_timeR = current_timeR;
-
-  return -omegaR*60; // 156.25 for 384, 312.5 for 192, 1250 for 48, 117.1875 for 512, 75 for 800, 60 for 1000, 29.296875 for 2048
-
-}
-
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -255,22 +141,10 @@ void setup() {
   if (robotType == kicker) {
     ((Kicker*) robot)->enable();
   }
-
-  // Alter
-  pinMode(a_channelL, INPUT_PULLUP);
-  pinMode(b_channelL, INPUT);
-
-  attachInterrupt(a_channelL, encoderL, RISING);
-
-  // Added
-  pinMode(a_channelR, INPUT_PULLUP);
-  pinMode(b_channelR, INPUT);
-
-  attachInterrupt(a_channelR, encoderR, RISING);
-
-  delay(800);
+   
+  // Rhys: Everything from here down to line 160 needs to be moved to drive constructor
   // Gyro paired?
-    if (!mpu.begin()) {
+  if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     while (1) {
       delay(10);
@@ -283,6 +157,7 @@ void setup() {
     
   mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
   Serial.print("Filter bandwidth set to: " + String(mpu.getFilterBandwidth()));
+ // Rhys: Stop here :D
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -301,29 +176,20 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
-  //Serial.print(encoderACount);
-  // Alter
-  speedL = calcSpeedL(encoderLCount);
-  // Added
-  speedR = calcSpeedR(encoderRCount);
-
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  sensors_event_t a, g, temp; // Rhys: Move to Drive.h
+  mpu.getEvent(&a, &g, &temp); // Rhys: call inside driveUpdate()
 
   Serial.print("Rotation Z,");
   Serial.print(g.gyro.z - 0.03);
   Serial.print(",rad/s,");
 
-  drive->setCurrentAngelSpeed(g.gyro.z - 0.03);
+  drive->setCurrentAngelSpeed(g.gyro.z - 0.03); // Rhys: call inside driveUpdate()
 
   //drive->update(speed);
 
   // delay(5);
 
   if (ps5.isConnected()) { 
-    // Serial.print(F("\r\nConnected"));
-    // ps5.setLed(255, 0, 0);   // set LED red
-
     if (robotType == mecanum_center) {
       ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
     } else {
@@ -370,7 +236,7 @@ void loop() {
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     // Alter
-    drive->update2(speedL, speedR);
+    drive->update2(speedL, speedR); // Rhys: update2 needs to be more formalized into update, use if statements to prevent issues
     // Added
     //drive->update(speedR);
 
