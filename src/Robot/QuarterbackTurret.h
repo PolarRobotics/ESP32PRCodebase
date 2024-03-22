@@ -250,7 +250,7 @@ class QuarterbackTurret : public Robot {
     void printDebug();
 
     // * encoder
-    static int64_t currentTurretEncoderCount;
+    static int32_t currentTurretEncoderCount;
     static uint8_t turretEncoderStateB; // A channel will be 1 when interrupt triggers
     static void turretEncoderISR();
 };
