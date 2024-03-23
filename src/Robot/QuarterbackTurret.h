@@ -83,6 +83,11 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 // #define QB_TURRET_SLOP_COUNTS     /* = */ QB_DIRECTION_CHANGE_SLOP_PCT * QB_COUNTS_PER_TURRET_REV
 #define QB_TURRET_SLOP_COUNTS 540
 
+#define QB_TURRET_STOP_LOOP_DELAY_MS 10
+#define QB_TURRET_STOP_THRESHOLD_MS 500 // must be a multiple of QB_TURRET_STOP_LOOP_DELAY_MS
+
+#define QB_TURRET_HOME_STOP_FACTOR 0.1 // correction constant for homing, multiplied into stop counts in final homing
+
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 

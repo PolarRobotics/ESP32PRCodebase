@@ -409,6 +409,8 @@ void QuarterbackTurret::zeroTurret() {
   Serial.println(F("zero called"));
   Serial.print(F("STARTING count: "));
   Serial.println(currentTurretEncoderCount);
+  Serial.println(F("Resetting count to 0"));
+  currentTurretEncoderCount = 0;
   targetRelativeHeading = 0;
 
   // set speed
@@ -426,13 +428,16 @@ void QuarterbackTurret::zeroTurret() {
     Serial.println(currentTurretEncoderCount);
   }
 
+  Serial.print(F("laser should read high rn: read = "));
+  Serial.println(digitalRead(turretLaserPin));
+
   // get values as soon as the laser reads high
   int32_t risingEdgeEncoderCount = currentTurretEncoderCount;
   int32_t risingEdgeTimestamp = millis();
 
   while (
     digitalRead(turretLaserPin) == HIGH && // exit when the laser sensor goes low
-    currentTurretEncoderCount < (QB_COUNTS_PER_TURRET_REV / 2) && // exit if traveled half a rotation without triggering
+    (currentTurretEncoderCount - risingEdgeEncoderCount) < (QB_COUNTS_PER_TURRET_REV / 2) && // exit if traveled half a rotation without triggering
     !testForDisableOrStop() // exit if emergency stop or disable buttons are triggered
   ) {
     Serial.print(F("zeroing (stage 2), read = "));
@@ -440,6 +445,9 @@ void QuarterbackTurret::zeroTurret() {
     Serial.print(F("; cte_count: "));
     Serial.println(currentTurretEncoderCount);
   }
+
+  Serial.print(F("laser should read low rn: read = "));
+  Serial.println(digitalRead(turretLaserPin));
 
   int32_t fallingEdgeEncoderCount = currentTurretEncoderCount;
   int32_t fallingEdgeTimestamp = millis();
@@ -456,12 +464,34 @@ void QuarterbackTurret::zeroTurret() {
   Serial.print(F(", time: "));
   Serial.println(fallingEdgeTimestamp);
   
-  int32_t lastTurretEncoderCount = currentTurretEncoderCount - 1; // just something different than current
+  // Here lastTurretEncoderCount is used as the value of currentTurretEncoderCount in the previous iteration of the loop
+  int32_t lastTurretEncoderCount = -currentTurretEncoderCount; // just something different than current
+  uint16_t stopCounter = 0;
 
   // wait until turret is stopped
-  while (lastTurretEncoderCount != currentTurretEncoderCount) {
+  while (
+    stopCounter < (QB_TURRET_STOP_THRESHOLD_MS / QB_TURRET_STOP_LOOP_DELAY_MS) &&
+    !testForDisableOrStop()
+  ) {
+    // run a counter for how many loop iterations that the last and current are the same.
+    // if they are the same for a predetermined amount of time (QB_TURRET_STOP_THRESHOLD_MS),
+    // we assume that the motor has actually stopped.
+    if (lastTurretEncoderCount == currentTurretEncoderCount) {
+      stopCounter++;
+    } else {
+      stopCounter = 0;
+    }
+    
+    Serial.print(F("last ct: "));
+    Serial.print(lastTurretEncoderCount);
+    Serial.print(F(", current ct: "));
+    Serial.print(currentTurretEncoderCount);
+    Serial.print(F(", stopCt: "));
+    Serial.println(stopCounter);
+
     lastTurretEncoderCount = currentTurretEncoderCount; // update last count
-    delay(100); // then delay to wait for encoder to update
+
+    delay(QB_TURRET_STOP_LOOP_DELAY_MS); // then delay to wait for encoder to update
   }
 
   int32_t restEncoderCount = currentTurretEncoderCount;
@@ -486,46 +516,76 @@ void QuarterbackTurret::zeroTurret() {
 
   // now, to actually do this, we start moving the motor (which was stopped), but in the opposite direction.
 
+  Serial.println(F("motor stopped, now moving in opposite direction"));
+
   setTurretSpeed(-QB_HOME_PCT);
 
   // moving with a positive power increases the current encoder count, and vice versa
   // since we are moving with a negative power, the encoder count will be decreasing
-  // so we are looking for the current encoder count to be *less than* the second point
-  while (currentTurretEncoderCount > fallingEdgeEncoderCount) {
+
+  // wait for the laser to trigger (go high) again, then measure the difference 
+  // between the current encoder count and the known falling edge count.
+  // this value represents the mechanical slop, which can be used later.
+  // after that, tare the value of the current encoder count to the falling edge count.
+  
+  while (
+    digitalRead(turretLaserPin) == LOW && // exit when the laser sensor is triggered
+    !testForDisableOrStop() // exit if emergency stop or disable buttons are triggered
+  ) {
+    Serial.print(F("zeroing (stage 3), read = "));
+    Serial.print(digitalRead(turretLaserPin));
+    Serial.print(F("; cte_count: "));
+    Serial.print(currentTurretEncoderCount);
+    Serial.print(F("; fall_ct: "));
+    Serial.println(fallingEdgeEncoderCount);
     delay(5);
   }
 
-  // at this point, we will record the difference between the current count (physically, at the second point) and the rest count (third point)
-  // the current encoder count should be less than the falling edge count (past it, if it were to be physically translated) due to the slop
-  int32_t reEntryEncoderCount = currentTurretEncoderCount;
-  int32_t reEntryTimestamp = millis();
+  // at this point, we will record the difference between the current count (physically, at the second point or falling edge) 
+  // and the rest count (third point or stopping point). the current encoder count should be less than the falling edge count 
+  // (past it, if it were to be physically translated) due to the mechanical slop
+  // int32_t reEntryEncoderCount = currentTurretEncoderCount;
+  // int32_t reEntryTimestamp = millis();
 
-  // the error from the mechanical slop and the motor stopping is then the difference between the current position and the third point.
-  // again, the latter is greater, so we subtract from that
-  int32_t slopAndStopError = restEncoderCount - reEntryEncoderCount; // atp reEntryEncoderCount is still currentTurretEncoderCount
+  // the error only due to the motor not stopping perfectly is then found by the difference between the first and third points
+  int32_t stopError = restEncoderCount - risingEdgeEncoderCount;
 
-  // the error only due to the motor not stopping perfectly is then found by the difference between the second and third points
-  int32_t stopError = restEncoderCount - fallingEdgeEncoderCount;
+  // calculate the error due to slop
+  int32_t slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
 
-  // from here we can pinpoint the error due to slop
-  int32_t slopError = slopAndStopError - stopError;
 
   Serial.print(F("stop error: "));
   Serial.print(stopError);
   Serial.print(F("; slop error: "));
   Serial.println(slopError);
 
-  // then, we tare the current count to the second point, since we assume it is there
+  // then, we tare the current count to the third point (falling edge), since we assume it is there
   currentTurretEncoderCount = fallingEdgeEncoderCount;
 
   // find the theoretical midpoint, then add the stop error to get the target count
-  int32_t targetCount = ((fallingEdgeEncoderCount - risingEdgeEncoderCount) / 2) + stopError;
+  // int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) - stopError; // for if we change directions again
+  int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) + (stopError * QB_TURRET_HOME_STOP_FACTOR);
 
   Serial.print(F("target count: "));
   Serial.println(targetCount);
 
   // finally, move to the target count, then stop
-  while (currentTurretEncoderCount > targetCount) {
+  // setTurretSpeed(QB_HOME_PCT);
+
+
+  while (
+    // currentTurretEncoderCount < targetCount && 
+    currentTurretEncoderCount > targetCount && 
+    !testForDisableOrStop()
+  ) {
+    Serial.print(F("zeroing (stage 4), read = "));
+    Serial.print(digitalRead(turretLaserPin));
+    Serial.print(F("; cte_count: "));
+    Serial.print(currentTurretEncoderCount);
+    Serial.print(F("; target_ct: "));
+    Serial.print(targetCount);
+    Serial.print(F("; current_ct > target_ct? = "));
+    Serial.println(currentTurretEncoderCount > targetCount);
     delay(5);
   }
 
@@ -541,7 +601,8 @@ void QuarterbackTurret::reset() {
   this->enabled = true;
   this->runningMacro = true;
   moveCradle(back, true); // force
-  loadFromCenter();
+  // loadFromCenter();
+  zeroTurret(); // temp: just zero
   this->initialized = true;
   this->runningMacro = false;
 }
@@ -593,8 +654,10 @@ void QuarterbackTurret::printDebug() {
   Serial.print(F(" | currentTurretSpeed: "));
   Serial.println(currentTurretSpeed);
   */
-  // Serial.print(F("turretLaserState: "));
-  // Serial.println(digitalRead(turretLaserPin));
-  // Serial.print(F("currentTurretEncoderCount: "));
-  // Serial.println(currentTurretEncoderCount);
+  if (enabled) {
+    Serial.print(F("turretLaserState: "));
+    Serial.print(digitalRead(turretLaserPin));
+    Serial.print(F("; currentTurretEncoderCount: "));
+    Serial.println(currentTurretEncoderCount);
+  }
 }
