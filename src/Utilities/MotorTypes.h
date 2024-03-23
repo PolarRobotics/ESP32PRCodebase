@@ -30,4 +30,18 @@ const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
 
 const char* getMotorTypeString(MotorType type);
 
+/**
+ * @brief coeffs deffins the two constants needed for a power curve fit
+ * 
+ * f(x)=ax^b
+ * where, a and b are constonts
+ * 
+ */
+typedef struct Coeffs{
+  float a;
+  float b;
+} coeffs_t;
+
+coeffs_t getMotorCurveCoeff(MotorType motor, bool negativeDir = false);
+
 #endif // MOTOR_TYPES_H

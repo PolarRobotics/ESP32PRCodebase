@@ -91,8 +91,6 @@ class Drive {
     void calcTurning(float stickTrn, float fwdLinPwr);
 
   protected:
-    // MotorControl* M1;
-    // MotorControl* M2;
     MotorControl M1, M2;
     float stickForwardRev, stickTurn;
     float lastTurnPwr;
@@ -114,7 +112,6 @@ class Drive {
     Drive(BotType botType, MotorType motorType);
     Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
     void setupMotors(uint8_t lpin, uint8_t rpin);
-    void setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
     float getForwardPower();
