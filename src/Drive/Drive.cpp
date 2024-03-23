@@ -39,7 +39,7 @@ Drive::Drive(BotType botType, MotorType motorType) {
   Drive(botType, motorType, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction, bool hasGyro) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
@@ -89,15 +89,17 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     lastTime = 0;
   } 
 
-  CL_enable = true;
-  k_p = 1500;
-  k_i = 0;
-  //k_i = 0.05;
+  // Gyro
+  if (hasGyro){
+    CL_enable = true;
+    k_p = 1500;
+    k_i = 0;
+    // k_i = 0.05;
 
-  integral_sum = 0;
-  prev_current_error = 0;
-  prev_integral_time = 0;
-
+    integral_sum = 0;
+    prev_current_error = 0;
+    prev_integral_time = 0;
+  }
 }
 
 void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
@@ -430,6 +432,49 @@ void Drive::printCsvInfo() {
     Serial.println(5); // last line is -ALWAYS- println or else the python script will break
 }
 
+void Drive::setCurrentAngleSpeed(float speed) {
+  currentAngleSpeed = speed;
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrate uses trapizodial intgration to calculate the running integral sum for the PI controller
+ * 
+*/
+int Drive::integrate(int current_error) {
+  integral_sum = integral_sum + (current_error + prev_current_error); //*(millis()-prev_integral_time)/100;
+  prev_integral_time = millis();
+  prev_current_error = current_error;
+  
+  return integral_sum; 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrateReset resets the varibles in integral
+ * 
+*/
+void Drive::integrateReset() {
+  integral_sum = 0;
+  prev_current_error = 0;
+  prev_integral_time = millis();
+}
+
+/**
+ * @brief NEEDS SPELLCHECK PILoop is the closed loop controller. this is the main function for CL  
+ * @author Grant Brautigam
+ * Updated 11-19-2023
+ * 
+*/
+int Drive::PILoop() {  
+  if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) {// the motor wants to stop, skip and reset the PI loop  
+    motorDiffCorrection = k_p*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
+  } else {
+    motorDiffCorrection = 0;
+    integrateReset();
+  }
+
+  return motorDiffCorrection; 
+}
+
 /**
  * 
  * @brief updates the motors after calling all the functions to generate
@@ -445,10 +490,19 @@ void Drive::update(int speed) {
 
     generateMotionValues();
 
-    M1.setCurrentSpeed(speed);
-    //M1.write(-.3);
-    //M1.setTargetSpeed(-900);
-    M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+    if (CL_enable) {
+        mpu.getEvent(&a, &g, &temp);
+        setCurrentAngleSpeed(g.gyro.z - 0.03);
+        motorDiff = PILoop()*.5;
+        Serial.print(motorDiff);
+        Serial.print("  ");
+    } else {
+        motorDiff = 0;
+    }
+
+    // get the ramp value
+    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
+    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
 
     if ((millis() - lastTime) >= 100) {
         power = power - 0.05;

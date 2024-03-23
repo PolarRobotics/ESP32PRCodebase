@@ -4,6 +4,10 @@
 #include <Robot/MotorControl.h>
 #include "PolarRobotics.h"
 
+// Gyro Includes
+#include <Adafruit_MPU6050.h>
+#include <Wire.h>
+
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
 #endif // !NUM_MOTORS
@@ -92,8 +96,25 @@ class Drive {
     float turnSensitivityScalar = 0.0f;
     float domainAdjustment = 0.0f;
 
+    // Gyroscope
+    Adafruit_MPU6050 mpu;
+    sensors_event_t a, g, temp;
+    float currentAngleSpeed;
+    bool drivingStraight;
+    int motorDiff;
+
+    // PILoop
+    bool CL_enable = false;
+    int motorDiffCorrection;
+    float k_p;
+    float k_i;
+    const float ERROR_THRESHOLD = 0.02;
     unsigned long lastTime;
-    float power;
+    //integrate
+    int prev_current_error;
+    int integral_sum;
+    unsigned long prev_integral_time;
+
 
     void calcTurning(float stickTrn, float fwdLinPwr);
 
@@ -143,7 +164,7 @@ class Drive {
 
     Drive();
     Drive(BotType botType, MotorType motorType);
-    Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
+    Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2, bool hasGyro = false);
     void setupMotors(uint8_t lpin, uint8_t rpin);
     void setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
@@ -163,6 +184,12 @@ class Drive {
     void printSetup();
     virtual void printDebugInfo();
     virtual void printCsvInfo();
+
+    // CL Gyro Functions
+    void setCurrentAngleSpeed(float speed);
+    int PILoop();
+    int integrate(int current_error);
+    void integrateReset();
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0
