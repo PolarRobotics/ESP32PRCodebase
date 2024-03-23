@@ -112,24 +112,10 @@ void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
     // M1->setup(lpin), M2->setup(rpin);
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    M1.setup(lpin, this->motorType, this->gearRatio);
+    M2.setup(rpin, this->motorType, this->gearRatio);
 }
 
-/**
- * setupMotors
- * @brief to be called when setting up a motor with an encoder
- * 
- * 
-*/
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    // this->M1 = new MotorControl(motorType, true, this->gearRatio);
-    // this->M2 = new MotorControl(motorType, true, this->gearRatio);
-    
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
-}
 
 void Drive::setMotorType(MotorType motorType) {
     this->motorType = motorType;

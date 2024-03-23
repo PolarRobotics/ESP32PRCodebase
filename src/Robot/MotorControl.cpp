@@ -2,14 +2,6 @@
 
 #include "MotorControl.h"
 
-// void ext_read_encoder0() {
-//   GlobalClassPointer[0]->readEncoder();
-// }
-
-// void ext_read_encoder1() {
-//   GlobalClassPointer[1]->readEncoder();
-// }
-
 /**
  * @brief 
  * A class similar to the servo class, implements a method of choosing timers and channels 
@@ -72,11 +64,10 @@ MotorControl::MotorControl() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
-  this->has_encoder = has_encoder;
+uint8_t MotorControl::setup(int mot_pin, MotorType type, float gearRatio) {
+  
   this->motor_type = type;
   this->gear_ratio = gearRatio;
-  this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
@@ -245,8 +236,22 @@ int MotorControl::PILoop(int target_speed) {
 
 }
 
-int MotorControl::Percent2RPM(float pct) {
-   float temp = constrain(pct, -1, 1);
+void MotorControl::sendRPM(int rpm){
+  if (rpm < 0)
+    negativeDir = true;
+  else 
+    negativeDir = false;
+  
+  coeff = getMotorCurveCoeff(motor_type, negativeDir);
+
+  pct = coeff.a*pow(rpm, coeff.b);
+
+  Motor.write(pct);
+}
+
+int MotorControl::Percent2RPM(float pct)
+{
+  // float temp = constrain(pct, -1, 1);
   return this->max_rpm * constrain(pct, -1.0f, 1.0f);
   //return copysign(4651*pow(abs(pct), 1.7783f), pct);
 }
@@ -306,6 +311,7 @@ int MotorControl::ramp(int requestedPower,  float accelRate) {
             requestedRPM = abs_requestedPower; // to prevent you from slowing down below the requested speed
     }
     
-    return copysign(requestedRPM, requestedPower);
+    return requestedRPM;
 
 }
+
