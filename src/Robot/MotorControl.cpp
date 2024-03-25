@@ -142,3 +142,19 @@ float MotorControl::ramp(float requestedPower,  float accelRate) {
 
 }
 
+/**
+ * @brief NEEDS SPELLCHECK setTargetSpeed is the "main loop" of motor control. It is the profered function to set the speed of a motor
+ * it calls other inportent functions like ramp and PILoop
+ * 
+*/
+void MotorControl::setTargetSpeed(int target_rpm) {
+ if (target_rpm > deadZone || target_rpm < -1 * deadZone) // dead zone
+ {
+  float ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+  this->write(ramped_speed); //convert speed to the coresponding motor power and write to the motor 
+ }
+ else
+  this->write(0); // stopping the motor
+
+}
+

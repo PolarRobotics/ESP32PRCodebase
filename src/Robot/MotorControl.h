@@ -13,6 +13,7 @@ class MotorControl {
 private:
   MotorType motor_type; // the type of motor to be assigned to this object
   float gear_ratio;     // the input / output gear ratio
+  float deadZone = 0.001;
 
   // Servo:
   MotorInterface Motor;
@@ -41,5 +42,7 @@ public:
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
+
+  void setTargetSpeed(int target_rpm);
 
 };
