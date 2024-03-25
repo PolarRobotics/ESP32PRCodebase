@@ -69,11 +69,20 @@ void MotorControl::write(float pct) {
   Motor.write(pct);
 }
 
+/**
+ * @brief writes to the motor using an RPM number RPM number is converted to 
+ *        motor percentage based on real data collected in experiments
+ * @author Grant Brautigam
+ * @param rpm you want the motors at
+ * Updated 03-25-2024
+*/
 void MotorControl::sendRPM(int rpm){
   if (rpm < 0)
     negativeDir = true;
   else 
     negativeDir = false;
+
+  rpm = rpm / gear_ratio; // needed because mechanical engineering :)
   
   coeff = getMotorCurveCoeff(motor_type, negativeDir);
 
@@ -151,10 +160,10 @@ void MotorControl::setTargetSpeed(int target_rpm) {
  if (target_rpm > deadZone || target_rpm < -1 * deadZone) // dead zone
  {
   float ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
-  this->write(ramped_speed); //convert speed to the coresponding motor power and write to the motor 
+  this->sendRPM(ramped_speed); //convert speed to the coresponding motor power and write to the motor 
  }
  else
-  this->write(0); // stopping the motor
+  this->sendRPM(0); // stopping the motor
 
 }
 
