@@ -4,7 +4,7 @@
 
 Lights::Lights() {
   currState = PAIRING;
-  homeState = AWAY;
+  homeState = HOME;
 }
 
 void Lights::setupLEDS() {
