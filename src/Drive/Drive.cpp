@@ -319,11 +319,8 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
 }
 
 void Drive::emergencyStop() {
-    // M1->writelow(), M2->writelow();
-    // M1.writelow(), M2.writelow();
-
-    M1.write(0); 
-    M2.write(0);
+    M1.stop(); 
+    M2.stop();
 }
 
 void Drive::printSetup() {
@@ -485,18 +482,13 @@ void Drive::update() {
         motorDiff = 0;
     }
 
-    // get the ramp value
-    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
-
-    // Set the ramp value to a function, needed for generateMotionValues
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
+    if (drivingStraight){
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+    } else {
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+    }
     
-    // M1->write(requestedMotorPower[0]);
-    // M2->write(requestedMotorPower[1]);
-
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
 }
 
