@@ -94,6 +94,10 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     integral_sum = 0;
     prev_current_error = 0;
     prev_integral_time = 0;
+
+    mpu.begin();
+    mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
+    mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
   }
 }
 
@@ -460,7 +464,7 @@ void Drive::integrateReset() {
  * 
 */
 int Drive::PILoop() {  
-  if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) {// the motor wants to stop, skip and reset the PI loop  
+  if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) { // the motor wants to stop, skip and reset the PI loop  
     motorDiffCorrection = k_p*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
   } else {
     motorDiffCorrection = 0;
