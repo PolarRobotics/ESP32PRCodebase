@@ -83,6 +83,7 @@ class Drive {
     BotType botType; // TODO: I added this to private only because motorType was private.
     float gearRatio;
     bool hasEncoders;
+    bool hasGyro;
 
     float BSNscalar;
     float wheelBase;
