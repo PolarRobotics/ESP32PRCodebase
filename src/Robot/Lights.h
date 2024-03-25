@@ -14,7 +14,7 @@ private:
   uint8_t currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
-  uint8_t homeState;
+  bool isOffense;
   Lights();
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM
@@ -27,11 +27,6 @@ public:
     TACKLED,     // turn red when tackled
     DISCO,       // go crazy
     OFF
-  };
-  enum HomeState {
-    HOME,
-    AWAY,
-    LINEMAN
   };
   static Lights& getInstance() {
     static Lights instance;
