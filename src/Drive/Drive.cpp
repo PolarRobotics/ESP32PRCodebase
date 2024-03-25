@@ -43,6 +43,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
+  this->hasGyro = false;
   this->gearRatio = driveParams.gear_ratio;
   this->wheelBase = driveParams.wheel_base;
   this->R_Min = driveParams.r_min;
