@@ -44,5 +44,6 @@ public:
   float ramp(float requestedPower, float accelRate);
 
   void setTargetSpeed(int target_rpm);
+  void stop();
 
 };

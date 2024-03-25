@@ -163,7 +163,16 @@ void MotorControl::setTargetSpeed(int target_rpm) {
   this->sendRPM(ramped_speed); //convert speed to the coresponding motor power and write to the motor 
  }
  else
-  this->sendRPM(0); // stopping the motor
+  this->stop(); // stopping the motor
 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK stop derectly writes o to the motor. It also resets the integral adder inside the PI loop. 
+ * This is an esay way to rapidly stop motion on an indeviual motor
+ * 
+ */
+void MotorControl::stop() {
+    this->write(0);
 }
 
