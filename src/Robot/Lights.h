@@ -9,14 +9,8 @@
 #define TIME_BETWEEN_TOGGLES 500
 
 class Lights {
-private:
-  unsigned long lastToggleTime;
-  uint8_t currState;
-  CRGBArray<NUM_LEDS> leds;
-  uint8_t iteration;
-  bool isOffense;
-  Lights();
 public:
+
   // MUHAMMED ENUM PRAISE BE UPON HIM
   enum LEDState {
     PAIRING,     // yellow
@@ -28,6 +22,23 @@ public:
     DISCO,       // go crazy
     OFF
   };
+  enum HomeState {
+    HOME,
+    AWAY,
+    LINEMAN
+  };
+
+private:
+
+  unsigned long lastToggleTime;
+  LEDState currState;
+  CRGBArray<NUM_LEDS> leds;
+  uint8_t iteration;
+  HomeState homeState;
+  Lights();\
+  
+public:
+
   static Lights& getInstance() {
     static Lights instance;
     return instance;
