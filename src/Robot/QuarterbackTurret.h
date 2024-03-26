@@ -160,6 +160,8 @@ class QuarterbackTurret : public Robot {
     int32_t currentRelativeTurretCount; // default undefined
     int32_t targetTurretEncoderCount; // default 0
     int32_t errorEncoderCount; // error, i.e. |current - target|
+    int32_t slopError; // error due to mechanical slop, automatically determined by robot during reset
+    int32_t stopError; // number of encoder counts that are needed for the motor to stop
 
     bool turretMoving;
 
@@ -207,7 +209,7 @@ class QuarterbackTurret : public Robot {
 
     //* base/internal functions
     // moves turret at specified speed (open loop)
-    void setTurretSpeed(float absoluteSpeed); 
+    void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     void moveTurret(int heading, bool relativeToRobot = true); 
@@ -258,6 +260,8 @@ class QuarterbackTurret : public Robot {
     static int32_t currentTurretEncoderCount;
     static uint8_t turretEncoderStateB; // A channel will be 1 when interrupt triggers
     static void turretEncoderISR();
+
+    void turretDirectionChanged();
 };
 
 #endif // QUARTERBACK_TURRET_H

@@ -191,10 +191,22 @@ void QuarterbackTurret::action() {
 // note that because the direction is flipped to be more intuitive for the driver,
 // the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
 // positive direction is also positive encoder direction, and vice versa
-void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
+void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false) {
   if (enabled) {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
     turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
+
+    // if (copysign(1, currentTurretSpeed) != copysign(1, targetTurretSpeed) && (currentTurretSpeed != 0 && targetTurretSpeed != 0)) {
+    if (!overrideEncoderTare) {
+      if (currentTurretSpeed > 0 && targetTurretSpeed < 0) { // going CW, trying to go CCW
+        currentTurretEncoderCount += slopError;
+        targetTurretEncoderCount += slopError;
+      } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
+        currentTurretEncoderCount -= slopError;
+        targetTurretEncoderCount -= slopError;
+      }
+    }
+
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
   } else {
     turretMotor.write(0);
@@ -249,6 +261,10 @@ void QuarterbackTurret::updateTurretMotionStatus() {
       setTurretSpeed(0);
     }
   }
+}
+
+void QuarterbackTurret::turretDirectionChanged() {
+
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
@@ -548,10 +564,10 @@ void QuarterbackTurret::zeroTurret() {
   // int32_t reEntryTimestamp = millis();
 
   // the error only due to the motor not stopping perfectly is then found by the difference between the first and third points
-  int32_t stopError = restEncoderCount - risingEdgeEncoderCount;
+  stopError = restEncoderCount - risingEdgeEncoderCount;
 
   // calculate the error due to slop
-  int32_t slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
+  slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
 
 
   Serial.print(F("stop error: "));
