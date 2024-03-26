@@ -35,7 +35,7 @@ coeffs_t getMotorCurveCoeff(MotorType motor, bool negativeDir){
   if(negativeDir){
     //motor is moving CW
     switch (motor) {
-      case MotorType::big_ampflow: return {1.0f, 1.0f};
+      case MotorType::big_ampflow: return {.0012f, .7895f};
       case MotorType::small_ampflow: return {1.0f, 1.0f};
       case MotorType::mecanum: return {1.0f, 1.0f};
       case MotorType::falcon: return {1.0f, 1.0f};
@@ -43,7 +43,7 @@ coeffs_t getMotorCurveCoeff(MotorType motor, bool negativeDir){
   } else {
     //motor is moving CCW
     switch (motor) {
-      case MotorType::big_ampflow: return {1.0f, 1.0f};
+      case MotorType::big_ampflow: return {.0087f, .5616f};
       case MotorType::small_ampflow: return {1.0f, 1.0f};
       case MotorType::mecanum: return {1.0f, 1.0f};
       case MotorType::falcon: return {1.0f, 1.0f};

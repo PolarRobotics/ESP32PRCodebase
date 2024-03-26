@@ -86,7 +86,7 @@ void MotorControl::sendRPM(int rpm){
   
   coeff = getMotorCurveCoeff(motor_type, negativeDir);
 
-  pct = coeff.a*pow(rpm, coeff.b);
+  pct = copysign(coeff.a*pow(abs(rpm), coeff.b), rpm);
 
   Motor.write(pct);
 }

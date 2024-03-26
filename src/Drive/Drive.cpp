@@ -485,10 +485,10 @@ void Drive::update() {
 
     if (drivingStraight){
         M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
     } else {
         M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
     }
     
 }
