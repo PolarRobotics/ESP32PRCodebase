@@ -46,6 +46,10 @@ drive_param_t driveParams;
 // Config
 ConfigManager config;
 
+// Debouncer
+Debouncer* dbTackle = nullptr;
+#define TACKLE_SENSOR_DEBOUNCE_DELAY 1000
+
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
 void onConnection();
@@ -135,6 +139,9 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
+  // Initialize debouncer(s)
+  dbTackle = new Debouncer(TACKLE_SENSOR_DEBOUNCE_DELAY, true);
+
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
@@ -186,14 +193,15 @@ void loop() {
     }
 
     if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
-      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
-        lights.setLEDStatus(Lights::TACKLED);
-        lights.tackleTime = millis();
-      } 
-      // debounce the tackle sensor input
-      else if (Debouncer::debounce() && 
-          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
-        lights.setLEDStatus(Lights::OFFENSE);
+      if (dbTackle->debounceAndPressed(digitalRead(TACKLE_PIN))) {
+        if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+          lights.setLEDStatus(Lights::TACKLED);
+          lights.tackleTime = millis();
+        } 
+        // debounce the tackle sensor input
+        else if (lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
+          lights.setLEDStatus(Lights::OFFENSE);
+        }
       }
     }
 
