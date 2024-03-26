@@ -196,15 +196,9 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
     turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
 
-    // if (copysign(1, currentTurretSpeed) != copysign(1, targetTurretSpeed) && (currentTurretSpeed != 0 && targetTurretSpeed != 0)) {
+    // handle mechanical slop when changing directions
     if (!overrideEncoderTare) {
-      if (currentTurretSpeed > 0 && targetTurretSpeed < 0) { // going CW, trying to go CCW
-        currentTurretEncoderCount += slopError;
-        targetTurretEncoderCount += slopError;
-      } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
-        currentTurretEncoderCount -= slopError;
-        targetTurretEncoderCount -= slopError;
-      }
+      turretDirectionChanged();
     }
 
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
@@ -264,7 +258,13 @@ void QuarterbackTurret::updateTurretMotionStatus() {
 }
 
 void QuarterbackTurret::turretDirectionChanged() {
-
+  if (currentTurretSpeed > 0 && targetTurretSpeed < 0) { // going CW, trying to go CCW
+    currentTurretEncoderCount += slopError;
+    targetTurretEncoderCount += slopError;
+  } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
+    currentTurretEncoderCount -= slopError;
+    targetTurretEncoderCount -= slopError;
+  }
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
