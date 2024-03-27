@@ -237,25 +237,32 @@ int MotorControl::PILoop(int target_speed) {
 }
 
 /**
- * @brief writes to the motor using an RPM number RPM number is converted to 
+ * @brief writes to the motor using an RPM number 
+ *        When useCurevFir is true the RPM number is converted to 
  *        motor percentage based on real data collected in experiments
  * @author Grant Brautigam
  * @param rpm you want the motors at
  * Updated 03-25-2024
 */
 void MotorControl::sendRPM(int rpm){
-  if (rpm < 0)
-    negativeDir = true;
-  else 
-    negativeDir = false;
-
-  rpm = rpm / gear_ratio; // needed because mechanical engineering :)
   
-  coeff = getMotorCurveCoeff(motor_type, negativeDir);
+  if (uesCurveFit) {
+    if (rpm < 0)
+      negativeDir = true;
+    else 
+      negativeDir = false;
 
-  pct = copysign(coeff.a*pow(abs(rpm), coeff.b), rpm);
+    rpm = rpm / gear_ratio; // needed because mechanical engineering :)
+    
+    coeff = getMotorCurveCoeff(motor_type, negativeDir);
 
-  Motor.write(pct);
+    pct = copysign(coeff.a*pow(abs(rpm), coeff.b), rpm);
+
+    Motor.write(pct);
+  } else {
+    Motor.write(RPM2Percent(rpm));
+  }
+
 }
 
 int MotorControl::Percent2RPM(float pct)
@@ -346,6 +353,6 @@ void MotorControl::setTargetSpeed(int target_rpm) {
  * 
  */
 void MotorControl::stop() {
-    this->write(0);
+    Motor.write(0);
 }
 

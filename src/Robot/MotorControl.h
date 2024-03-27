@@ -17,6 +17,8 @@ private:
   float gear_ratio;     // the input / output gear ratio
   float deadZone = 0.001;
 
+  bool uesCurveFit = false;
+
   // Servo:
   MotorInterface Motor;
 
