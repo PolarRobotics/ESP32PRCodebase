@@ -101,7 +101,7 @@ void setup() {
       break;
     case runningback:
       robot = new Lineman();
-      drive = new DriveQuick(driveParams);
+      drive = new Drive(runningback, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case receiver:

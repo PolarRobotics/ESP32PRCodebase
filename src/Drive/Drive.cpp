@@ -392,25 +392,47 @@ void Drive::printCsvInfo() {
  * DO NOT CALL THIS FUNCTION UNTIL setStickPwr and setSpeedScalar have been called before update
  * @author Rhys Davies
  * Created: 9-12-2022
- * Updated: 10-11-2020
 */
 void Drive::update() {
-    // Generate turning motion
-    generateMotionValues();
-    //printDebugInfo();
+    // !TODO Clean up when robots are rewired:
+    if (this->botType == runningback) {
+        // Generate turning motion
+        generateMotionValues();
+        //printDebugInfo();
 
-    // get the ramp value
-    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+        // calculate the value to set to the motors to based on the acceleration rate
+        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], RB_ACCELERATION_RATE);
+        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], RB_ACCELERATION_RATE);
 
-    // Set the ramp value to a function, needed for generateMotionValues
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
-    
-    // M1->write(requestedMotorPower[0]);
-    // M2->write(requestedMotorPower[1]);
+        // Set the ramp value to a function, needed for generateMotionValues
+        lastRampPower[0] = requestedMotorPower[0];
+        lastRampPower[1] = requestedMotorPower[1];
 
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+        // TODO: move to MotorController
+        // Make sure the min values written to the motor are not zero, gives the motor enough to break the deadband
+        requestedMotorPower[0] = fabs(requestedMotorPower[0]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[0];
+        requestedMotorPower[1] = fabs(requestedMotorPower[1]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[1];
+
+        // Write the ramped value to the motor via MotorInterface
+        M1.write(requestedMotorPower[0]);
+        M2.write(-requestedMotorPower[1]);
+    }
+    else { // CASE FOR ANY OTHER ROBOT
+        // Generate turning motion
+        generateMotionValues(RB_TANK_MODE_PCT);
+        //printDebugInfo();
+
+        // calculate the value to set to the motors to based on the acceleration rate
+        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
+        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+
+        // Set the ramp value to a function, needed for generateMotionValues
+        lastRampPower[0] = requestedMotorPower[0];
+        lastRampPower[1] = requestedMotorPower[1];
+        
+        // Write the ramped value to the motor via MotorInterface
+        M1.write(requestedMotorPower[0]);
+        M2.write(requestedMotorPower[1]);
+    }
 }
 
