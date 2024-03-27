@@ -88,9 +88,15 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   // Gyro
   if (hasGyro){
     CL_enable = true;
-    k_p = 1500;
+    
+    switch (botType) {
+        case BotType::lineman: { k_p = 1500; break; }
+        case BotType::receiver: { k_p = 1500; break; }
+        case BotType::runningback: { k_p = 1500; break; }
+        case BotType::quarterback: { k_p = 1500; break; }
+    }
+
     k_i = 0;
-    // k_i = 0.05;
 
     integral_sum = 0;
     prev_current_error = 0;
