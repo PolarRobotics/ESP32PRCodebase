@@ -191,7 +191,7 @@ void QuarterbackTurret::action() {
 // note that because the direction is flipped to be more intuitive for the driver,
 // the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
 // positive direction is also positive encoder direction, and vice versa
-void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false) {
+void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare) {
   if (enabled) {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
     turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW

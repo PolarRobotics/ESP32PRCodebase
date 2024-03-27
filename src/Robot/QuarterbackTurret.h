@@ -209,7 +209,7 @@ class QuarterbackTurret : public Robot {
 
     //* base/internal functions
     // moves turret at specified speed (open loop)
-    void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare); 
+    void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     void moveTurret(int heading, bool relativeToRobot = true); 
