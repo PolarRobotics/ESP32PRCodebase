@@ -250,7 +250,7 @@ void Drive::generateMotionValues(float tankModePct) {
 
                 requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
-            } else if(stickTurn < -STICK_DEADZONE) { // turn Left
+            } else if (stickTurn < -STICK_DEADZONE) { // turn Left
                 // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
                 //     case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
                 //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
@@ -471,7 +471,6 @@ int Drive::PILoop() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
-    //printDebugInfo();
 
     if (CL_enable) {
         mpu.getEvent(&a, &g, &temp);
@@ -491,5 +490,7 @@ void Drive::update() {
         M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
     }
     
+    //printDebugInfo();
+
 }
 
