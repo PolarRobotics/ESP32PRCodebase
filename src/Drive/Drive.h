@@ -101,7 +101,7 @@ class Drive {
     int motorDiff;
 
     // PILoop
-    bool CL_enable = false;
+    bool CL_enable = true;
     int motorDiffCorrection;
     float k_p;
     float k_i;
