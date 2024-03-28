@@ -87,24 +87,3 @@ void DriveQuick::update() {
   M1.write(requestedMotorPower[0]);
   M2.write(-requestedMotorPower[1]);
 }
-
-void DriveQuick::printDebugInfo() {
-  Serial.print(F("DQ | "));
-  Serial.print(F("L_Hat_Y: "));
-  Serial.print(stickForwardRev);
-  Serial.print(F("  R_HAT_X: "));
-  Serial.print(stickTurn);
-
-  // Serial.print(F("  |  Turn: "));
-  // Serial.print(lastTurnPwr);
-
-  Serial.print(F("  L_MotPwr: "));
-  // Serial.print(falcon_motor_pwr[0]);
-  Serial.print(requestedMotorPower[0]);
-
-  Serial.print(F("  R_MotPwr: "));
-  // Serial.print(falcon_motor_pwr[1]);
-  Serial.print(requestedMotorPower[1]);
-
-  Serial.print(F("\n"));
-}
