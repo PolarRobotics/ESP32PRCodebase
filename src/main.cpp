@@ -301,26 +301,8 @@ void setup() {
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
-  //Serial.print(encoderACount);
-  // Alter
-  speedL = calcSpeedL(encoderLCount);
-  // Added
-  speedR = calcSpeedR(encoderRCount);
-
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-
-  Serial.print("Rotation Z,");
-  Serial.print(g.gyro.z - 0.03);
-  Serial.print(",rad/s,");
-
-  drive->setCurrentAngelSpeed(g.gyro.z - 0.03);
-
-  //drive->update(speed);
-
-  // delay(5);
-
-  if (ps5.isConnected()) { 
+  
+  if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
 

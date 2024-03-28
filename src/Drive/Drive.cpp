@@ -93,7 +93,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   // Gyro
   if (hasGyro){
     CL_enable = true;
-    
+
     switch (botType) {
         case BotType::lineman: { k_p = 1500; break; }
         case BotType::receiver: { k_p = 1500; break; }
@@ -488,27 +488,30 @@ int Drive::PILoop() {
  * Created: 9-12-2022
  * Updated: 10-11-2020
 */
-void Drive::update(int speed) {
-
-    generateMotionValues();
-
+void Drive::update() {
+    // Generate turning motion
+    //generateMotionValues();
+    //delay(100);
     if (CL_enable) {
         mpu.getEvent(&a, &g, &temp);
         setCurrentAngleSpeed(g.gyro.z - 0.03);
         motorDiff = PILoop()*.5;
         Serial.print(motorDiff);
         Serial.print("  ");
+        Serial.print("Rotation Z, ");
+        Serial.print(g.gyro.z - 0.03);
+        Serial.println("");
     } else {
         motorDiff = 0;
     }
 
-    if (drivingStraight){
-        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
-    } else {
-        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
-    }
+    // if (drivingStraight){
+    //     M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
+    //     M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+    // } else {
+    //     M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+    //     M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+    // }
     
     //printDebugInfo();
 
