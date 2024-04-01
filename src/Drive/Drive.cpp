@@ -2,9 +2,6 @@
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
 
-    Adafruit_MPU6050* mpu = new Adafruit_MPU6050();  
-    sensors_event_t a, g, temp;
-
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
  * this class takes the the the stick input, scales the turning value for each motor and ramps that value over time,
@@ -105,9 +102,9 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     prev_current_error = 0;
     prev_integral_time = 0;
 
-    mpu->begin(0x68);
-    mpu->setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
-    mpu->setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
+    // mpu->begin(0x68);
+    // mpu->setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
+    // mpu->setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
   }
 }
 
@@ -464,7 +461,7 @@ int Drive::PILoop() {
     integrateReset();
   }
 
-  return motorDiffCorrection; 
+  return constrain(motorDiffCorrection, 0, 5000); 
 }
 
 /**
@@ -482,14 +479,12 @@ void Drive::update() {
     generateMotionValues();
     //delay(100);
     if (CL_enable) {
-        mpu.getEvent(&a, &g, &temp);
-        setCurrentAngleSpeed(g.gyro.z - 0.03);
         motorDiff = PILoop()*.5;
-        Serial.print(motorDiff);
-        Serial.print("  ");
-        Serial.print("Rotation Z, ");
-        Serial.print(g.gyro.z - 0.03);
-        Serial.println("");
+        // Serial.print(motorDiff);
+        // Serial.print("  ");
+        // Serial.print("Rotation Z, ");
+        // Serial.print(g.gyro.z - 0.03);
+        // Serial.println("");
     } else {
         motorDiff = 0;
     }

@@ -94,7 +94,7 @@ class Drive {
     float domainAdjustment = 0.0f;
 
     // Gyroscope
-    Adafruit_MPU6050 mpu;
+    Adafruit_MPU6050 *mpu;
     sensors_event_t a, g, temp;
     float currentAngleSpeed;
     bool drivingStraight;
