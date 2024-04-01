@@ -17,7 +17,8 @@ void QuarterbackTurret::turretEncoderISR() {
 }
 
 QuarterbackTurret::QuarterbackTurret(
-  uint8_t assemblyPin,
+  uint8_t assemblyStepPin,
+  uint8_t assemblyDirPin,
   uint8_t cradlePin,
   uint8_t turretPin,
   uint8_t flywheelLeftPin,
@@ -123,6 +124,9 @@ void QuarterbackTurret::action() {
     else if (dbCross->debounceAndPressed(ps5.Cross())) {
       handoff();
     } 
+    else if (ps5.Left()) {
+      testRoutine();
+    }
     //* Manual and Automatic Controls
     else {
       //* Right Trigger (R2): Fire (cradle/grabber forward)
@@ -226,9 +230,9 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
       if (units == degrees) {
         moveTurret(heading, counts, relativeToRobot);
       } else if (units == counts) {
-        targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
+        targetTurretEncoderCount = abs(heading) * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
-        setTurretSpeed(0.2 * copysign(1, stickTurret)); //! temp magic number, will eventually need to ramp
+        setTurretSpeed(QB_HOME_PCT * copysign(1, heading)); //! temp constant, implement P loop soon
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
       currentRelativeHeading = targetRelativeHeading;
@@ -242,28 +246,31 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
 
 void QuarterbackTurret::moveTurretAndWait(int heading, bool relativeToRobot) {
   moveTurret(heading, relativeToRobot);
-  while (turretMoving) {
+  while (turretMoving && !testForDisableOrStop()) {
     updateTurretMotionStatus();
     delay(10);
   }
 }
 
 void QuarterbackTurret::updateTurretMotionStatus() {
-  if (turretMoving && fabs(currentTurretEncoderCount - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
+  Serial.print(F("update called with ctec = "));
+  Serial.print(currentTurretEncoderCount);
+  Serial.print(F("; ttec = "));
+  Serial.println(targetTurretEncoderCount);
+  // determines if encoder is within "spec"
+  if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
-    if (fabs(stickTurret) < STICK_DEADZONE) {
-      setTurretSpeed(0);
-    }
+    setTurretSpeed(0);
   }
 }
 
 void QuarterbackTurret::turretDirectionChanged() {
   if (currentTurretSpeed > 0 && targetTurretSpeed < 0) { // going CW, trying to go CCW
-    currentTurretEncoderCount += slopError;
-    targetTurretEncoderCount += slopError;
-  } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
     currentTurretEncoderCount -= slopError;
     targetTurretEncoderCount -= slopError;
+  } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
+    currentTurretEncoderCount += slopError;
+    targetTurretEncoderCount += slopError;
   }
 }
 
@@ -414,10 +421,20 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
-  setFlywheelSpeedStage(slow_outwards);
   moveTurretAndWait(180);
+  setFlywheelSpeedStage(slow_outwards);
   moveCradle(forward);
   this->runningMacro = false;
+}
+
+void QuarterbackTurret::testRoutine() {
+  this->runningMacro = true;
+  moveTurretAndWait(90);
+  delay(500);
+  moveTurretAndWait(-90);
+  delay(500);
+  moveTurretAndWait(180);
+  delay(500);
 }
 
 void QuarterbackTurret::zeroTurret() {

@@ -86,7 +86,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_STOP_LOOP_DELAY_MS 10
 #define QB_TURRET_STOP_THRESHOLD_MS 500 // must be a multiple of QB_TURRET_STOP_LOOP_DELAY_MS
 
-#define QB_TURRET_HOME_STOP_FACTOR 0.1 // correction constant for homing, multiplied into stop counts in final homing
+#define QB_TURRET_HOME_STOP_FACTOR 0.5 // correction constant for homing, multiplied into stop counts in final homing
 
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
@@ -195,7 +195,8 @@ class QuarterbackTurret : public Robot {
     
   public:
     QuarterbackTurret(
-      uint8_t assemblyPin,
+      uint8_t assemblyStepPin,
+      uint8_t assemblyDirPin,
       uint8_t cradlePin,
       uint8_t turretPin,
       uint8_t flywheelLeftPin,
@@ -246,6 +247,7 @@ class QuarterbackTurret : public Robot {
     //* derived functions (manual macros)
     void loadFromCenter(); // prepares qb to intake ball from center
     void handoff(); // hands off ball to runningback
+    void testRoutine();
 
     //* setup and safety functions
     void zeroTurret(); // calibrates turret/moves turret to home/zero (cnc/3d printer style)
