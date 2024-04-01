@@ -31,7 +31,7 @@
 
 // Gyroscope
 Adafruit_MPU6050 mpu;
-bool useGyro = false;
+bool useGyro = true;
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
@@ -175,9 +175,9 @@ void loop() {
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
 
-    Serial.print("Rotation Z,");
-    Serial.print(g.gyro.z - 0.03);
-    Serial.print(",rad/s,");
+    // Serial.print("Rotation Z,");
+    // Serial.println(g.gyro.z - 0.03);
+    // Serial.print(",rad/s,");
 
     drive->setCurrentAngleSpeed(g.gyro.z - 0.03);
   }
