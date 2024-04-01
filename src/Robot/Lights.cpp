@@ -4,6 +4,7 @@
 
 Lights::Lights() {
   currState = PAIRING;
+  nextState = AWAY;
   homeState = AWAY;
 }
 
@@ -41,11 +42,11 @@ void Lights::updateLEDS() {
       }
       break;
     }
-    case OFFENSE: {
+    case HOME: {
       leds = CRGB::Green;
       break;
     }
-    case DEFENSE: {
+    case AWAY: {
       leds = CRGB::White;
       break;
     }
@@ -73,18 +74,21 @@ void Lights::togglePosition() {
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-    switch (homeState) {
+    switch (nextState) {
       case HOME:
-        setLEDStatus(OFFENSE);
-        homeState = AWAY;
+        setLEDStatus(HOME);
+        homeState = HOME;
+        nextState = AWAY;
         break;
       case AWAY:
-        setLEDStatus(DEFENSE);
-        homeState = LINEMAN;
+        setLEDStatus(AWAY);
+        homeState = AWAY;
+        nextState = OFF;
         break;
-      case LINEMAN:
+      case OFF:
         setLEDStatus(OFF);
-        homeState = HOME;
+        homeState = OFF;
+        nextState = HOME;
         break;
     }
     lastToggleTime = millis();
@@ -93,4 +97,8 @@ void Lights::togglePosition() {
 
 int Lights::returnStatus() {
   return static_cast<int>(this->currState);
+}
+
+int Lights::homeStatus() {
+  return static_cast<int>(this->homeState);
 }

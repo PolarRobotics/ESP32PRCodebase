@@ -14,6 +14,7 @@ private:
   uint8_t currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
+  uint8_t nextState;
   uint8_t homeState;
   Lights();
 public:
@@ -22,16 +23,11 @@ public:
     PAIRING,     // yellow
     PAIRED,      // green then fade out
     UNPAIRED,
-    OFFENSE,     // blue and green
-    DEFENSE,     // green
+    HOME,        // green
+    AWAY,        // white
     TACKLED,     // turn red when tackled
     DISCO,       // go crazy
     OFF
-  };
-  enum HomeState {
-    HOME,
-    AWAY,
-    LINEMAN
   };
   static Lights& getInstance() {
     static Lights instance;
@@ -44,6 +40,7 @@ public:
   void updateLEDS();
   void togglePosition();
   int returnStatus();
+  int homeStatus();
   void pairState(bool state);
 
   // LED Variables

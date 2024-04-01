@@ -179,20 +179,24 @@ void loop() {
       lights.setLEDStatus(Lights::DISCO);
     }
 
-    // Manual LED State Toggle (Defense/Offense)
+    // Manual LED State Toggle (Home/Away/Off)
     if (ps5.Options()) {
       lights.togglePosition();
     }
 
     if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
-      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+      if (lights.returnStatus() == (lights.HOME || lights.AWAY) && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
       } 
       // debounce the tackle sensor input
       else if ((millis() - lights.tackleTime) >= lights.switchTime && 
           lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
-        lights.setLEDStatus(Lights::OFFENSE);
+        switch (lights.homeStatus()) {
+          case lights.HOME: lights.setLEDStatus(Lights::HOME); break;
+          case lights.AWAY: lights.setLEDStatus(Lights::AWAY); break;
+          case lights.OFF: lights.setLEDStatus(Lights::OFF); break;
+        }
       }
     }
 
