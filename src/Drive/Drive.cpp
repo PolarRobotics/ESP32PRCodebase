@@ -100,7 +100,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
         case BotType::runningback: { k_p = 1500; break; }
         case BotType::quarterback: { k_p = 1500; break; }
     }
-    k_p = 1500;
+    
     k_i = 0;
 
     integral_sum = 0;
