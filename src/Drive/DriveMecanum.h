@@ -31,7 +31,7 @@ class DriveMecanum : public Drive {
   public:
     //! Must call base class constructor with appropriate arguments
     DriveMecanum(); // This is the prototype, see DriveMecanum.cpp for implementation
-    void setServos(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB);
+    void setupMotors(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB);
     void setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX);
     // float getReqMotorPwr(uint8_t mtr);
     void emergencyStop();

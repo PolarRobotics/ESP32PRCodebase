@@ -33,7 +33,7 @@ DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum
   }
 }
 
-void DriveMecanum::setServos(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB) {
+void DriveMecanum::setupMotors(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB) {
     this->LF.setup(pinLF);
     this->RF.setup(pinRF);
     this->LB.setup(pinLB);
@@ -170,11 +170,6 @@ void DriveMecanum::printDebugInfo() {
     Serial.print(F("  SRX: "));
     Serial.print(stickTurn);
 
-    // Serial.print(F("  Xcomp: "));
-    // Serial.print(this->x_comp);
-    // Serial.print(F("  Ycomp: "));
-    // Serial.print(this->y_comp);
-
     Serial.print(F("  LF: "));
     Serial.print(mecanumMotorPwr[0]);
     Serial.print(F("  RF: "));
@@ -184,12 +179,5 @@ void DriveMecanum::printDebugInfo() {
     Serial.print(F("  RB: "));
     Serial.print(mecanumMotorPwr[3]);
 
-    // Serial.print(F("  PWRO: "));
-    // for (int i = 0; i < NUM_MOTORS; i++) {
-    //     Serial.print(i);
-    //     Serial.print(F("  "));
-    //     // Serial.print(getReqMotorPwr(i));
-    //     Serial.print(F("  "));
-    // }
     Serial.print(F("\n"));
 }
