@@ -230,7 +230,7 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
       if (units == degrees) {
         moveTurret(heading, counts, relativeToRobot);
       } else if (units == counts) {
-        targetTurretEncoderCount = abs(heading) * QB_COUNTS_PER_TURRET_DEGREE;
+        targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
         setTurretSpeed(QB_HOME_PCT * copysign(1, heading)); //! temp constant, implement P loop soon
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
@@ -414,7 +414,7 @@ void QuarterbackTurret::loadFromCenter() {
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_inwards);
   moveCradle(back);
-  zeroTurret();
+  // zeroTurret();
   this->runningMacro = false;
 }
 
@@ -429,12 +429,22 @@ void QuarterbackTurret::handoff() {
 
 void QuarterbackTurret::testRoutine() {
   this->runningMacro = true;
+  Serial.println(F("test routine called"));
+  Serial.println(F("initial ctec: "));
+  Serial.println(currentTurretEncoderCount);
   moveTurretAndWait(90);
   delay(500);
+  Serial.println(F("ctec after turn to 90 deg: "));
+  Serial.println(currentTurretEncoderCount);
   moveTurretAndWait(-90);
   delay(500);
+  Serial.println(F("ctec after turn to -90 deg: "));
+  Serial.println(currentTurretEncoderCount);
   moveTurretAndWait(180);
   delay(500);
+  Serial.println(F("ctec after turn to 180 deg: "));
+  Serial.println(currentTurretEncoderCount);
+  this->runningMacro = false;
 }
 
 void QuarterbackTurret::zeroTurret() {

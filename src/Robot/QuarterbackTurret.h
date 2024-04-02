@@ -45,10 +45,10 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_CROSS_HOLD_DELAY 500L
 
 #define QB_TURRET_INTERPOLATION_DELAY 5L
-#define QB_TURRET_THRESHOLD 200
+#define QB_TURRET_THRESHOLD 35
 #define QB_TURRET_STICK_SCALE_FACTOR 0.5
 
-#define QB_HOME_PCT 0.13
+#define QB_HOME_PCT 0.2
 
 //* Question: Why are there so many #defines commented out?
 //* Answer: Documentation purposes.
