@@ -43,7 +43,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
-  this->hasGyro = true;
+  this->hasGyro = false;
   this->gearRatio = driveParams.gear_ratio;
   this->wheelBase = driveParams.wheel_base;
   this->R_Min = driveParams.r_min;
@@ -468,8 +468,8 @@ void Drive::integrateReset() {
 */
 int Drive::PILoop() {  
   if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) { // the motor wants to stop, skip and reset the PI loop  
-    Serial.print("HERE");
-    motorDiffCorrection = k_p*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
+    motorDiffCorrection = 1500*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
+    //Serial.println(motorDiffCorrection);
   } else {
     motorDiffCorrection = 0;
     integrateReset();
@@ -504,19 +504,20 @@ void Drive::update() {
         motorDiff = 0;
     }
 
-    Serial.println(motorDiff);
+    //Serial.println(motorDiff);
 
     if (drivingStraight){
         M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+        //Serial.print("HERE");
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
     } else {
         M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
-        M2.setTargetSpeed(-M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
     }
     
 
 
-    //printDebugInfo();
+    printDebugInfo();
 
 }
 
