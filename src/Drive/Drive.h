@@ -11,8 +11,7 @@
 // RAMP DEFINES
 #ifndef ACCELERATION_RATE
 // rate of change of power with respect to time when accelerating %power/10th of sec
-// #define ACCELERATION_RATE .0375f // probably lower for runningback
-#define ACCELERATION_RATE 0.00375f // probably lower for runningback
+#define ACCELERATION_RATE 0.00375f // [RPM/ms] possibly change to RPM/s for future
 #endif // !ACCELERATION_RATE
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
@@ -30,7 +29,7 @@
 //these should = normal speed, QB needs 0.5 for both 
 
 // Controller Defines
-#define STICK_DEADZONE 0.035 //0.0390625F // 8.0 / 127.0
+#define STICK_DEADZONE 0.075 //0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
 
@@ -61,6 +60,11 @@
 #define FALCON_BOOST_PCT          0.6f
 #define FALCON_NORMAL_PCT         0.4f // 0.5
 #define FALCON_SLOW_PCT           0.15f
+
+// BSN defines for the small 12v motors
+#define SMALL_12V_BOOST_PCT          0.15f
+#define SMALL_12V_NORMAL_PCT         0.1f // 0.5
+#define SMALL_12V_SLOW_PCT           0.05f
 
 #define BRAKE_BUTTON_PCT 0
 
@@ -109,8 +113,8 @@ class Drive {
     Drive();
     Drive(BotType botType, MotorType motorType);
     Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
-    void setServos(uint8_t lpin, uint8_t rpin);
-    void setServos(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
+    void setupMotors(uint8_t lpin, uint8_t rpin);
+    void setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
     void setMotorType(MotorType motorType);
     void setStickPwr(int8_t leftY, int8_t rightX);
     float getForwardPower();
@@ -123,6 +127,7 @@ class Drive {
     virtual void update();
     void printSetup();
     virtual void printDebugInfo();
+    virtual void printCsvInfo();
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0
