@@ -184,18 +184,19 @@ void loop() {
       lights.togglePosition();
     }
 
-    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
-      if (lights.returnStatus() == (lights.HOME || lights.AWAY) && digitalRead(TACKLE_PIN) == LOW) {
+    // If the robot is able to hold the ball, it is able to be tackled:
+    if (robotType == receiver || robotType == quarterback || robotType == runningback) {
+      if (lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
       } 
       // debounce the tackle sensor input
       else if ((millis() - lights.tackleTime) >= lights.switchTime && 
-          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
+          lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
         switch (lights.homeStatus()) {
-          case lights.HOME: lights.setLEDStatus(Lights::HOME); break;
-          case lights.AWAY: lights.setLEDStatus(Lights::AWAY); break;
-          case lights.OFF: lights.setLEDStatus(Lights::OFF); break;
+          case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
+          case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
+          case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
         }
       }
     }
