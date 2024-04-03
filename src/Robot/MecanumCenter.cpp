@@ -11,13 +11,16 @@ MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
   this->flywheelPin = fwpin;
   this->conveyorPin = conveyorpin;
 
+  // conveyorDB = new Debouncer(MC_DEBOUNCE_WAIT);
+  // intakeDB = new Debouncer(MC_DEBOUNCE_WAIT);
+
   // Attach the motors inside the class to their respective pins
   flywheelMotor.setup(flywheelPin);
   conveyorMotor.setup(conveyorPin);
 
   // Set the motor to zero so it doesnt spin on startup
   conveyorMotor.write(MC_CONVEYOR_OFF);
-  
+
   // spin on startup for testing
   // flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL);
   // conveyorMotor.write(MC_CONVEYOR_ON);
@@ -29,7 +32,7 @@ void MecanumCenter::action() {
     toggleConveyor();
   
   if (ps5.Circle())
-    toggleFlywheels();
+    toggleIntake();
   
   // Change the flywheel speed
   if(ps5.Triangle())
@@ -41,9 +44,9 @@ void MecanumCenter::action() {
 }
 
 
-void MecanumCenter::toggleFlywheels() {
+void MecanumCenter::toggleIntake() {
+  // Toggle the flywheels and use the speed factor to know what speed
   if (millis() - lastDBFW >= MC_DEBOUNCE_WAIT) {
-    // Toggle the flywheels and use the speed factor to know what speed
     if (!flywheelsOn){
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
       // Serial.println(F("Write FW ON"));
@@ -53,7 +56,6 @@ void MecanumCenter::toggleFlywheels() {
     }
     // Toggle the bool so we know if its on or not
     flywheelsOn = !flywheelsOn;
-
     lastDBFW = millis();
   }
 }

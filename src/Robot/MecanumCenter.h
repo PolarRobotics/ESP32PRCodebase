@@ -6,6 +6,7 @@
 #include <Robot/Robot.h>
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include <Utilities/Debouncer.h>
 
 // TODO: we should seriously reconsider the use of defines, since the names are duplicated between QB and MC
 // Flywheel defines 
@@ -13,11 +14,11 @@
 #define MC_FLYWHEEL_STOP_SPEED 0
 
 // Conveyor defines
-#define MC_CONVEYOR_ON 0.5
+#define MC_CONVEYOR_ON 1 //0.5
 #define MC_CONVEYOR_OFF 0
 
 // Debounce Vars
-#define MC_DEBOUNCE_WAIT 500
+#define MC_DEBOUNCE_WAIT 250
 
 /**
  * @brief Mecanum Center Subclass Header
@@ -29,6 +30,10 @@ class MecanumCenter : public Robot {
     uint8_t conveyorPin;
     MotorControl flywheelMotor;
     MotorControl conveyorMotor;
+
+    // Debouncer* conveyorDB;
+    // Debouncer* intakeDB;
+
     bool flywheelsOn, conveyorOn;
     uint8_t currentElevation, targetElevation;
     unsigned long lastFlywheelToggleTime;
@@ -37,7 +42,7 @@ class MecanumCenter : public Robot {
   public:
     MecanumCenter(uint8_t fwpin, uint8_t conveyorpin);
     void action() override; //! robot subclass must override action
-    void toggleFlywheels();
+    void toggleIntake();
     void toggleConveyor();
     void changeFWSpeed(SpeedStatus speed);
     void debug();
