@@ -31,7 +31,7 @@
 
 // Gyroscope
 Adafruit_MPU6050 mpu;
-bool useGyro = true;
+bool useGyro = false;
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
