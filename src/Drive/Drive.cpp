@@ -48,7 +48,7 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
   this->R_Min = driveParams.r_min;
   this->R_Max = driveParams.r_max;
 
-  if (botType == quarterback) {
+  if (botType == quarterback_old) {
     this->BIG_BOOST_PCT = 0.8; 
     this->BIG_NORMAL_PCT = 0.4; 
     this->BIG_SLOW_PCT = 0.3;

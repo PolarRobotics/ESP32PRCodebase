@@ -88,9 +88,9 @@ void setup() {
       drive = new Drive(kicker, motorType, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
-    case quarterback:
+    case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback, motorType, driveParams);
+      drive = new Drive(quarterback_old, motorType, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
