@@ -830,7 +830,7 @@ void QuarterbackTurret::setTurretAngle() {
   float headingdeg;
   headingdeg = ((atan2(lis3mdl.x, lis3mdl.y) * 180) / M_PI) + 180;
 
-  Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
+  Serial.print("\tHeading [deg]:   "); Serial.print((int16_t) headingdeg);
 
   this->turretAngle = (int16_t) headingdeg;
 }
