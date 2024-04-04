@@ -110,7 +110,19 @@ void setup() {
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback_turret:
-      robot = new QuarterbackTurret(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4, M1_PIN, M2_PIN, ENC1_CHA, ENC1_CHB, ENC2_CHA);
+      robot = new QuarterbackTurret(
+        M1_PIN, // left flywheel
+        M2_PIN, // right flywheel
+        M3_PIN, // cradle
+        M4_PIN, // turret
+        SPECBOT_PIN1, // assembly stepper step
+        SPECBOT_PIN2, // assembly stepper dir
+        SPECBOT_PIN3, // magnetometer sda
+        SPECBOT_PIN4, // magnetometer scl
+        ENC1_CHA, // turret encoder
+        ENC1_CHB, // turret encoder
+        ENC2_CHA  // zeroing laser
+      );
       break;
     case quarterback_base:
     case receiver:

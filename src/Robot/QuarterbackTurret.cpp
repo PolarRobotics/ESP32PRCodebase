@@ -17,15 +17,17 @@ void QuarterbackTurret::turretEncoderISR() {
 }
 
 QuarterbackTurret::QuarterbackTurret(
-  uint8_t assemblyStepPin,
-  uint8_t assemblyDirPin,
-  uint8_t cradlePin,
-  uint8_t turretPin,
-  uint8_t flywheelLeftPin,
-  uint8_t flywheelRightPin,
-  uint8_t turretEncoderPinA,
-  uint8_t turretEncoderPinB,
-  uint8_t turretLaserPin
+  uint8_t flywheelLeftPin,    // M1
+  uint8_t flywheelRightPin,   // M2
+  uint8_t cradlePin,          // M3
+  uint8_t turretPin,          // M4
+  uint8_t assemblyStepPin,    // S1
+  uint8_t assemblyDirPin,     // S2 
+  uint8_t magnetometerSdaPin, // S3
+  uint8_t magnetometerSclPin, // S4
+  uint8_t turretEncoderPinA,  // E1A
+  uint8_t turretEncoderPinB,  // E1B
+  uint8_t turretLaserPin      // E2A
 ) {
   
   // set all state variables to default values,
