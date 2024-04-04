@@ -42,8 +42,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_CRADLE_TRAVEL_DELAY 750L // ~0.75 seconds to fully extend or compress linear actuator
 
 #define QB_CIRCLE_HOLD_DELAY 750L
-#define QB_TRIANGLE_HOLD_DELAY 500L
-#define QB_CROSS_HOLD_DELAY 500L
+#define QB_TRIANGLE_HOLD_DELAY 200L
+#define QB_CROSS_HOLD_DELAY 200L
 
 #define QB_TURRET_INTERPOLATION_DELAY 5L
 #define QB_TURRET_THRESHOLD 35
@@ -167,8 +167,8 @@ class QuarterbackTurret : public Robot {
     bool turretMoving;
 
     // world-relative headings
-    int currentAbsoluteHeading; // default 0
-    int targetAbsoluteHeading;  // default 0
+    int16_t currentAbsoluteHeading; // default 0
+    int16_t targetAbsoluteHeading;  // default 0
 
     uint8_t turretLaserState;
 
@@ -205,10 +205,21 @@ class QuarterbackTurret : public Robot {
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     //* private helper function
-    void moveTurret(int heading, TurretUnits units, bool relativeToRobot = true); 
+    void moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot = true); 
 
     //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
     void updateTurretMotionStatus();
+
+    //* private helper function to calculate new value for currentRelativeHeading from currentTurretEncoderCount
+    int16_t getCurrentHeading();
+
+    //* private helper function to calculate the heading with the smallest absolute value difference from the current (or provided)
+    // for example, if called with target = 270 degrees and current = 0, this function would return -90,
+    // because it is closer to go counterclockwise 90 degrees than to go clockwise 270 degrees.
+    // note that the current heading should be positive, but the negative sign on a target heading is used to determine direction.
+    // overloaded to allow calling with currentRelativeHeading (cannot set a class member as a default argument)
+    int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
+    int16_t findNearestHeading(int16_t targetHeading);
     
   public:
     QuarterbackTurret(
@@ -230,10 +241,10 @@ class QuarterbackTurret : public Robot {
     void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
-    void moveTurret(int heading, bool relativeToRobot = true); 
+    void moveTurret(int16_t heading, bool relativeToRobot = true); 
 
     // moves turret and loops/waits until heading is reached (BLOCKING/SYNCHRONOUS)
-    void moveTurretAndWait(int heading, bool relativeToRobot = true);
+    void moveTurretAndWait(int16_t heading, bool relativeToRobot = true);
       
     // aims the assembly holding the flywheels and cradle (two states).
     void aimAssembly(AssemblyAngle angle); 

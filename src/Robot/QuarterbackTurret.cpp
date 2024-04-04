@@ -216,11 +216,11 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
   }
 }
 
-void QuarterbackTurret::moveTurret(int heading, bool relativeToRobot) {
+void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot) {
   moveTurret(heading, degrees, relativeToRobot);
 }
 
-void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relativeToRobot) {
+void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot) {
   Serial.print(F("moveTurret called with heading ="));
   Serial.print(heading);
   Serial.print(F(", units = "));
@@ -249,7 +249,7 @@ void QuarterbackTurret::moveTurret(int heading, TurretUnits units, bool relative
   }
 }
 
-void QuarterbackTurret::moveTurretAndWait(int heading, bool relativeToRobot) {
+void QuarterbackTurret::moveTurretAndWait(int16_t heading, bool relativeToRobot) {
   moveTurret(heading, relativeToRobot);
   while (turretMoving && !testForDisableOrStop()) {
     updateTurretMotionStatus();
@@ -277,6 +277,41 @@ void QuarterbackTurret::turretDirectionChanged() {
     currentTurretEncoderCount += slopError;
     targetTurretEncoderCount += slopError;
   }
+}
+
+int16_t QuarterbackTurret::getCurrentHeading() {
+  return (currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE) % 360;
+}
+
+int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t currentHeading) {
+  // assuming targetHeading is positive
+  int16_t positiveHeading = targetHeading;
+
+  // if targetHeading is negative, convert to a positive heading
+  if (targetHeading < 0) {
+    positiveHeading = targetHeading + 360;
+  }
+
+  // properly constrain headings to be within (-360, +360)
+  positiveHeading %= 360;
+  int16_t negativeHeading = positiveHeading - 360;
+  if (negativeHeading == -360) // same as if (positiveHeading == 0)
+    negativeHeading = 0; 
+
+  // calculate which heading is closer to the current heading
+  int16_t adjustedCurrentHeading = currentHeading % 360;
+
+  if (abs(adjustedCurrentHeading - positiveHeading) < abs(adjustedCurrentHeading - negativeHeading)) {
+    // negative heading is closer
+    return negativeHeading;
+  } else {
+    // positive heading is closer
+    return positiveHeading;
+  }
+}
+
+int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading) {
+  findNearestHeading(targetHeading, currentRelativeHeading);
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
@@ -426,7 +461,9 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
-  moveTurretAndWait(180);
+  int16_t targetHeading = (getCurrentHeading() + 180) % 360;
+  moveTurretAndWait(targetHeading);
+  // moveTurretAndWait(180);
   setFlywheelSpeedStage(slow_outwards);
   moveCradle(forward);
   this->runningMacro = false;
