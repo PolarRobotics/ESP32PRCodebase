@@ -7,6 +7,8 @@
 
 #define NUM_LEDS 100
 #define TIME_BETWEEN_TOGGLES 500
+#define LIGHTS_SWITCH_TIME 1000
+#define LIGHTS_UPDATE_TIME 20 // time between updates of the leds, in milliseconds
 
 class Lights {
 private:
@@ -14,8 +16,8 @@ private:
   uint8_t currState;
   CRGBArray<NUM_LEDS> leds;
   uint8_t iteration;
-  uint8_t nextState;
-  uint8_t homeState;
+  uint8_t nextHomeState;
+  uint8_t currentHomeState;
   Lights();
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM
@@ -42,10 +44,13 @@ public:
   int returnStatus();
   int homeStatus();
   void pairState(bool state);
+  void printDebugInfo();
 
   // LED Variables
-  unsigned long tackleTime = 0;
-  const int switchTime = 1000; //! KEEP THIS HERE!!!
+  unsigned long tackleTime;
+  unsigned long updateTime;
+  const int switchTime = LIGHTS_SWITCH_TIME; // the time alotted to stay in the tackled state
+  const int updateSwitchTime = LIGHTS_UPDATE_TIME; // debounce time for updating the leds when in the disco state
 };
 
 #endif // LIGHTS_H

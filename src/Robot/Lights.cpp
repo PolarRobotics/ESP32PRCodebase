@@ -4,8 +4,11 @@
 
 Lights::Lights() {
   currState = PAIRING;
-  nextState = AWAY;
-  homeState = AWAY;
+  nextHomeState = AWAY;
+  currentHomeState = AWAY;
+
+  tackleTime = millis();
+  updateTime = millis();
 }
 
 void Lights::setupLEDS() {
@@ -74,21 +77,21 @@ void Lights::togglePosition() {
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
   if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
-    switch (nextState) {
+    switch (nextHomeState) {
       case HOME:
         setLEDStatus(HOME);
-        homeState = HOME;
-        nextState = AWAY;
+        currentHomeState = HOME;
+        nextHomeState = AWAY;
         break;
       case AWAY:
         setLEDStatus(AWAY);
-        homeState = AWAY;
-        nextState = OFF;
+        currentHomeState = AWAY;
+        nextHomeState = OFF;
         break;
       case OFF:
         setLEDStatus(OFF);
-        homeState = OFF;
-        nextState = HOME;
+        currentHomeState = OFF;
+        nextHomeState = HOME;
         break;
     }
     lastToggleTime = millis();
@@ -100,5 +103,13 @@ int Lights::returnStatus() {
 }
 
 int Lights::homeStatus() {
-  return static_cast<int>(this->homeState);
+  return static_cast<int>(this->currentHomeState);
+}
+
+void Lights::printDebugInfo() {
+  Serial.print(F("Lights: currState: "));
+  Serial.print(static_cast<int>(this->currState));
+  Serial.print(F(" currentHomeState: "));
+  Serial.print(static_cast<int>(this->currentHomeState));
+  Serial.print(F("\n"));
 }
