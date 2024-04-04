@@ -215,7 +215,9 @@ void loop() {
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
     // lights.printDebugInfo();
-    delay(5);
+
+    delay(5); // necessary for lights to be happy
+      
   } else { // no response from PS5 controller within last 300 ms, so stop
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
