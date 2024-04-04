@@ -198,7 +198,7 @@ class QuarterbackTurret : public Robot {
       {  0.068, -0.018,  0.950  }
     };
     Adafruit_LIS3MDL lis3mdl;
-    float turretAngle;
+    int16_t turretAngle;
 
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
@@ -300,7 +300,7 @@ class QuarterbackTurret : public Robot {
     void setTurretAngle();
 
     //* Returns current turret angle
-    double getTurretAngle();
+    int16_t getTurretAngle();
 };
 
 #endif // QUARTERBACK_TURRET_H

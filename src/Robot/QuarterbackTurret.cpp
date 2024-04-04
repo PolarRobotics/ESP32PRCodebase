@@ -832,7 +832,7 @@ void QuarterbackTurret::setTurretAngle() {
 
   Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
 
-  this->turretAngle = headingdeg;
+  this->turretAngle = (int16_t) headingdeg;
 }
 
 /**
@@ -840,6 +840,6 @@ void QuarterbackTurret::setTurretAngle() {
  * @author Corbin Hibler
  * @date 2024-01-03
 */
-double QuarterbackTurret::getTurretAngle() {
+int16_t QuarterbackTurret::getTurretAngle() {
   return this->turretAngle;
 }
