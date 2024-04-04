@@ -7,6 +7,7 @@
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
+#include <Adafruit_LIS3MDL.h>
 
 enum TurretMode {
   manual, automatic
@@ -183,6 +184,22 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbCross;
     Debouncer* dbTurretInterpolator;
 
+    //* Magnetometer
+    // Calibrated 1/23/2024:
+    // Hard-iron calibration settings
+    const float hard_iron[3] = {
+      -8.31,  4.68,  5.42
+    };
+
+    // Soft-iron calibration settings
+    const float soft_iron[3][3] = {
+      {  1.015,  0.046,  0.068  },
+      {  0.046,  1.044, -0.018  },
+      {  0.068, -0.018,  0.950  }
+    };
+    Adafruit_LIS3MDL lis3mdl;
+    float turretAngle;
+
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
 
@@ -264,6 +281,15 @@ class QuarterbackTurret : public Robot {
     static void turretEncoderISR();
 
     void turretDirectionChanged();
+
+    //* Setup for magnetometer modes and other stuff
+    void magnetometerSetup();
+
+    //* Sets the class field turretAngle to the converted value
+    void setTurretAngle();
+
+    //* Returns current turret angle
+    double getTurretAngle();
 };
 
 #endif // QUARTERBACK_TURRET_H
