@@ -198,7 +198,7 @@ class QuarterbackTurret : public Robot {
       {  0.068, -0.018,  0.950  }
     };
     Adafruit_LIS3MDL lis3mdl;
-    int16_t turretAngle;
+    int16_t magnetometerHeading;
 
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
@@ -296,11 +296,11 @@ class QuarterbackTurret : public Robot {
     //* Setup for magnetometer modes and other stuff
     void magnetometerSetup();
 
-    //* Sets the class field turretAngle to the converted value
-    void setTurretAngle();
+    //* Sets the class field magnetometerHeading to the converted value
+    void setMagnetometerHeading();
 
     //* Returns current turret angle
-    int16_t getTurretAngle();
+    int16_t getMagnetometerHeading();
 };
 
 #endif // QUARTERBACK_TURRET_H

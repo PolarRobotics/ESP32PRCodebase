@@ -65,7 +65,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->stickFlywheel = 0;
   this->stickTurret = 0;
   
-  this->turretAngle = 0;
+  this->magnetometerHeading = 0;
 
   // turret laser setup
   this->turretLaserPin = turretLaserPin;
@@ -110,7 +110,7 @@ void QuarterbackTurret::action() {
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
   // above two inputs are registered in `testForDisableOrStop()` since this is re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  setTurretAngle();
+  setMagnetometerHeading();
 
   if (!testForDisableOrStop() && !runningMacro) {
     //* Circle: Startup and Home (Reset or Zero Turret)
@@ -814,11 +814,11 @@ void QuarterbackTurret::magnetometerSetup() {
 }
 
 /**
- * @brief Sets class field turretAngle to converted value from magnetometer.
+ * @brief Sets class field magnetometerHeading to converted value from magnetometer.
  * @authors Rhys Davies, Corbin Hibler
  * @date 2024-01-03
 */
-void QuarterbackTurret::setTurretAngle() {
+void QuarterbackTurret::setMagnetometerHeading() {
   lis3mdl.read();      // get X Y and Z data at once
   // Then print out the raw data
   Serial.print("\nX:  "); Serial.print(lis3mdl.x); 
@@ -832,14 +832,14 @@ void QuarterbackTurret::setTurretAngle() {
 
   Serial.print("\tHeading [deg]:   "); Serial.print((int16_t) headingdeg);
 
-  this->turretAngle = (int16_t) headingdeg;
+  this->magnetometerHeading = (int16_t) headingdeg;
 }
 
 /**
- * @brief Returns value of class field turretAngle.
+ * @brief Returns value of class field magnetometerHeading.
  * @author Corbin Hibler
  * @date 2024-01-03
 */
-int16_t QuarterbackTurret::getTurretAngle() {
-  return this->turretAngle;
+int16_t QuarterbackTurret::getMagnetometerHeading() {
+  return this->magnetometerHeading;
 }
