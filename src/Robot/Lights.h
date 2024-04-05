@@ -4,6 +4,8 @@
 #define LIGHTS_H
 #include <FastLED.h>
 #include <PolarRobotics.h>
+#include <Utilities/Debouncer.h>
+#include <ps5Controller.h>
 
 #define NUM_LEDS 100
 #define TIME_BETWEEN_TOGGLES 500
@@ -18,6 +20,7 @@ private:
   uint8_t iteration;
   uint8_t nextHomeState;
   uint8_t currentHomeState;
+  Debouncer* dbLights;
   Lights();
 public:
   // MUHAMMED ENUM PRAISE BE UPON HIM

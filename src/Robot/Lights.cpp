@@ -9,6 +9,8 @@ Lights::Lights() {
 
   tackleTime = millis();
   updateTime = millis();
+
+  this->dbLights = new Debouncer(TIME_BETWEEN_TOGGLES);
 }
 
 void Lights::setupLEDS() {
@@ -76,7 +78,7 @@ void Lights::updateLEDS() {
 void Lights::togglePosition() {
   // debounce makes sure you cant hold down the button, 
   // I think the ps5 library already does this, but we probably should check
-  if (millis() - lastToggleTime >= TIME_BETWEEN_TOGGLES) {
+  if (dbLights->debounceAndPressed(ps5.Options())) {
     switch (nextHomeState) {
       case HOME:
         setLEDStatus(HOME);
