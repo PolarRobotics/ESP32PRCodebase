@@ -31,7 +31,7 @@
 
 // Gyroscope
 Adafruit_MPU6050 mpu;
-bool useGyro = true;
+//bool useGyro = true;
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
@@ -138,7 +138,7 @@ void setup() {
     ((Kicker*) robot)->enable();
   }
 
-  if (useGyro) {
+  //if (useGyro) {
     // Gyro paired?
       if (!mpu.begin()) {
       //Serial.println("Failed to find MPU6050 chip");
@@ -148,12 +148,12 @@ void setup() {
     }
     //Serial.println("MPU6050 Found!");
 
-    mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
+    mpu.setGyroRange(MPU6050_RANGE_500_DEG);  // 250, 500, 1000, 2000
     //Serial.print("Gyro range set to: " + String(mpu.getGyroRange()));
       
-    mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
+    mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);  // 260, 184, 94, 44, 21, 10, 5
     //Serial.print("Filter bandwidth set to: " + String(mpu.getFilterBandwidth()));
-  }
+  //}
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -171,16 +171,19 @@ void setup() {
 // runs continuously after setup(). controls driving and any special robot functionality during a game
 void loop() {
 
-  if (useGyro) { 
+  Serial.print("Main Loop ");
+  //delay(10);
+
+  //if (useGyro) { 
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
 
-    // Serial.print("Rotation Z,");
-    // Serial.println(g.gyro.z - 0.03);
-    // Serial.print(",rad/s,");
+    Serial.print("Rotation Z:");
+    Serial.print(g.gyro.z - 0.03);
+    Serial.print(" rad/s ");
 
     drive->setCurrentAngleSpeed(g.gyro.z - 0.03);
-  }
+  //}
 
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
@@ -245,6 +248,7 @@ void loop() {
       drive->emergencyStop();
       lights.setLEDStatus(Lights::UNPAIRED);
   }
+  Serial.print("Main Loop End ");
 }
 
 /**
