@@ -52,6 +52,10 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     this->BIG_BOOST_PCT = 0.8; 
     this->BIG_NORMAL_PCT = 0.4; 
     this->BIG_SLOW_PCT = 0.3;
+  } else if (botType == center) {
+    this->BIG_BOOST_PCT = 0.5;  
+    this->BIG_NORMAL_PCT = 0.4; 
+    this->BIG_SLOW_PCT = 0.25;
   } else {
     this->BIG_BOOST_PCT = 0.7;  
     this->BIG_NORMAL_PCT = 0.6; 
