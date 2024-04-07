@@ -230,6 +230,7 @@ void loop() {
       lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
+    delay(5);
       
   } else { // no response from PS5 controller within last 300 ms, so stop
     if (robotType != quarterback_turret) {

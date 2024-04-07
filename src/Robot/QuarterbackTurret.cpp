@@ -170,8 +170,11 @@ void QuarterbackTurret::action() {
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
           setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
+          calculateHeadingMag();
         } else {
           setTurretSpeed(0);
+          calculateHeadingMag();
+          updateTurretMotionStatus();
         }
 
         // updateTurretMotionStatus();
@@ -260,10 +263,10 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, bool relativeToRobot)
 }
 
 void QuarterbackTurret::updateTurretMotionStatus() {
-  Serial.print(F("update called with ctec = "));
-  Serial.print(currentTurretEncoderCount);
-  Serial.print(F("; ttec = "));
-  Serial.println(targetTurretEncoderCount);
+  // Serial.print(F("update called with ctec = "));
+  // Serial.print(currentTurretEncoderCount);
+  // Serial.print(F("; ttec = "));
+  // Serial.println(targetTurretEncoderCount);
   // determines if encoder is within "spec"
   if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
@@ -681,6 +684,11 @@ void QuarterbackTurret::zeroTurret() {
   currentRelativeHeading = 0;
   currentTurretEncoderCount = 0;
   Serial.println(F("zeroed"));
+
+  //Now that the encoder is zeroed we can just zero the magnetometer
+  delay(250);
+  calibMagnetometer();
+
   this->runningMacro = false;
 }
 
@@ -742,10 +750,12 @@ void QuarterbackTurret::printDebug() {
   Serial.println(currentTurretSpeed);
   */
   if (enabled) {
+    /*
     Serial.print(F("turretLaserState: "));
     Serial.print(digitalRead(turretLaserPin));
     Serial.print(F("; currentTurretEncoderCount: "));
     Serial.println(currentTurretEncoderCount);
+    */
   }
 }
 
@@ -823,18 +833,130 @@ void QuarterbackTurret::magnetometerSetup() {
 void QuarterbackTurret::setMagnetometerHeading() {
   lis3mdl.read();      // get X Y and Z data at once
   // Then print out the raw data
-  Serial.print("\nX:  "); Serial.print(lis3mdl.x); 
-  Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
-  Serial.print("\tZ:  "); Serial.print(lis3mdl.z); 
+  //Serial.print("X:  "); Serial.print(lis3mdl.x); 
+  //Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+  //Serial.print("\tZ:  "); Serial.print(lis3mdl.z); 
 
   // Calculate angle for heading, assuming board is parallel to
   // the ground and  Y points toward heading.
-  float headingdeg;
   headingdeg = ((atan2(lis3mdl.x, lis3mdl.y) * 180) / M_PI) + 180;
 
-  Serial.print("\tHeading [deg]:   "); Serial.print((int16_t) headingdeg);
+  //Serial.print("\tHeading [deg]:   "); 
+  //Serial.print(headingdeg); 
+  //Serial.println();
 
   this->magnetometerHeading = (int16_t) headingdeg;
+}
+
+void QuarterbackTurret::calculateHeadingMag() {
+  //Only run the code in here if the calibration has been done to the magnetometer
+  if (magnetometerCalibrated) {
+    lis3mdl.read(); 
+    //Calculate the current angle of the turret based on the calibration data
+    if (xsign) {
+      xVal = lis3mdl.x + xHalf;
+    } else {
+      xVal = lis3mdl.x - xHalf;
+    }
+
+    if (ysign) {
+      yVal = lis3mdl.y + yHalf;
+    } else {
+      yVal = lis3mdl.y - yHalf;
+    }
+    
+    
+
+    //Evaluate both ranges of X and Y then scale the smaller value to be within the same range as the larger
+    if (yHalf > xHalf) {
+      xVal = (double)((double)xVal/((double)xHalf))*(double)yHalf;
+    } else if (xHalf > yHalf) {
+      yVal = (double)((double)yVal/((double)yHalf))*(double)xHalf;
+    }
+    
+    //Calculate angle in radians
+    headingrad = atan2(yVal, xVal);
+
+    //Convert to degrees
+    headingdeg = headingrad*180/M_PI;
+
+    //If the degrees are negative then they just need inversed plus 180
+    if (headingdeg < 0) {
+      headingdeg+=360;
+    }
+    headingdeg = (int)headingdeg;
+
+    /*DEBUGGING PRINTOUTS*/
+    Serial.print("X:  "); Serial.print(lis3mdl.x); 
+    Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+    Serial.print("\tMinX:  "); Serial.print(minX); 
+    Serial.print("\tMaxX:  "); Serial.print(maxX); 
+    Serial.print("\tMinY:  "); Serial.print(minY); 
+    Serial.print("\tMaxY:  "); Serial.print(maxY); 
+    Serial.print("\txAdapt:  "); Serial.print(xVal);
+    Serial.print("\tyAdapt:  "); Serial.print(yVal);
+    Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
+
+    //Delay in program to make printouts readable
+    //delay(50);
+    Serial.println();
+    }
+}
+
+/*
+  This will spin then turret around 360 degrees semi-slowly to allow for the magnetometer to calibrate itself wherever it is started up
+*/
+void QuarterbackTurret::calibMagnetometer() {
+  
+    int degreesMove = 360;
+    targetTurretEncoderCount = degreesMove * QB_COUNTS_PER_TURRET_DEGREE;
+    turretMoving = true;
+    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove));
+    while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
+      // get X Y and Z data at once
+      lis3mdl.read();      
+
+      //Constantly looking for min and max values of X
+      if (lis3mdl.x < minX && lis3mdl.x != -1) {minX = lis3mdl.x;}
+      else if (lis3mdl.x > maxX && lis3mdl.x != -1) {maxX = lis3mdl.x;}
+
+      //Adjusting X values to range from + or - values rather than all positive
+      xHalf = abs(maxX) - abs(minX);
+      xHalf/= 2;
+      xHalf+= abs(minX);
+
+      //Constantly looking for min and max values of Y
+      if (lis3mdl.y < minY && lis3mdl.y != -1) {minY = lis3mdl.y;}
+      else if (lis3mdl.y > maxY && lis3mdl.y != -1) {maxY = lis3mdl.y;}
+
+      //Adjusting Y values to range from + or - values rather than all positive
+      yHalf = abs(maxY) - abs(minY);
+      yHalf/= 2;
+      yHalf+= abs(minY);
+    
+      /*DEBUGGING PRINTOUTS*/
+      Serial.print("X:  "); Serial.print(lis3mdl.x); 
+      Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+      Serial.print("\tMinX:  "); Serial.print(minX); 
+      Serial.print("\tMaxX:  "); Serial.print(maxX); 
+      Serial.print("\tMinY:  "); Serial.print(minY); 
+      Serial.print("\tMaxY:  "); Serial.print(maxY); 
+
+    //Delay in program to make printouts readable
+    //delay(50);  
+    Serial.println();
+    }
+
+    //Updating variables that will be used to handle other two possible sign cases for each value
+    if ((maxX+minX) < 0) {
+      xsign = true;
+    }
+    if ((maxY+minY) < 0) {
+      ysign = true;
+    }
+
+    magnetometerCalibrated = true;
+    Serial.println("Magnetometer has been calibrated!");
 }
 
 /**

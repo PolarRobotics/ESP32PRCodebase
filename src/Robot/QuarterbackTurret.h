@@ -49,7 +49,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_THRESHOLD 35
 #define QB_TURRET_STICK_SCALE_FACTOR 0.5
 
-#define QB_HOME_PCT 0.2
+#define QB_HOME_PCT .125
+#define QB_HOME_MAG .1
 
 //* Question: Why are there so many #defines commented out?
 //* Answer: Documentation purposes.
@@ -200,12 +201,41 @@ class QuarterbackTurret : public Robot {
     Adafruit_LIS3MDL lis3mdl;
     int16_t magnetometerHeading;
 
+    int yVal = 0;
+    int xVal = 0;
+    int maxX = -1000000;
+    int minX = 1000000;
+    int xHalf = 0;
+    int maxY = -1000000;
+    int minY = 1000000;
+    int yHalf = 0;
+    //True is negative, false is positive
+    bool xsign = false;
+    bool ysign = false;
+
+    int16_t initialHeadingDeg;
+    int16_t difference;
+    float headingdeg;
+    float headingrad;
+
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     //* private helper function
     void moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot = true); 
+
+    /* Plan outlined below
+    - Get current magnetometer heading value
+    - Get initial magnetometer heading value
+    - Find difference between these two and set the turret requested position to be whereever the turret is currently at +/- the correct number of degrees to bring it back to initial position
+
+    Then move on to adding an offset that is based on the joystick and time / magnitude pressed that would modify the above initial heading value so it drives robot to this posiiton instead
+    */
+    
+    void calculateHeadingMag();
+
+    void calibMagnetometer();
 
     //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
     void updateTurretMotionStatus();
@@ -235,6 +265,8 @@ class QuarterbackTurret : public Robot {
       uint8_t turretEncoderPinB,  // E1B
       uint8_t turretLaserPin      // E2A
     );
+
+    bool magnetometerCalibrated = false;
 
     void action() override; //! robot subclass must override action
 
