@@ -168,8 +168,8 @@ class QuarterbackTurret : public Robot {
     bool turretMoving;
 
     // world-relative headings
-    int16_t currentAbsoluteHeading; // default 0
-    int16_t targetAbsoluteHeading;  // default 0
+    int16_t currentAbsoluteHeading = 0; // default 0
+    int16_t targetAbsoluteHeading = 0;  // default 0
 
     uint8_t turretLaserState;
 
@@ -217,6 +217,19 @@ class QuarterbackTurret : public Robot {
     int16_t difference;
     float headingdeg;
     float headingrad;
+    int headingError;
+    long previousTime = 0;
+    float ePrevious = 0;
+    float eIntegral = 0;
+    float kp = .005;
+    float ki = 0.0;
+    float kd = 0.0;
+    float turretPIDSpeed = 0;
+    int prevTurretAngles[10] = {0,0,0,0,0,0,0,0,0,0};
+    int prevTurretAngleIndex = 0;
+
+    void holdTurretStill();
+    float turretPIDController(int setPoint, float kp, float kd, float ki);
 
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
@@ -329,9 +342,6 @@ class QuarterbackTurret : public Robot {
 
     //* Setup for magnetometer modes and other stuff
     void magnetometerSetup();
-
-    //* Sets the class field magnetometerHeading to the converted value
-    void setMagnetometerHeading();
 
     //* Returns current turret angle
     int16_t getMagnetometerHeading();

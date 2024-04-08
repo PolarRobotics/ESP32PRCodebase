@@ -112,7 +112,6 @@ void QuarterbackTurret::action() {
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
   // above two inputs are registered in `testForDisableOrStop()` since this is re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  setMagnetometerHeading();
 
   if (!testForDisableOrStop() && !runningMacro) {
     //* Circle: Startup and Home (Reset or Zero Turret)
@@ -172,8 +171,9 @@ void QuarterbackTurret::action() {
           setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
           calculateHeadingMag();
         } else {
-          setTurretSpeed(0);
+          //setTurretSpeed(0);
           calculateHeadingMag();
+          holdTurretStill();
           updateTurretMotionStatus();
         }
 
@@ -825,27 +825,83 @@ void QuarterbackTurret::magnetometerSetup() {
                           true); // enabled!
 }
 
-/**
- * @brief Sets class field magnetometerHeading to converted value from magnetometer.
- * @authors Rhys Davies, Corbin Hibler
- * @date 2024-01-03
-*/
-void QuarterbackTurret::setMagnetometerHeading() {
-  lis3mdl.read();      // get X Y and Z data at once
-  // Then print out the raw data
-  //Serial.print("X:  "); Serial.print(lis3mdl.x); 
-  //Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
-  //Serial.print("\tZ:  "); Serial.print(lis3mdl.z); 
+float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki) {
+  //Measure the time elapsed since last iteration
+  long currentTime = millis();
+  float deltaT = ((float)(currentTime - previousTime));
 
-  // Calculate angle for heading, assuming board is parallel to
-  // the ground and  Y points toward heading.
-  headingdeg = ((atan2(lis3mdl.x, lis3mdl.y) * 180) / M_PI) + 180;
+  //Only update the current PID values every 100 ms
+  if (deltaT > 5 && deltaT < 25) {
+    /*Computer the error, derivative, and integral*/
+    //Note about Error: Distance from current position to requested position with respect to rollovers at 360 (makes it a bit more complicated)
+    //Positive values of E will drive current heading towads 0
+    // int normalDistance = headingdeg - targetAbsoluteHeading - 360;
+    // int reverseDistance = headingdeg - targetAbsoluteHeading + 360;
+    // normalDistance = normalDistance%360;
+    // reverseDistance = reverseDistance%360;
+    // int e = normalDistance;
+    // if (abs(reverseDistance) < abs(normalDistance)) {
+    //   e = reverseDistance;
+    // }
 
-  //Serial.print("\tHeading [deg]:   "); 
-  //Serial.print(headingdeg); 
+    int e = findNearestHeading(headingdeg, targetAbsoluteHeading);
+
+    //Find nearest heading
+
+    float eDerivative = (e - ePrevious);
+    eIntegral = eIntegral + e*.001;
+
+    //Computer the PID control signal
+    float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
+
+    //Divide by 100 and then constrain to be from 0 ot 1
+    if (u>.2) {u=.2;}
+    else if (u<-.2) { u = -.2;}
+
+    //If the robot gets within 5 degrees then send error etc to 0
+    if (abs(e) < 10) {
+      e = 0;
+      eDerivative = 0;
+      eIntegral = 0;
+      ePrevious = 0;
+    }
+
+    Serial.print("DeltaT:\t"); Serial.print(deltaT);
+    Serial.print("\tP:\t"); Serial.print((kp*e), 4);
+    Serial.print("\tI:\t"); Serial.print((ki * eIntegral), 4);
+    //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
+    Serial.print("\tPWM Value:\t"); Serial.print(u , 4);
+    Serial.print("\tCurrent Heading [deg]:\t"); Serial.print(headingdeg , 0);
+    Serial.print("\tTarget Heading [deg]:\t"); Serial.print(targetAbsoluteHeading , 0);
+    Serial.println();
+
+    //Update variables for next iteration
+    previousTime = currentTime;
+    ePrevious = e;
+    return -u;
+  } else if (deltaT > 250) {
+    previousTime = currentTime;
+    return turretPIDSpeed;
+  } else {
+    return turretPIDSpeed;
+  }
+  
+}
+
+void QuarterbackTurret::holdTurretStill() {
+
+  if (magnetometerCalibrated) {
+    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
+    setTurretSpeed(turretPIDSpeed);
+    //Serial.print("PWM Signal:\t"); Serial.print(turretPIDSpeed);
+    //Serial.println();
+  }
+
+  //Serial.print("Current Heading [deg]:\t"); Serial.print(headingdeg);
+  //Serial.print("\tTarget Heading [deg]:\t"); Serial.print(targetAbsoluteHeading);
+  //Serial.print("\tError [deg]:\t"); Serial.print(abs(headingError));
+  //Serial.print("\tPWM Value:\t"); Serial.print(turretPIDSpeed);
   //Serial.println();
-
-  this->magnetometerHeading = (int16_t) headingdeg;
 }
 
 void QuarterbackTurret::calculateHeadingMag() {
@@ -875,7 +931,9 @@ void QuarterbackTurret::calculateHeadingMag() {
     }
     
     //Calculate angle in radians
-    headingrad = atan2(yVal, xVal);
+    if (xVal !=-1 && xVal !=0 && yVal != 0 && yVal !=-1) {
+      headingrad = atan2(yVal, xVal);
+    }
 
     //Convert to degrees
     headingdeg = headingrad*180/M_PI;
@@ -886,20 +944,31 @@ void QuarterbackTurret::calculateHeadingMag() {
     }
     headingdeg = (int)headingdeg;
 
+    prevTurretAngles[prevTurretAngleIndex] = headingdeg;
+    prevTurretAngleIndex++;
+    prevTurretAngleIndex %= std::end(prevTurretAngles) - std::begin(prevTurretAngles);
+
+    //Taking the avergage for heading
+    headingdeg = 0;
+    for (int i = 0; i<(std::end(prevTurretAngles) - std::begin(prevTurretAngles)); i++) {
+      headingdeg+=prevTurretAngles[i];
+    }
+    headingdeg/=(std::end(prevTurretAngles) - std::begin(prevTurretAngles));
+
     /*DEBUGGING PRINTOUTS*/
-    Serial.print("X:  "); Serial.print(lis3mdl.x); 
-    Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
-    Serial.print("\tMinX:  "); Serial.print(minX); 
-    Serial.print("\tMaxX:  "); Serial.print(maxX); 
-    Serial.print("\tMinY:  "); Serial.print(minY); 
-    Serial.print("\tMaxY:  "); Serial.print(maxY); 
-    Serial.print("\txAdapt:  "); Serial.print(xVal);
-    Serial.print("\tyAdapt:  "); Serial.print(yVal);
-    Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
+    //Serial.print("X:  "); Serial.print(lis3mdl.x); 
+    //Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+    //Serial.print("\tMinX:  "); Serial.print(minX); 
+    //Serial.print("\tMaxX:  "); Serial.print(maxX); 
+    //Serial.print("\tMinY:  "); Serial.print(minY); 
+    //Serial.print("\tMaxY:  "); Serial.print(maxY); 
+    //Serial.print("\txAdapt:  "); Serial.print(xVal);
+    //Serial.print("\tyAdapt:  "); Serial.print(yVal);
+    //Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
 
     //Delay in program to make printouts readable
     //delay(50);
-    Serial.println();
+    //Serial.println();
     }
 }
 
@@ -917,8 +986,8 @@ void QuarterbackTurret::calibMagnetometer() {
       lis3mdl.read();      
 
       //Constantly looking for min and max values of X
-      if (lis3mdl.x < minX && lis3mdl.x != -1) {minX = lis3mdl.x;}
-      else if (lis3mdl.x > maxX && lis3mdl.x != -1) {maxX = lis3mdl.x;}
+      if (lis3mdl.x < minX && lis3mdl.x != -1 && lis3mdl.x != 0) {minX = lis3mdl.x;}
+      else if (lis3mdl.x > maxX && lis3mdl.x != -1 && lis3mdl.x != 0) {maxX = lis3mdl.x;}
 
       //Adjusting X values to range from + or - values rather than all positive
       xHalf = abs(maxX) - abs(minX);
@@ -926,8 +995,8 @@ void QuarterbackTurret::calibMagnetometer() {
       xHalf+= abs(minX);
 
       //Constantly looking for min and max values of Y
-      if (lis3mdl.y < minY && lis3mdl.y != -1) {minY = lis3mdl.y;}
-      else if (lis3mdl.y > maxY && lis3mdl.y != -1) {maxY = lis3mdl.y;}
+      if (lis3mdl.y < minY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {minY = lis3mdl.y;}
+      else if (lis3mdl.y > maxY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {maxY = lis3mdl.y;}
 
       //Adjusting Y values to range from + or - values rather than all positive
       yHalf = abs(maxY) - abs(minY);
@@ -957,6 +1026,8 @@ void QuarterbackTurret::calibMagnetometer() {
 
     magnetometerCalibrated = true;
     Serial.println("Magnetometer has been calibrated!");
+    eIntegral = 0;
+    previousTime = millis();
 }
 
 /**
