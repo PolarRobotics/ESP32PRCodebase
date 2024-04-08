@@ -222,11 +222,14 @@ class QuarterbackTurret : public Robot {
     float ePrevious = 0;
     float eIntegral = 0;
     float kp = .005;
-    float ki = 0.0;
+    float ki = 0.0012;
     float kd = 0.0;
     float turretPIDSpeed = 0;
-    int prevTurretAngles[10] = {0,0,0,0,0,0,0,0,0,0};
-    int prevTurretAngleIndex = 0;
+    int prevErrorVals[10] = {0,0,0,0,0,0,0,0,0,0};
+    int prevErrorIndex = 0;
+    int errorAverageLength = 10;
+    bool firstAverage = true;
+    float minMagSpeed = .05;
 
     void holdTurretStill();
     float turretPIDController(int setPoint, float kp, float kd, float ki);

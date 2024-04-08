@@ -212,7 +212,7 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
 
     // handle mechanical slop when changing directions
     if (!overrideEncoderTare) {
-      turretDirectionChanged();
+      //turretDirectionChanged();
     }
 
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
@@ -308,10 +308,10 @@ int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t cur
 
   if (abs(adjustedCurrentHeading - positiveHeading) < abs(adjustedCurrentHeading - negativeHeading)) {
     // negative heading is closer
-    return negativeHeading;
+    return positiveHeading;
   } else {
     // positive heading is closer
-    return positiveHeading;
+    return negativeHeading;
   }
 }
 
@@ -844,12 +844,32 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     //   e = reverseDistance;
     // }
 
+    //Find which direction will be closer
     int e = findNearestHeading(headingdeg, targetAbsoluteHeading);
 
-    //Find nearest heading
+    //Taking the average of the error
+    prevErrorVals[prevErrorIndex] = e;
+    prevErrorIndex++;
+    prevErrorIndex %= errorAverageLength;
+
+    //For the first one populate the average so it does not freak out
+    if (firstAverage) {
+      for (int i = 0; i<errorAverageLength; i++) {
+        prevErrorVals[i] = e;
+      }
+      firstAverage = false;
+    }
+
+    //Taking the avergage for heading
+    int avgError = 0;
+    for (int i = 0; i<errorAverageLength; i++) {
+      avgError+=prevErrorVals[i];
+    }
+    avgError/=errorAverageLength;
+    e = avgError;
 
     float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e*.001;
+    eIntegral = eIntegral + e*.01;
 
     //Computer the PID control signal
     float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
@@ -859,25 +879,31 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     else if (u<-.2) { u = -.2;}
 
     //If the robot gets within 5 degrees then send error etc to 0
-    if (abs(e) < 10) {
+    if (abs(e) < 3) {
       e = 0;
       eDerivative = 0;
       eIntegral = 0;
       ePrevious = 0;
     }
 
-    Serial.print("DeltaT:\t"); Serial.print(deltaT);
-    Serial.print("\tP:\t"); Serial.print((kp*e), 4);
-    Serial.print("\tI:\t"); Serial.print((ki * eIntegral), 4);
-    //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
-    Serial.print("\tPWM Value:\t"); Serial.print(u , 4);
-    Serial.print("\tCurrent Heading [deg]:\t"); Serial.print(headingdeg , 0);
-    Serial.print("\tTarget Heading [deg]:\t"); Serial.print(targetAbsoluteHeading , 0);
+    Serial.print("DeltaT: "); Serial.print(deltaT);
+    Serial.print("\tError: [deg]: "); Serial.print(e);
+    Serial.print("\tP: "); Serial.print((kp*e), 4);
+    Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
+    Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
+    Serial.print("\tPWM Value: "); Serial.print(u , 4);
+    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
+    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
     Serial.println();
 
     //Update variables for next iteration
     previousTime = currentTime;
     ePrevious = e;
+
+
+    u = copysign(constrain( abs(u), minMagSpeed, 1), u);
+    if (e == 0) {u = 0.0;}
+
     return -u;
   } else if (deltaT > 250) {
     previousTime = currentTime;
@@ -893,6 +919,7 @@ void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
     turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
     setTurretSpeed(turretPIDSpeed);
+
     //Serial.print("PWM Signal:\t"); Serial.print(turretPIDSpeed);
     //Serial.println();
   }
@@ -921,8 +948,6 @@ void QuarterbackTurret::calculateHeadingMag() {
       yVal = lis3mdl.y - yHalf;
     }
     
-    
-
     //Evaluate both ranges of X and Y then scale the smaller value to be within the same range as the larger
     if (yHalf > xHalf) {
       xVal = (double)((double)xVal/((double)xHalf))*(double)yHalf;
@@ -943,17 +968,6 @@ void QuarterbackTurret::calculateHeadingMag() {
       headingdeg+=360;
     }
     headingdeg = (int)headingdeg;
-
-    prevTurretAngles[prevTurretAngleIndex] = headingdeg;
-    prevTurretAngleIndex++;
-    prevTurretAngleIndex %= std::end(prevTurretAngles) - std::begin(prevTurretAngles);
-
-    //Taking the avergage for heading
-    headingdeg = 0;
-    for (int i = 0; i<(std::end(prevTurretAngles) - std::begin(prevTurretAngles)); i++) {
-      headingdeg+=prevTurretAngles[i];
-    }
-    headingdeg/=(std::end(prevTurretAngles) - std::begin(prevTurretAngles));
 
     /*DEBUGGING PRINTOUTS*/
     //Serial.print("X:  "); Serial.print(lis3mdl.x); 
