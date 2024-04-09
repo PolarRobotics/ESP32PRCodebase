@@ -212,7 +212,7 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
 
     // handle mechanical slop when changing directions
     if (!overrideEncoderTare) {
-      //turretDirectionChanged();
+      turretDirectionChanged();
     }
 
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
@@ -309,10 +309,11 @@ int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t cur
   if (abs(adjustedCurrentHeading - positiveHeading) < abs(adjustedCurrentHeading - negativeHeading)) {
     // negative heading is closer
     return positiveHeading;
-  } else {
+  } //else {
     // positive heading is closer
     return negativeHeading;
-  }
+  // }
+  // TODO: fix this function. negative and postive are flipped, but the outputs are correct, so logic needs to change
 }
 
 int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading) {
@@ -918,7 +919,7 @@ void QuarterbackTurret::holdTurretStill() {
 
   if (magnetometerCalibrated) {
     turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
-    setTurretSpeed(turretPIDSpeed);
+    setTurretSpeed(turretPIDSpeed, true);
 
     //Serial.print("PWM Signal:\t"); Serial.print(turretPIDSpeed);
     //Serial.println();
@@ -994,7 +995,7 @@ void QuarterbackTurret::calibMagnetometer() {
     int degreesMove = 360;
     targetTurretEncoderCount = degreesMove * QB_COUNTS_PER_TURRET_DEGREE;
     turretMoving = true;
-    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove));
+    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
     while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
       // get X Y and Z data at once
       lis3mdl.read();      
