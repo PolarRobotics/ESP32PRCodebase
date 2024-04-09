@@ -169,11 +169,19 @@ void QuarterbackTurret::action() {
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
           setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-          calculateHeadingMag();
+
+          // targetAbsoluteHeading += (1 * copysign(1, stickTurret));
+          // targetAbsoluteHeading %= 360;
+          // Serial.print(F("--target abs heading: "));
+          // Serial.println(targetAbsoluteHeading);
+          // calculateHeadingMag();
+          // holdTurretStill();
         } else {
-          //setTurretSpeed(0);
-          calculateHeadingMag();
-          holdTurretStill();
+          setTurretSpeed(0);
+
+          // calculateHeadingMag();
+          // holdTurretStill();
+
           updateTurretMotionStatus();
         }
 
