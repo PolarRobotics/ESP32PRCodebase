@@ -66,8 +66,6 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->stickFlywheel = 0;
   this->stickTurret = 0;
-  
-  this->magnetometerHeading = 0;
 
   // turret laser setup
   this->turretLaserPin = turretLaserPin;
@@ -168,21 +166,26 @@ void QuarterbackTurret::action() {
         //* Right Stick X: Turret Control
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
-          setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-
-          // targetAbsoluteHeading += (1 * copysign(1, stickTurret));
-          // targetAbsoluteHeading %= 360;
-          // Serial.print(F("--target abs heading: "));
-          // Serial.println(targetAbsoluteHeading);
-          // calculateHeadingMag();
-          // holdTurretStill();
+          //Check if magnetometer functionality is enabled
+          if (useMagnetometer) {
+            targetAbsoluteHeading += (1 * copysign(1, stickTurret));
+            targetAbsoluteHeading %= 360;
+            //Serial.print(F("--target abs heading: "));
+            //Serial.println(targetAbsoluteHeading);
+            calculateHeadingMag();
+            holdTurretStill();
+          } else {
+            setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
+          }
         } else {
-          setTurretSpeed(0);
-
-          // calculateHeadingMag();
-          // holdTurretStill();
-
-          updateTurretMotionStatus();
+          //Check if magnetometer functionality is enabled
+          if (useMagnetometer) {
+            calculateHeadingMag();
+            holdTurretStill();
+          } else {
+            setTurretSpeed(0);
+          }
+          updateTurretMotionStatus();          
         }
 
         // updateTurretMotionStatus();
@@ -695,8 +698,10 @@ void QuarterbackTurret::zeroTurret() {
   Serial.println(F("zeroed"));
 
   //Now that the encoder is zeroed we can just zero the magnetometer
-  delay(250);
-  calibMagnetometer();
+  if (useMagnetometer) {
+    delay(250);
+    calibMagnetometer();
+  }
 
   this->runningMacro = false;
 }
@@ -834,112 +839,69 @@ void QuarterbackTurret::magnetometerSetup() {
                           true); // enabled!
 }
 
-float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki) {
-  //Measure the time elapsed since last iteration
-  long currentTime = millis();
-  float deltaT = ((float)(currentTime - previousTime));
-
-  //Only update the current PID values every 100 ms
-  if (deltaT > 5 && deltaT < 25) {
-    /*Computer the error, derivative, and integral*/
-    //Note about Error: Distance from current position to requested position with respect to rollovers at 360 (makes it a bit more complicated)
-    //Positive values of E will drive current heading towads 0
-    // int normalDistance = headingdeg - targetAbsoluteHeading - 360;
-    // int reverseDistance = headingdeg - targetAbsoluteHeading + 360;
-    // normalDistance = normalDistance%360;
-    // reverseDistance = reverseDistance%360;
-    // int e = normalDistance;
-    // if (abs(reverseDistance) < abs(normalDistance)) {
-    //   e = reverseDistance;
-    // }
-
-    //Find which direction will be closer
-    int e = findNearestHeading(headingdeg, targetAbsoluteHeading);
-
-    //Taking the average of the error
-    prevErrorVals[prevErrorIndex] = e;
-    prevErrorIndex++;
-    prevErrorIndex %= errorAverageLength;
-
-    //For the first one populate the average so it does not freak out
-    if (firstAverage) {
-      for (int i = 0; i<errorAverageLength; i++) {
-        prevErrorVals[i] = e;
-      }
-      firstAverage = false;
-    }
-
-    //Taking the avergage for heading
-    int avgError = 0;
-    for (int i = 0; i<errorAverageLength; i++) {
-      avgError+=prevErrorVals[i];
-    }
-    avgError/=errorAverageLength;
-    e = avgError;
-
-    float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e*.01;
-
-    //Computer the PID control signal
-    float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
-
-    //Divide by 100 and then constrain to be from 0 ot 1
-    if (u>.2) {u=.2;}
-    else if (u<-.2) { u = -.2;}
-
-    //If the robot gets within 5 degrees then send error etc to 0
-    if (abs(e) < 3) {
-      e = 0;
-      eDerivative = 0;
-      eIntegral = 0;
-      ePrevious = 0;
-    }
-
-    Serial.print("DeltaT: "); Serial.print(deltaT);
-    Serial.print("\tError: [deg]: "); Serial.print(e);
-    Serial.print("\tP: "); Serial.print((kp*e), 4);
-    Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
-    Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
-    Serial.print("\tPWM Value: "); Serial.print(u , 4);
-    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
-    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
-    Serial.println();
-
-    //Update variables for next iteration
-    previousTime = currentTime;
-    ePrevious = e;
-
-
-    u = copysign(constrain( abs(u), minMagSpeed, 1), u);
-    if (e == 0) {u = 0.0;}
-
-    return -u;
-  } else if (deltaT > 250) {
-    previousTime = currentTime;
-    return turretPIDSpeed;
-  } else {
-    return turretPIDSpeed;
-  }
+/**
+ * @brief Spins the turret 360 degrees slowly to allow magnetometer to calibrate itself on startup
+ * @author George Rak
+ * @date 4-9-2024
+*/
+void QuarterbackTurret::calibMagnetometer() {
   
+    int degreesMove = 360;
+    targetTurretEncoderCount = degreesMove * QB_COUNTS_PER_TURRET_DEGREE;
+    turretMoving = true;
+    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
+    //Loop until the target encoder count has been achieved
+    while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
+      // get X Y and Z data all at once
+      lis3mdl.read();      
+
+      //Constantly looking for min and max values of X
+      if (lis3mdl.x < minX && lis3mdl.x != -1 && lis3mdl.x != 0) {minX = lis3mdl.x;}
+      else if (lis3mdl.x > maxX && lis3mdl.x != -1 && lis3mdl.x != 0) {maxX = lis3mdl.x;}
+
+      //Adjusting X values to range from + or - values rather than all positive
+      xHalf = abs(maxX) - abs(minX);
+      xHalf/= 2;
+      xHalf+= abs(minX);
+
+      //Constantly looking for min and max values of Y
+      if (lis3mdl.y < minY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {minY = lis3mdl.y;}
+      else if (lis3mdl.y > maxY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {maxY = lis3mdl.y;}
+
+      //Adjusting Y values to range from + or - values rather than all positive
+      yHalf = abs(maxY) - abs(minY);
+      yHalf/= 2;
+      yHalf+= abs(minY);
+    
+      /*DEBUGGING PRINTOUTS*/
+      //Serial.print("X:  "); Serial.print(lis3mdl.x); 
+      //Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+      //Serial.print("\tMinX:  "); Serial.print(minX); 
+      //Serial.print("\tMaxX:  "); Serial.print(maxX); 
+      //Serial.print("\tMinY:  "); Serial.print(minY); 
+      //Serial.print("\tMaxY:  "); Serial.print(maxY); 
+      //Serial.println();    
+    }
+
+    //Updating variables that will be used to handle other two possible sign cases for each value
+    if ((maxX+minX) < 0) {
+      xsign = true;
+    }
+    if ((maxY+minY) < 0) {
+      ysign = true;
+    }
+
+    magnetometerCalibrated = true;
+    Serial.println("Magnetometer has been calibrated!");
+    eIntegral = 0;
+    previousTime = millis();
 }
 
-void QuarterbackTurret::holdTurretStill() {
-
-  if (magnetometerCalibrated) {
-    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
-    setTurretSpeed(turretPIDSpeed, true);
-
-    //Serial.print("PWM Signal:\t"); Serial.print(turretPIDSpeed);
-    //Serial.println();
-  }
-
-  //Serial.print("Current Heading [deg]:\t"); Serial.print(headingdeg);
-  //Serial.print("\tTarget Heading [deg]:\t"); Serial.print(targetAbsoluteHeading);
-  //Serial.print("\tError [deg]:\t"); Serial.print(abs(headingError));
-  //Serial.print("\tPWM Value:\t"); Serial.print(turretPIDSpeed);
-  //Serial.println();
-}
-
+/**
+ * @brief Uses the data collected at calibration to calculate the current heading relative to magnetic north
+ * @author George Rak
+ * @date 4-9-2024
+*/
 void QuarterbackTurret::calculateHeadingMag() {
   //Only run the code in here if the calibration has been done to the magnetometer
   if (magnetometerCalibrated) {
@@ -988,76 +950,103 @@ void QuarterbackTurret::calculateHeadingMag() {
     //Serial.print("\txAdapt:  "); Serial.print(xVal);
     //Serial.print("\tyAdapt:  "); Serial.print(yVal);
     //Serial.print("\tHeading [deg]:   "); Serial.print(headingdeg);
-
-    //Delay in program to make printouts readable
-    //delay(50);
     //Serial.println();
     }
 }
 
-/*
-  This will spin then turret around 360 degrees semi-slowly to allow for the magnetometer to calibrate itself wherever it is started up
+/**
+ * @brief Checks if the turret should be held still and runs the PID loop setting turret speed equal to PWM value calculated
+ * @author George Rak
+ * @date 4-9-2024
 */
-void QuarterbackTurret::calibMagnetometer() {
-  
-    int degreesMove = 360;
-    targetTurretEncoderCount = degreesMove * QB_COUNTS_PER_TURRET_DEGREE;
-    turretMoving = true;
-    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
-    while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
-      // get X Y and Z data at once
-      lis3mdl.read();      
-
-      //Constantly looking for min and max values of X
-      if (lis3mdl.x < minX && lis3mdl.x != -1 && lis3mdl.x != 0) {minX = lis3mdl.x;}
-      else if (lis3mdl.x > maxX && lis3mdl.x != -1 && lis3mdl.x != 0) {maxX = lis3mdl.x;}
-
-      //Adjusting X values to range from + or - values rather than all positive
-      xHalf = abs(maxX) - abs(minX);
-      xHalf/= 2;
-      xHalf+= abs(minX);
-
-      //Constantly looking for min and max values of Y
-      if (lis3mdl.y < minY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {minY = lis3mdl.y;}
-      else if (lis3mdl.y > maxY && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10) {maxY = lis3mdl.y;}
-
-      //Adjusting Y values to range from + or - values rather than all positive
-      yHalf = abs(maxY) - abs(minY);
-      yHalf/= 2;
-      yHalf+= abs(minY);
-    
-      /*DEBUGGING PRINTOUTS*/
-      Serial.print("X:  "); Serial.print(lis3mdl.x); 
-      Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
-      Serial.print("\tMinX:  "); Serial.print(minX); 
-      Serial.print("\tMaxX:  "); Serial.print(maxX); 
-      Serial.print("\tMinY:  "); Serial.print(minY); 
-      Serial.print("\tMaxY:  "); Serial.print(maxY); 
-
-    //Delay in program to make printouts readable
-    //delay(50);  
-    Serial.println();
-    }
-
-    //Updating variables that will be used to handle other two possible sign cases for each value
-    if ((maxX+minX) < 0) {
-      xsign = true;
-    }
-    if ((maxY+minY) < 0) {
-      ysign = true;
-    }
-
-    magnetometerCalibrated = true;
-    Serial.println("Magnetometer has been calibrated!");
-    eIntegral = 0;
-    previousTime = millis();
+void QuarterbackTurret::holdTurretStill() {
+  if (magnetometerCalibrated) {
+    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
+    setTurretSpeed(turretPIDSpeed, true);
+  }
 }
 
 /**
- * @brief Returns value of class field magnetometerHeading.
- * @author Corbin Hibler
- * @date 2024-01-03
+ * @brief PID controller to hold the turret still (gains tuned, not calculated)
+ * @author George Rak
+ * @date 4-9-2024
 */
-int16_t QuarterbackTurret::getMagnetometerHeading() {
-  return this->magnetometerHeading;
+float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki) {
+  //Measure the time elapsed since last iteration
+  long currentTime = millis();
+  float deltaT = ((float)(currentTime - previousTime));
+
+  //PID loops should update as fast as possible but if it waits too long this could be a problem
+  if (deltaT > 5 && deltaT < 25) {
+
+    //Find which direction will be closer to requested angle
+    int e = findNearestHeading(headingdeg, targetAbsoluteHeading);
+
+    //Taking the average of the error
+    prevErrorVals[prevErrorIndex] = e;
+    prevErrorIndex++;
+    prevErrorIndex %= errorAverageLength;
+
+    //For the first one populate the average so it does not freak out
+    if (firstAverage) {
+      for (int i = 0; i<errorAverageLength; i++) {
+        prevErrorVals[i] = e;
+      }
+      firstAverage = false;
+    }
+
+    //Taking the avergage for error
+    int avgError = 0;
+    for (int i = 0; i<errorAverageLength; i++) {
+      avgError+=prevErrorVals[i];
+    }
+    avgError/=errorAverageLength;
+    e = avgError;
+
+    //Calculate the derivative and integral values
+    float eDerivative = (e - ePrevious);
+    eIntegral = eIntegral + e*.01;
+
+    //Computer the PID control signal
+    float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
+
+    //Constrain output PWM values to -.2 to .2
+    if (u>.2) {u=.2;}
+    else if (u<-.2) { u = -.2;}
+
+    //If the robot gets within an acceptable range then send error etc to 0
+    if (abs(e) < 3) {
+      e = 0;
+      eDerivative = 0;
+      eIntegral = 0;
+      ePrevious = 0;
+    }
+
+    //Serial.print("DeltaT: "); Serial.print(deltaT);
+    //Serial.print("\tError: [deg]: "); Serial.print(e);
+    //Serial.print("\tP: "); Serial.print((kp*e), 4);
+    //Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
+    //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
+    //Serial.print("\tPWM Value: "); Serial.print(u , 4);
+    //Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
+    //Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
+    //Serial.println();
+
+    //Update variables for next iteration
+    previousTime = currentTime;
+    ePrevious = e;
+
+    //Constrain the values that are sent to the motor while keeping sign
+    u = copysign(constrain( abs(u), minMagSpeed, 1), u);
+    if (e == 0) {u = 0.0;}
+
+    return -u;
+  } else if (deltaT > 250) {
+    //Drop the value if the time since last loop is too high so that errors don't spike
+    previousTime = currentTime;
+    return turretPIDSpeed;
+  } else {
+    //If the loop runs faster than the minimum time just return the last value and wait for next loop
+    return turretPIDSpeed;
+  }
 }

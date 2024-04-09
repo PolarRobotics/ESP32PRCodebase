@@ -185,22 +185,17 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbCross;
     Debouncer* dbTurretInterpolator;
 
-    //* Magnetometer
-    // Calibrated 1/23/2024:
-    // Hard-iron calibration settings
-    const float hard_iron[3] = {
-      -8.31,  4.68,  5.42
-    };
-
-    // Soft-iron calibration settings
-    const float soft_iron[3][3] = {
-      {  1.015,  0.046,  0.068  },
-      {  0.046,  1.044, -0.018  },
-      {  0.068, -0.018,  0.950  }
-    };
+    /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
-    int16_t magnetometerHeading;
+    bool useMagnetometer = false; //Change this if you want to use the magnetometer or any of it's functions
 
+    /* Magnetometer calibration variables used at startup each time
+        - yVal, xVal:     The current x and y values read by the magnetometer (after adjustments)
+        - maxX, minX:     During calibration the max and min X values are recorded
+        - maxY, minY:     During calibration the max and min Y values are recorded
+        - xHalf, yHalf:   Half of the total range of expected x and Y values (Usesd to shift values back to origin [0,0])
+        - xsign, ysign:   Determines whether to add to the half value or subtract from it when shifting values back to origin (true = subtract)
+    */
     int yVal = 0;
     int xVal = 0;
     int maxX = -1000000;
@@ -209,15 +204,31 @@ class QuarterbackTurret : public Robot {
     int maxY = -1000000;
     int minY = 1000000;
     int yHalf = 0;
-    //True is negative, false is positive
     bool xsign = false;
     bool ysign = false;
 
-    int16_t initialHeadingDeg;
-    int16_t difference;
-    float headingdeg;
+    /* Magnetometer current heading calculations
+        - headingrad:     The current calculated heading in radians using the X and Y values after calibration
+        - headingdeg:     The current calculated headign in degrees -> uses headingrad
+        - headingError:   
+    */
     float headingrad;
-    int headingError;
+    float headingdeg;
+
+    /* Magnetometer PID calculations
+        - previousTime:         Used to calcualte errors and deltaT in PID function
+        - ePrevious:            The error builds as time goes on, this is used to record the previous and new error values
+        - eIntegral:            The current error integral calculated, will be added to ePrevious in PID loop
+        - kp:                   Proportional gain used in PID
+        - ki:                   Integral gain used in PID
+        - kd:                   Derivative gain used in PID
+        - turretPIDSpeed:       The calculated PWM value used in the PID loop
+        - prevErrorVals:        Array of previous error values used to average the last few together to smooth out random spikes in readings from magnetometer
+        - prevErrorIndex:       The current index gets replaced with the new error value cycling through the entire array over time
+        - errorAverageLength:   The length of the array used for averaging the error
+        - firstAverage:         On the first error calculations the array is filled with zeros so this accounts for that by filling the entire array with the current reading
+        - minMagSpeed:          Small PWM signals fail to make the motor turn leading to error in PID calculations, this sets a bottom bound on the PWM signal that can be calculated by the PID loop
+    */
     long previousTime = 0;
     float ePrevious = 0;
     float eIntegral = 0;
@@ -231,8 +242,30 @@ class QuarterbackTurret : public Robot {
     bool firstAverage = true;
     float minMagSpeed = .075;
 
+    /* Magnetometer functions:
+        - magnetometerSetup       Sets some of the parameters runs once
+        - calibMagnetometer       Rotates turret once on startup recording readings and setting values that will move and scale outputs to be correct angle
+        - calculateHeadingMag     Uses the values calculated during calibration to find the current heading of the turret with respect to the original 0 position
+        - holdTurretStill         Checks if the calibration has been completed and hold turret stil is enabled then enables the PID loop
+        - turretPIDController     PID loop that drives turret to the current setpoint
+    */
+    void magnetometerSetup();
+    void calibMagnetometer();
+    void calculateHeadingMag();
     void holdTurretStill();
     float turretPIDController(int setPoint, float kp, float kd, float ki);
+
+    /* MAGNETOMETER CURRENT STATE NOTES / PLAN
+      - the PID controller works pretty well, tested on table rotating quickly
+      - Tested PID controller on field and it immidiately flipped so we need to tune it so that the robot does not tip itself over
+      - Magnetometer mount needs redesigned and printed to be more stable / protective of the magnetometer and wires (Should probably solder wires to magnetometer for best reliability)
+      - Ability to change holding angle of turret with joystick needs evaluated for correctness
+      - Turret flywheel equation needs generated for requested distance
+      - Nathan capstone integration needs done to control angle and thorw distance
+      - Testing needs done to see how much flywheels beign on affects magnetometer
+      - Relative velocities should be taken into account with trajectory calculations
+    */
+    
 
     // private helper function to avoid code duplication between force and normal case
     void moveCradleSubroutine();
@@ -240,18 +273,6 @@ class QuarterbackTurret : public Robot {
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     //* private helper function
     void moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot = true); 
-
-    /* Plan outlined below
-    - Get current magnetometer heading value
-    - Get initial magnetometer heading value
-    - Find difference between these two and set the turret requested position to be whereever the turret is currently at +/- the correct number of degrees to bring it back to initial position
-
-    Then move on to adding an offset that is based on the joystick and time / magnitude pressed that would modify the above initial heading value so it drives robot to this posiiton instead
-    */
-    
-    void calculateHeadingMag();
-
-    void calibMagnetometer();
 
     //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
     void updateTurretMotionStatus();
@@ -342,12 +363,6 @@ class QuarterbackTurret : public Robot {
     static void turretEncoderISR();
 
     void turretDirectionChanged();
-
-    //* Setup for magnetometer modes and other stuff
-    void magnetometerSetup();
-
-    //* Returns current turret angle
-    int16_t getMagnetometerHeading();
 };
 
 #endif // QUARTERBACK_TURRET_H
