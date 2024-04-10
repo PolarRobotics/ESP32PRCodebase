@@ -50,7 +50,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_STICK_SCALE_FACTOR 0.25
 
 #define QB_HOME_PCT .125
-#define QB_HANDOFF .2
+#define QB_HANDOFF .3
 #define QB_HOME_MAG .1
 
 //* Question: Why are there so many #defines commented out?
@@ -188,7 +188,7 @@ class QuarterbackTurret : public Robot {
 
     /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
-    bool useMagnetometer = true;  //Change this if you want to use the magnetometer or any of it's functions
+    bool useMagnetometer = false;  //Change this if you want to use the magnetometer or any of it's functions
     bool holdTurretStillEnabled = false; //Change thi sif you only want to use the magnetometer for the handoff and not the hold steady
 
     /* Magnetometer calibration variables used at startup each time
@@ -255,7 +255,7 @@ class QuarterbackTurret : public Robot {
     void calibMagnetometer();
     void calculateHeadingMag();
     void holdTurretStill();
-    float turretPIDController(int setPoint, float kp, float kd, float ki);
+    float turretPIDController(int setPoint, float kp, float kd, float ki, float maxSpeed);
 
     /* MAGNETOMETER CURRENT STATE NOTES / PLAN
       - the PID controller works pretty well, tested on table rotating quickly
@@ -289,6 +289,8 @@ class QuarterbackTurret : public Robot {
     // overloaded to allow calling with currentRelativeHeading (cannot set a class member as a default argument)
     int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
     int16_t findNearestHeading(int16_t targetHeading);
+    int NormalizeAngle(int angle);
+    int CalculateRotation(float currentAngle, float targetAngle);
     
   public:
     QuarterbackTurret(

@@ -254,7 +254,14 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool rela
         //This runs during the handoff macro
         targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
+        setTurretSpeed(QB_HANDOFF/4 * copysign(1, heading)); //! temp constant, implement P loop soon
+        delay(100);
+        setTurretSpeed(QB_HANDOFF/3 * copysign(1, heading)); //! temp constant, implement P loop soon
+        delay(100);
+        setTurretSpeed(QB_HANDOFF/2 * copysign(1, heading)); //! temp constant, implement P loop soon
+        delay(100);
         setTurretSpeed(QB_HANDOFF * copysign(1, heading)); //! temp constant, implement P loop soon
+
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
       currentRelativeHeading = targetRelativeHeading;
@@ -298,6 +305,41 @@ void QuarterbackTurret::turretDirectionChanged() {
 
 int16_t QuarterbackTurret::getCurrentHeading() {
   return (currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE) % 360;
+}
+
+// Function to normalize an angle to the range [0, 360)
+int QuarterbackTurret::NormalizeAngle(int angle) {
+    while (angle < 0) {
+      angle+=360;
+    }
+    angle%= 360; // Ensure angle is within [0, 360) range
+    return angle;
+}
+
+// Function to calculate the shortest rotation direction
+// Returns -1 for counterclockwise, 1 for clockwise, or 0 if no rotation needed
+int QuarterbackTurret::CalculateRotation(float currentAngle, float targetAngle) {
+    currentAngle = NormalizeAngle(currentAngle);
+    targetAngle = NormalizeAngle(targetAngle);
+
+    int positiveDegreeCount = currentAngle;
+    int negativeDegreeCount = currentAngle;
+    int iter = 0;
+    
+    while (NormalizeAngle(negativeDegreeCount) != targetAngle && NormalizeAngle(positiveDegreeCount) != targetAngle) {
+      positiveDegreeCount++;
+      negativeDegreeCount--;
+      iter++;
+    }
+
+    if (iter == 0) {
+      return 0;
+    }
+    else if (NormalizeAngle(negativeDegreeCount) == targetAngle) {
+      return iter;
+    } else {
+      return iter*-1;
+    }
 }
 
 int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t currentHeading) {
@@ -478,33 +520,38 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
-  int16_t targetHeading = (getCurrentHeading() + 150) % 360;
+  int16_t targetHeading = (getCurrentHeading() + 130) % 360;
   calculateHeadingMag();
   targetAbsoluteHeading = headingdeg +180;
   targetAbsoluteHeading%=360;
+
   if (useMagnetometer) {
-    moveTurretAndWait(targetHeading);
+    //moveTurretAndWait(targetHeading);
     //Use the magnetometer to make sure we get close to the requested angle
-    calculateHeadingMag();
-    holdTurretStill();
-    cradleActuator.write(1.0);
+    //calculateHeadingMag();
+    //holdTurretStill();
+    //cradleActuator.write(1.0);
     setFlywheelSpeedStage(slow_outwards);
     long currentTime = millis();
-    while ((currentTime +2000) > millis()) {
+    while ((currentTime + 4000) > millis()) {
       calculateHeadingMag();
-      holdTurretStill();
+      turretPIDSpeed = turretPIDController(targetAbsoluteHeading, .01, 0, 0, .25);
+      setTurretSpeed(turretPIDSpeed, true);
     }
+    cradleActuator.write(1.0);
+    delay(2000);
   } else {
-    targetHeading += 30;
+    targetHeading += 10;
     targetHeading %= 360;
     moveTurretAndWait(targetHeading);
     cradleActuator.write(1.0);
     setFlywheelSpeedStage(slow_outwards);
     delay(2000);
+    setFlywheelSpeedStage(stopped);
   }
-  // moveTurretAndWait(180);
-  //setFlywheelSpeedStage(slow_outwards);
-  moveCradle(back);
+  cradleActuator.write(-1);
+  delay(2000);
+  cradleActuator.write(0);
   this->runningMacro = false;
 }
 
@@ -983,7 +1030,7 @@ void QuarterbackTurret::calculateHeadingMag() {
 */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
-    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki);
+    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, .2);
     setTurretSpeed(turretPIDSpeed, true);
   }
 }
@@ -993,7 +1040,10 @@ void QuarterbackTurret::holdTurretStill() {
  * @author George Rak
  * @date 4-9-2024
 */
-float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki) {
+float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki, float maxSpeed) {
+  if (maxSpeed > .5) {maxSpeed=.5;}
+  else if (maxSpeed < -.5) {maxSpeed=-.5;}
+
   //Measure the time elapsed since last iteration
   long currentTime = millis();
   float deltaT = ((float)(currentTime - previousTime));
@@ -1002,7 +1052,7 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
   if (deltaT > 5 && deltaT < 25) {
 
     //Find which direction will be closer to requested angle
-    int e = findNearestHeading(targetAbsoluteHeading, headingdeg);
+    int e = CalculateRotation(headingdeg, targetAbsoluteHeading);
 
     //Taking the average of the error
     prevErrorVals[prevErrorIndex] = e;
@@ -1033,8 +1083,8 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
 
     //Constrain output PWM values to -.2 to .2
-    if (u>.2) {u=.2;}
-    else if (u<-.2) { u = -.2;}
+    if (u>maxSpeed) {u=maxSpeed;}
+    else if (u<-maxSpeed) { u = -maxSpeed;}
 
     //If the robot gets within an acceptable range then send error etc to 0
     if (abs(e) < 3) {
@@ -1045,7 +1095,7 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     }
 
     //Serial.print("DeltaT: "); Serial.print(deltaT);
-    Serial.print("\tError: [deg]: "); Serial.print(e);
+    Serial.print("\tError: [deg]:  "); Serial.print(e);
     Serial.print("\tP: "); Serial.print((kp*e), 4);
     Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
     //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
