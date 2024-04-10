@@ -135,16 +135,25 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
     // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
     stickForwardRev = (leftY / 127.5f);
-    stickTurn = (rightX / 127.5f);  
+    stickTurn = (rightX / 127.5f);
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
+    // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
     if (fabs(stickForwardRev) < STICK_DEADZONE)
       stickForwardRev = 0;
+    else if (stickForwardRev > 0)
+      stickForwardRev = (stickForwardRev - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    else if (stickForwardRev < 0)
+      stickForwardRev = (stickForwardRev + STICK_DEADZONE) / (1 - STICK_DEADZONE);
     
     if (fabs(stickTurn) < STICK_DEADZONE)
       stickTurn = 0;
-    
+    else if (stickTurn > 0)
+      stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    else if (stickTurn < 0)
+      stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+
 }
 
 float Drive::getForwardPower() {
@@ -429,8 +438,7 @@ void Drive::printCsvInfo() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
-    //printDebugInfo();
-
+    
     // get the ramp value
     requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
     requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
@@ -441,8 +449,8 @@ void Drive::update() {
     
     // M1->write(requestedMotorPower[0]);
     // M2->write(requestedMotorPower[1]);
-
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+    float motordiff = 0.0;
+    M1.write(requestedMotorPower[0] + motordiff);
+    M2.write(requestedMotorPower[1] - motordiff);
 }
 
