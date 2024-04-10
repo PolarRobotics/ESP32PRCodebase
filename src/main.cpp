@@ -88,9 +88,9 @@ void setup() {
       drive = new Drive(kicker, motorType, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
-    case quarterback:
+    case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback, motorType, driveParams);
+      drive = new Drive(quarterback_old, motorType, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
@@ -175,37 +175,48 @@ void loop() {
       drive->setBSN(Drive::NORMAL);
     }
 
-    if (ps5.Share()) {
+    if (ps5.Share()) 
       lights.setLEDStatus(Lights::DISCO);
-    }
-
-    // Manual LED State Toggle (Defense/Offense)
-    if (ps5.Options()) {
+    
+    // Manual LED State Toggle (Home/Away/Off)
+    if (ps5.Options()) 
       lights.togglePosition();
-    }
-
-    if (robotType != lineman) { // && lights.returnStatus() == lights.OFFENSE || lights.returnStatus() == lights.TACKLED
-      if (lights.returnStatus() == lights.OFFENSE && digitalRead(TACKLE_PIN) == LOW) {
+    
+    // If the robot is able to hold the ball, it is able to be tackled:
+    if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
+      // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
+      if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
         lights.setLEDStatus(Lights::TACKLED);
         lights.tackleTime = millis();
       } 
-      // debounce the tackle sensor input
+      // leave the tackled state after some time and the tackle sensor pin went back to high
       else if ((millis() - lights.tackleTime) >= lights.switchTime && 
-          lights.returnStatus() == lights.TACKLED && digitalRead(TACKLE_PIN) == HIGH) { 
-        lights.setLEDStatus(Lights::OFFENSE);
+          lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) {
+        switch (lights.homeStatus()) {
+          case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
+          case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
+          case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
+        }
       }
     }
 
     //* Update the motors based on the inputs from the controller
     //* Can change functionality depending on subclass, like robot.action()
     drive->update();
-    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
-    if (lights.returnStatus() == lights.DISCO)
+    if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime)) {
       lights.updateLEDS();
+      lights.updateTime = millis();
+    }
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
+
+    // DEBUGGING:  
+    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+    // lights.printDebugInfo();
+
+    delay(5); // necessary for lights to be happy
       
   } else { // no response from PS5 controller within last 300 ms, so stop
       // Emergency stop if the controller disconnects
