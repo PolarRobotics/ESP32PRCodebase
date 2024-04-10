@@ -97,7 +97,7 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->dbCircle = new Debouncer(QB_CIRCLE_HOLD_DELAY);
   this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
-  this->dbCross = new Debouncer(QB_CROSS_HOLD_DELAY);
+  this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
@@ -167,7 +167,7 @@ void QuarterbackTurret::action() {
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
           //Check if magnetometer functionality is enabled
-          if (useMagnetometer) {
+          if (useMagnetometer && holdTurretStillEnabled) {
             targetAbsoluteHeading += (1 * copysign(1, stickTurret));
             targetAbsoluteHeading %= 360;
             //Serial.print(F("--target abs heading: "));
@@ -179,7 +179,7 @@ void QuarterbackTurret::action() {
           }
         } else {
           //Check if magnetometer functionality is enabled
-          if (useMagnetometer) {
+          if (useMagnetometer && holdTurretStillEnabled) {
             calculateHeadingMag();
             holdTurretStill();
           } else {
@@ -251,9 +251,10 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool rela
       if (units == degrees) {
         moveTurret(heading, counts, relativeToRobot);
       } else if (units == counts) {
+        //This runs during the handoff macro
         targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
-        setTurretSpeed(QB_HOME_PCT * copysign(1, heading)); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF * copysign(1, heading)); //! temp constant, implement P loop soon
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
       currentRelativeHeading = targetRelativeHeading;
@@ -319,12 +320,11 @@ int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t cur
 
   if (abs(adjustedCurrentHeading - positiveHeading) < abs(adjustedCurrentHeading - negativeHeading)) {
     // negative heading is closer
-    return positiveHeading;
-  } //else {
+    return (adjustedCurrentHeading - positiveHeading);
+  } else {
     // positive heading is closer
-    return negativeHeading;
-  // }
-  // TODO: fix this function. negative and postive are flipped, but the outputs are correct, so logic needs to change
+    return (adjustedCurrentHeading - negativeHeading);
+  }
 }
 
 int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading) {
@@ -478,11 +478,33 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight);
-  int16_t targetHeading = (getCurrentHeading() + 180) % 360;
-  moveTurretAndWait(targetHeading);
+  int16_t targetHeading = (getCurrentHeading() + 150) % 360;
+  calculateHeadingMag();
+  targetAbsoluteHeading = headingdeg +180;
+  targetAbsoluteHeading%=360;
+  if (useMagnetometer) {
+    moveTurretAndWait(targetHeading);
+    //Use the magnetometer to make sure we get close to the requested angle
+    calculateHeadingMag();
+    holdTurretStill();
+    cradleActuator.write(1.0);
+    setFlywheelSpeedStage(slow_outwards);
+    long currentTime = millis();
+    while ((currentTime +2000) > millis()) {
+      calculateHeadingMag();
+      holdTurretStill();
+    }
+  } else {
+    targetHeading += 30;
+    targetHeading %= 360;
+    moveTurretAndWait(targetHeading);
+    cradleActuator.write(1.0);
+    setFlywheelSpeedStage(slow_outwards);
+    delay(2000);
+  }
   // moveTurretAndWait(180);
-  setFlywheelSpeedStage(slow_outwards);
-  moveCradle(forward);
+  //setFlywheelSpeedStage(slow_outwards);
+  moveCradle(back);
   this->runningMacro = false;
 }
 
@@ -980,7 +1002,7 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
   if (deltaT > 5 && deltaT < 25) {
 
     //Find which direction will be closer to requested angle
-    int e = findNearestHeading(headingdeg, targetAbsoluteHeading);
+    int e = findNearestHeading(targetAbsoluteHeading, headingdeg);
 
     //Taking the average of the error
     prevErrorVals[prevErrorIndex] = e;
@@ -1023,14 +1045,14 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     }
 
     //Serial.print("DeltaT: "); Serial.print(deltaT);
-    //Serial.print("\tError: [deg]: "); Serial.print(e);
-    //Serial.print("\tP: "); Serial.print((kp*e), 4);
-    //Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
+    Serial.print("\tError: [deg]: "); Serial.print(e);
+    Serial.print("\tP: "); Serial.print((kp*e), 4);
+    Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
     //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
-    //Serial.print("\tPWM Value: "); Serial.print(u , 4);
-    //Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
-    //Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
-    //Serial.println();
+    Serial.print("\tPWM Value: "); Serial.print(u , 4);
+    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
+    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
+    Serial.println();
 
     //Update variables for next iteration
     previousTime = currentTime;

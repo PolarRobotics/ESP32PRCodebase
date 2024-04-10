@@ -47,9 +47,10 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 #define QB_TURRET_INTERPOLATION_DELAY 5L
 #define QB_TURRET_THRESHOLD 35
-#define QB_TURRET_STICK_SCALE_FACTOR 0.5
+#define QB_TURRET_STICK_SCALE_FACTOR 0.25
 
 #define QB_HOME_PCT .125
+#define QB_HANDOFF .2
 #define QB_HOME_MAG .1
 
 //* Question: Why are there so many #defines commented out?
@@ -187,7 +188,8 @@ class QuarterbackTurret : public Robot {
 
     /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
-    bool useMagnetometer = false; //Change this if you want to use the magnetometer or any of it's functions
+    bool useMagnetometer = true;  //Change this if you want to use the magnetometer or any of it's functions
+    bool holdTurretStillEnabled = false; //Change thi sif you only want to use the magnetometer for the handoff and not the hold steady
 
     /* Magnetometer calibration variables used at startup each time
         - yVal, xVal:     The current x and y values read by the magnetometer (after adjustments)
