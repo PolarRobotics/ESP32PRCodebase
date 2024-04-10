@@ -438,8 +438,7 @@ void Drive::printCsvInfo() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
-    printDebugInfo();
-
+    
     // get the ramp value
     requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
     requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
