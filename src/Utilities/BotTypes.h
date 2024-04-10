@@ -62,7 +62,7 @@ typedef struct BotConfig {
   // BotType secondary_type;
 } bot_config_t;
 
-#define NUM_BOTS 17
+#define NUM_BOTS 20
 
 // Bot Aliases
 #define BOT_IPP            0
