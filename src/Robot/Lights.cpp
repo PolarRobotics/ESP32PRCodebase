@@ -1,4 +1,5 @@
 #include "Robot/Lights.h"
+#include "Lights.h"
 
 // Function Definitions
 
@@ -11,14 +12,39 @@ Lights::Lights() {
   updateTime = millis();
 }
 
-void Lights::setupLEDS() {
+void Lights::setupLEDS() { // when switch to neopi
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
   // FastLED.setMaxPowerInVoltsAndMilliamps(5, 500); // Power Failsafe
   // Clears LEDs when code is updated
   FastLED.clear();
+  FastLED.setBrightness(110);
+}
+
+void Lights::setupIndicator() {
+  FastLED.addLeds<WS2812B, 14, GRB>(indicatorBoard, NUM_INDICATOR_LEDS);
+
+  FastLED.clear();
 
   updateLEDS();
   FastLED.setBrightness(110);
+}
+
+void Lights::indicatorPattern(Pattern pattern) {
+  this->currPattern = pattern;
+  switch (this->currPattern) {
+    case CROSS: {
+      leds[] = {
+        CRGB::Black, CRGB::White, CRGB::Black,
+        CRGB::White, CRGB::White, CRGB::White,
+        CRGB::Black, CRGB::White, CRGB::Black
+      };
+      break;
+    }
+    case Y: {
+
+      break;
+    }
+  }
 }
 
 // To set LED status
