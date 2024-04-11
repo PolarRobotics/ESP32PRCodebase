@@ -14,6 +14,16 @@
 // receiver indicator array
 #define NUM_INDICATOR_LEDS 9 // 3x3#define NUM_ROWS 
 
+
+/*
+Define the patterns to distinguish between receivers for the capstones tracking system
+
+need to use hexadecimal becase CRGB doesnt like being defined outside of setup()
+
+because the led strip is wired in an S pattern, we can use an array to represent each led,
+every odd row in this array will need to be mirrored accross the row, there is a way to treat
+the leds as a matrix with fastled, but this display is not that complex so we can go with this method
+*/ 
 constexpr uint16_t CROSSPATTERN[NUM_INDICATOR_LEDS] {
   0x000000, 0xFFFFFF, 0x000000,  // black, white, black
   0xFFFFFF, 0xFFFFFF, 0xFFFFFF,  // white, white, white
@@ -65,7 +75,7 @@ public:
   void setupLEDS();
 
   void setupIndicator();
-  void indicatorPattern(Pattern pattern);
+  void setIndicatorPattern(Pattern pattern);
   
   void setLEDStatus(LEDState status);
   void updateLEDS();

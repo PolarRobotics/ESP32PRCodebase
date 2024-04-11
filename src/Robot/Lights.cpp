@@ -29,22 +29,21 @@ void Lights::setupIndicator() {
   FastLED.setBrightness(110);
 }
 
-void Lights::indicatorPattern(Pattern pattern) {
+void Lights::setIndicatorPattern(Pattern pattern) {
   this->currPattern = pattern;
   switch (this->currPattern) {
     case CROSS: {
-      leds[] = {
-        CRGB::Black, CRGB::White, CRGB::Black,
-        CRGB::White, CRGB::White, CRGB::White,
-        CRGB::Black, CRGB::White, CRGB::Black
-      };
+      for (int i = 0; i <= NUM_INDICATOR_LEDS; i++)
+        indicatorBoard[i] = CRGB(CROSSPATTERN[i]);
       break;
     }
     case Y: {
-
+      for (int i = 0; i <= NUM_INDICATOR_LEDS; i++)
+        indicatorBoard[i] = CRGB(YPATTERN[i]);
       break;
     }
   }
+  FastLED.show();
 }
 
 // To set LED status
