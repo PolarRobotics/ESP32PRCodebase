@@ -24,13 +24,13 @@ because the led strip is wired in an S pattern, we can use an array to represent
 every odd row in this array will need to be mirrored accross the row, there is a way to treat
 the leds as a matrix with fastled, but this display is not that complex so we can go with this method
 */ 
-constexpr uint16_t CROSSPATTERN[NUM_INDICATOR_LEDS] {
+constexpr uint32_t CROSSPATTERN[NUM_INDICATOR_LEDS] {
   0x000000, 0xFFFFFF, 0x000000,  // black, white, black
   0xFFFFFF, 0xFFFFFF, 0xFFFFFF,  // white, white, white
   0x000000, 0xFFFFFF, 0x000000   // black, white, black
 };
 
-constexpr uint16_t YPATTERN[NUM_INDICATOR_LEDS] {
+constexpr uint32_t YPATTERN[NUM_INDICATOR_LEDS] {
   0xFFFFFF, 0x000000, 0xFFFFFF,  // black, white, black
   0x000000, 0xFFFFFF, 0x000000,  // white, white, white
   0x000000, 0xFFFFFF, 0x000000   // black, white, black

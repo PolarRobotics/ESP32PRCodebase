@@ -18,14 +18,12 @@ void Lights::setupLEDS() { // when switch to neopi
   // Clears LEDs when code is updated
   FastLED.clear();
   FastLED.setBrightness(110);
+  updateLEDS();
 }
 
 void Lights::setupIndicator() {
   FastLED.addLeds<WS2812B, 14, GRB>(indicatorBoard, NUM_INDICATOR_LEDS);
-
   FastLED.clear();
-
-  updateLEDS();
   FastLED.setBrightness(110);
 }
 
@@ -33,12 +31,12 @@ void Lights::setIndicatorPattern(Pattern pattern) {
   this->currPattern = pattern;
   switch (this->currPattern) {
     case CROSS: {
-      for (int i = 0; i <= NUM_INDICATOR_LEDS; i++)
+      for (int i = 0; i < NUM_INDICATOR_LEDS; i++)
         indicatorBoard[i] = CRGB(CROSSPATTERN[i]);
       break;
     }
     case Y: {
-      for (int i = 0; i <= NUM_INDICATOR_LEDS; i++)
+      for (int i = 0; i < NUM_INDICATOR_LEDS; i++)
         indicatorBoard[i] = CRGB(YPATTERN[i]);
       break;
     }
