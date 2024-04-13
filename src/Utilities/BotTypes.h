@@ -110,7 +110,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 9,  "c",         runningback,        falcon,        { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
   { 10, "phi",       center,             small_ampflow, { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
   { 11, "inf",       quarterback_old,    small_ampflow, { 0.5625f,   11.50f,  9.00f,  36.00f }},  //* 11: ∞
-  { 12, "theta",     kicker,             small_ampflow, { 0.34375f,  10.00f,  9.00f,  36.00f }},  //* 12: Θ
+  { 12, "theta",     kicker,             small_ampflow, { 0.34375f,  10.00f,  5.50f,  18.00f }},  //* 12: Θ
   { 13, "y=x",       mecanum_center,     mecanum,       { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 13: y=x
   { 14, "qb_base",   quarterback_base,   big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 14: unassigned
   { 15, "qb_turret", quarterback_turret, falcon,        { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 15: unassigned
