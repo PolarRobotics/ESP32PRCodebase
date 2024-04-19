@@ -262,16 +262,35 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool rela
       if (units == degrees) {
         moveTurret(heading, counts, relativeToRobot);
       } else if (units == counts) {
-        //This runs during the handoff macro
+        int8_t sign = copysign(1, currentTurretEncoderCount);
+        // currentTurretEncoderCount = abs(currentTurretEncoderCount);
+        // currentTurretEncoderCount %= 360;
+        // currentTurretEncoderCount *= sign;
+
         targetTurretEncoderCount = heading * QB_COUNTS_PER_TURRET_DEGREE;
         turretMoving = true;
-        setTurretSpeed(QB_HANDOFF/4 * copysign(1, heading)); //! temp constant, implement P loop soon
+        // sign now used for target instead of current
+        sign = 1; // 1 when positive, -1 when negative 
+        // if the current turret encoder count is over halfway to a full rotation in either direction
+        // if (abs(currentTurretEncoderCount) > (QB_COUNTS_PER_TURRET_REV / 2)) {
+        //   // ensure that the target and current counts are as close as possible
+        //   // if adding one rotation's worth of counts would help, do so
+        //   if (currentTurretEncoderCount - (targetTurretEncoderCount + QB_COUNTS_PER_TURRET_REV) < currentTurretEncoderCount - targetTurretEncoderCount) {
+        //     targetTurretEncoderCount += QB_COUNTS_PER_TURRET_REV;
+        //   }
+        // }
+
+        if (targetTurretEncoderCount < currentTurretEncoderCount) {
+          sign = -1;
+        }
+
+        setTurretSpeed(QB_HANDOFF/4 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF/3 * copysign(1, heading)); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF/3 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF/2 * copysign(1, heading)); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF/2 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF * copysign(1, heading)); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF * sign); //! temp constant, implement P loop soon
 
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
@@ -293,10 +312,10 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, bool relativeToRobot)
 }
 
 void QuarterbackTurret::updateTurretMotionStatus() {
-  // Serial.print(F("update called with ctec = "));
-  // Serial.print(currentTurretEncoderCount);
-  // Serial.print(F("; ttec = "));
-  // Serial.println(targetTurretEncoderCount);
+  Serial.print(F("update called with ctec = "));
+  Serial.print(currentTurretEncoderCount);
+  Serial.print(F("; ttec = "));
+  Serial.println(targetTurretEncoderCount);
   // determines if encoder is within "spec"
   if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
@@ -381,7 +400,7 @@ int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t cur
 }
 
 int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading) {
-  findNearestHeading(targetHeading, currentRelativeHeading);
+  return findNearestHeading(targetHeading, currentRelativeHeading);
 }
 
 void QuarterbackTurret::aimAssembly(AssemblyAngle angle) {
@@ -925,6 +944,19 @@ void QuarterbackTurret::magnetometerSetup() {
  * @date 4-9-2024
 */
 void QuarterbackTurret::calibMagnetometer() {
+
+    yVal = 0;
+    xVal = 0;
+    maxX = -1000000;
+    minX = 1000000;
+    xHalf = 0;
+    maxY = -1000000;
+    minY = 1000000;
+    yHalf = 0;
+    xsign = false;
+    ysign = false;
+
+    northHeadingDegrees = 0;
   
     int degreesMove = 360;
     targetTurretEncoderCount = degreesMove * QB_COUNTS_PER_TURRET_DEGREE;
@@ -970,11 +1002,38 @@ void QuarterbackTurret::calibMagnetometer() {
     if ((maxY+minY) < 0) {
       ysign = true;
     }
+    //
+
+    calculateHeadingMag();
+
+    Serial.print(F("Magnetometer reading after calib: "));
+    Serial.print(headingdeg);
+    Serial.print(F("\tEncoder after calib:"));
+    Serial.print(currentTurretEncoderCount);
+
+    turretMoving = true;
+    moveTurretAndWait(0, true); // go to zero of the encoder
 
     magnetometerCalibrated = true;
+
+    calculateHeadingMag(); // calculate current value of magnetometer (headingdeg)
+
+    Serial.print("Target Abs Heading Before 0: ");
+    Serial.print(targetAbsoluteHeading);
+    Serial.print("\tNorth Heading Degrees: ");
+    this->northHeadingDegrees = headingdeg;
+    Serial.print(northHeadingDegrees);
+    Serial.println();
+
+    // from here on out, headingdeg and targetAbsoluteHeading are offset by northHeadingDegrees
+    headingdeg = 0;    
+    targetAbsoluteHeading = 0;
+
     Serial.println("Magnetometer has been calibrated!");
     eIntegral = 0;
     previousTime = millis();
+
+    delay(2000);
 }
 
 /**
@@ -1007,7 +1066,7 @@ void QuarterbackTurret::calculateHeadingMag() {
     }
     
     //Calculate angle in radians
-    if (xVal !=-1 && xVal !=0 && yVal != 0 && yVal !=-1) {
+    if (xVal != -1 && xVal !=0 && yVal != 0 && yVal != -1) {
       headingrad = atan2(yVal, xVal);
     }
 
@@ -1016,9 +1075,12 @@ void QuarterbackTurret::calculateHeadingMag() {
 
     //If the degrees are negative then they just need inversed plus 180
     if (headingdeg < 0) {
-      headingdeg+=360;
+      headingdeg += 360;
     }
-    headingdeg = (int)headingdeg;
+
+    // integrate offset into measurement
+    headingdeg = ((int) headingdeg) ;//+ northHeadingDegrees;
+    if (headingdeg > 360) headingdeg = ((int) headingdeg) % 360; 
 
     /*DEBUGGING PRINTOUTS*/
     //Serial.print("X:  "); Serial.print(lis3mdl.x); 

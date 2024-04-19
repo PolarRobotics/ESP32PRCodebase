@@ -220,6 +220,7 @@ class QuarterbackTurret : public Robot {
     int yHalf = 0;
     bool xsign = false;
     bool ysign = false;
+    int northHeadingDegrees = 0;
 
     /* Magnetometer current heading calculations
         - headingrad:     The current calculated heading in radians using the X and Y values after calibration
@@ -327,7 +328,7 @@ class QuarterbackTurret : public Robot {
     // moves turret at specified speed (open loop)
     void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false); 
 
-    // moves turret/turntable to specific heading. currently relative to robot, not field.
+    // moves turret/turntable to specific heading. currently relative to robot, not field. (NOT BLOCKING)
     void moveTurret(int16_t heading, bool relativeToRobot = true); 
 
     // moves turret and loops/waits until heading is reached (BLOCKING/SYNCHRONOUS)
