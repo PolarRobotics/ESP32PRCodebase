@@ -168,7 +168,7 @@ void QuarterbackTurret::action() {
         if (fabs(stickTurret) > STICK_DEADZONE) {
           //Check if magnetometer functionality is enabled
           if (useMagnetometer && holdTurretStillEnabled) {
-            targetAbsoluteHeading += (1 * copysign(1, stickTurret));
+            targetAbsoluteHeading += (1 * copysign(1, stickTurret/4));
             targetAbsoluteHeading %= 360;
             //Serial.print(F("--target abs heading: "));
             //Serial.println(targetAbsoluteHeading);

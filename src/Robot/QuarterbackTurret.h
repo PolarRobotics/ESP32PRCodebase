@@ -188,8 +188,8 @@ class QuarterbackTurret : public Robot {
 
     /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
-    bool useMagnetometer = false;  //Change this if you want to use the magnetometer or any of it's functions
-    bool holdTurretStillEnabled = false; //Change thi sif you only want to use the magnetometer for the handoff and not the hold steady
+    bool useMagnetometer = true;  //Change this if you want to use the magnetometer or any of it's functions
+    bool holdTurretStillEnabled = true; //Change thi sif you only want to use the magnetometer for the handoff and not the hold steady
 
     /* Magnetometer calibration variables used at startup each time
         - yVal, xVal:     The current x and y values read by the magnetometer (after adjustments)
@@ -243,6 +243,7 @@ class QuarterbackTurret : public Robot {
     int errorAverageLength = 5;
     bool firstAverage = true;
     float minMagSpeed = .075;
+    int skips = 0;
 
     /* Magnetometer functions:
         - magnetometerSetup       Sets some of the parameters runs once
