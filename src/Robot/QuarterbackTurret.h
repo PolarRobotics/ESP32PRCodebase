@@ -49,9 +49,10 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_THRESHOLD 35
 #define QB_TURRET_STICK_SCALE_FACTOR 0.25
 
-#define QB_HOME_PCT .125
-#define QB_HANDOFF .3
-#define QB_HOME_MAG .1
+#define QB_MIN_PWM_VALUE 0.08
+#define QB_HOME_PCT 0.125
+#define QB_HANDOFF  0.3
+#define QB_HOME_MAG 0.1
 
 //* Question: Why are there so many #defines commented out?
 //* Answer: Documentation purposes.
@@ -90,6 +91,16 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_STOP_THRESHOLD_MS 500 // must be a multiple of QB_TURRET_STOP_LOOP_DELAY_MS
 
 #define QB_TURRET_HOME_STOP_FACTOR 0.5 // correction constant for homing, multiplied into stop counts in final homing
+
+// higher means the turret will be less sensitive during manual control.
+// this defines the limit of the counter that basically "divides the clock"
+// of the loop so that the turret only updates every X iterations
+#define QB_TURRET_MANUAL_CONTROL_FACTOR 4 
+
+#define QB_TURRET_PID_THRESHOLD 3
+#define QB_TURRET_PID_MIN_DELTA_T 5
+#define QB_TURRET_PID_MAX_DELTA_T 25
+#define QB_TURRET_PID_BAD_DELTA_T 250
 
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
@@ -167,10 +178,11 @@ class QuarterbackTurret : public Robot {
     int32_t stopError; // number of encoder counts that are needed for the motor to stop
 
     bool turretMoving;
+    uint8_t manualHeadingIncrementCount; // default 0
 
     // world-relative headings
-    int16_t currentAbsoluteHeading = 0; // default 0
-    int16_t targetAbsoluteHeading = 0;  // default 0
+    int16_t currentAbsoluteHeading; // default 0
+    int16_t targetAbsoluteHeading;  // default 0
 
     uint8_t turretLaserState;
 
@@ -189,7 +201,7 @@ class QuarterbackTurret : public Robot {
     /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
     bool useMagnetometer = true;  //Change this if you want to use the magnetometer or any of it's functions
-    bool holdTurretStillEnabled = true; //Change thi sif you only want to use the magnetometer for the handoff and not the hold steady
+    bool holdTurretStillEnabled = true; //Change this if you only want to use the magnetometer for the handoff and not the hold steady
 
     /* Magnetometer calibration variables used at startup each time
         - yVal, xVal:     The current x and y values read by the magnetometer (after adjustments)
@@ -243,7 +255,6 @@ class QuarterbackTurret : public Robot {
     int errorAverageLength = 5;
     bool firstAverage = true;
     float minMagSpeed = .075;
-    int skips = 0;
 
     /* Magnetometer functions:
         - magnetometerSetup       Sets some of the parameters runs once

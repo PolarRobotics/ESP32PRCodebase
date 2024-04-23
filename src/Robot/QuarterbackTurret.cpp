@@ -64,6 +64,11 @@ QuarterbackTurret::QuarterbackTurret(
   
   this->turretMoving = false;
 
+  this->manualHeadingIncrementCount = 0;
+  
+  this->currentAbsoluteHeading = 0;
+  this->targetAbsoluteHeading = 0;
+
   this->stickFlywheel = 0;
   this->stickTurret = 0;
 
@@ -168,8 +173,14 @@ void QuarterbackTurret::action() {
         if (fabs(stickTurret) > STICK_DEADZONE) {
           //Check if magnetometer functionality is enabled
           if (useMagnetometer && holdTurretStillEnabled) {
-            targetAbsoluteHeading += (1 * copysign(1, stickTurret/4));
-            targetAbsoluteHeading %= 360;
+            // only change position every 4 loops
+            if (manualHeadingIncrementCount == 0) {
+              targetAbsoluteHeading += (1 * copysign(1, stickTurret));
+              targetAbsoluteHeading %= 360;
+            } else {
+              manualHeadingIncrementCount++;
+              manualHeadingIncrementCount %= 4;
+            }
             //Serial.print(F("--target abs heading: "));
             //Serial.println(targetAbsoluteHeading);
             calculateHeadingMag();
@@ -1041,15 +1052,15 @@ void QuarterbackTurret::holdTurretStill() {
  * @date 4-9-2024
 */
 float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, float ki, float maxSpeed) {
-  if (maxSpeed > .5) {maxSpeed=.5;}
-  else if (maxSpeed < -.5) {maxSpeed=-.5;}
+  if (maxSpeed > .5) { maxSpeed = .5; }
+  else if (maxSpeed < -.5) { maxSpeed = -.5; }
 
   //Measure the time elapsed since last iteration
   long currentTime = millis();
   float deltaT = ((float)(currentTime - previousTime));
 
   //PID loops should update as fast as possible but if it waits too long this could be a problem
-  if (deltaT > 5 && deltaT < 25) {
+  if (deltaT > QB_TURRET_PID_MIN_DELTA_T && deltaT < QB_TURRET_PID_MAX_DELTA_T) {
 
     //Find which direction will be closer to requested angle
     int e = CalculateRotation(headingdeg, targetAbsoluteHeading);
@@ -1069,25 +1080,28 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
 
     //Taking the avergage for error
     int avgError = 0;
-    for (int i = 0; i<errorAverageLength; i++) {
-      avgError+=prevErrorVals[i];
+    for (int i = 0; i < errorAverageLength; i++) {
+      avgError += prevErrorVals[i];
     }
-    avgError/=errorAverageLength;
+    avgError /= errorAverageLength;
     e = avgError;
 
     //Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e*.01;
+    eIntegral = eIntegral + e * .01;
 
     //Computer the PID control signal
-    float u = (kp*e) + (ki * eIntegral) + (kd*eDerivative);
+    float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
 
-    //Constrain output PWM values to -.2 to .2
-    if (u>maxSpeed) {u=maxSpeed;}
-    else if (u<-maxSpeed) { u = -maxSpeed;}
+    // Constrain output PWM values to -.2 to .2
+    if (u > maxSpeed) { u = maxSpeed; }
+    else if (u < -maxSpeed) { u = -maxSpeed; }
 
-    //If the robot gets within an acceptable range then send error etc to 0
-    if (abs(e) < 3) {
+    // If PWM value is less than the minimum PWM value needed to move the robot, 
+    if (abs(u) < QB_MIN_PWM_VALUE) { u = 0.0; }
+
+    // If the robot gets within an acceptable range then send error etc to 0
+    if (abs(e) < QB_TURRET_PID_THRESHOLD) {
       e = 0;
       eDerivative = 0;
       eIntegral = 0;
@@ -1100,20 +1114,20 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
     //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
     Serial.print("\tPWM Value: "); Serial.print(u , 4);
-    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg , 0);
-    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading , 0);
+    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg, 0);
+    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading);
     Serial.println();
 
-    //Update variables for next iteration
+    // Update variables for next iteration
     previousTime = currentTime;
     ePrevious = e;
 
-    //Constrain the values that are sent to the motor while keeping sign
-    u = copysign(constrain( abs(u), minMagSpeed, 1), u);
-    if (e == 0) {u = 0.0;}
+    // Constrain the values that are sent to the motor while keeping sign
+    u = copysign(constrain(abs(u), 0, 1), u); // TODO: maybe not necessary?
+    if (e == 0) { u = 0.0; }
 
     return -u;
-  } else if (deltaT > 250) {
+  } else if (deltaT > QB_TURRET_PID_BAD_DELTA_T) {
     //Drop the value if the time since last loop is too high so that errors don't spike
     previousTime = currentTime;
     return turretPIDSpeed;
