@@ -102,6 +102,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 #define QB_TURRET_PID_MAX_DELTA_T 25
 #define QB_TURRET_PID_BAD_DELTA_T 250
 
+#define QB_NORTH_OFFSET 0
+
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 
@@ -287,7 +289,7 @@ class QuarterbackTurret : public Robot {
 
     // moves turret/turntable to specific heading. currently relative to robot, not field.
     //* private helper function
-    void moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot = true); 
+    void moveTurret(int16_t heading, TurretUnits units, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = false); 
 
     //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
     void updateTurretMotionStatus();
@@ -329,10 +331,11 @@ class QuarterbackTurret : public Robot {
     void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false); 
 
     // moves turret/turntable to specific heading. currently relative to robot, not field. (NOT BLOCKING)
-    void moveTurret(int16_t heading, bool relativeToRobot = true); 
+    void moveTurret(int16_t heading, bool relativeToRobot = true, bool ramp = true); 
+    void moveTurret(int16_t heading, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = true);
 
     // moves turret and loops/waits until heading is reached (BLOCKING/SYNCHRONOUS)
-    void moveTurretAndWait(int16_t heading, bool relativeToRobot = true);
+    void moveTurretAndWait(int16_t heading, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = true);
       
     // aims the assembly holding the flywheels and cradle (two states).
     void aimAssembly(AssemblyAngle angle); 

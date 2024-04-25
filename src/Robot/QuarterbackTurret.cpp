@@ -243,11 +243,15 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
   }
 }
 
-void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot) {
-  moveTurret(heading, degrees, relativeToRobot);
+void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot, bool ramp) {
+  moveTurret(heading, degrees, QB_HOME_PCT, relativeToRobot, ramp);
 }
 
-void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool relativeToRobot) {
+void QuarterbackTurret::moveTurret(int16_t heading, float power, bool relativeToRobot, bool ramp) {
+  moveTurret(heading, degrees, power, relativeToRobot, ramp);
+}
+
+void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float power, bool relativeToRobot, bool ramp) {
   Serial.print(F("moveTurret called with heading ="));
   Serial.print(heading);
   Serial.print(F(", units = "));
@@ -260,7 +264,7 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool rela
       // todo: use encoder + laser to determine position
       targetRelativeHeading = heading;
       if (units == degrees) {
-        moveTurret(heading, counts, relativeToRobot);
+        moveTurret(heading, counts, power, relativeToRobot, ramp);
       } else if (units == counts) {
         int8_t sign = copysign(1, currentTurretEncoderCount);
         // currentTurretEncoderCount = abs(currentTurretEncoderCount);
@@ -303,8 +307,8 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, bool rela
   }
 }
 
-void QuarterbackTurret::moveTurretAndWait(int16_t heading, bool relativeToRobot) {
-  moveTurret(heading, relativeToRobot);
+void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power, bool relativeToRobot, bool ramp) {
+  moveTurret(heading, power, relativeToRobot, ramp);
   while (turretMoving && !testForDisableOrStop()) {
     updateTurretMotionStatus();
     delay(10);
@@ -312,10 +316,10 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, bool relativeToRobot)
 }
 
 void QuarterbackTurret::updateTurretMotionStatus() {
-  Serial.print(F("update called with ctec = "));
-  Serial.print(currentTurretEncoderCount);
-  Serial.print(F("; ttec = "));
-  Serial.println(targetTurretEncoderCount);
+  // Serial.print(F("update called with ctec = "));
+  // Serial.print(currentTurretEncoderCount);
+  // Serial.print(F("; ttec = "));
+  // Serial.println(targetTurretEncoderCount);
   // determines if encoder is within "spec"
   if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
@@ -995,6 +999,8 @@ void QuarterbackTurret::calibMagnetometer() {
       //Serial.println();    
     }
 
+    setTurretSpeed(0, true);
+
     //Updating variables that will be used to handle other two possible sign cases for each value
     if ((maxX+minX) < 0) {
       xsign = true;
@@ -1011,6 +1017,11 @@ void QuarterbackTurret::calibMagnetometer() {
     Serial.print(F("\tEncoder after calib:"));
     Serial.print(currentTurretEncoderCount);
 
+    // delay(5000);
+
+    currentTurretEncoderCount = 0;
+    targetTurretEncoderCount = 0;
+
     turretMoving = true;
     moveTurretAndWait(0, true); // go to zero of the encoder
 
@@ -1021,19 +1032,21 @@ void QuarterbackTurret::calibMagnetometer() {
     Serial.print("Target Abs Heading Before 0: ");
     Serial.print(targetAbsoluteHeading);
     Serial.print("\tNorth Heading Degrees: ");
-    this->northHeadingDegrees = headingdeg;
+    this->northHeadingDegrees = headingdeg;// + 45;
     Serial.print(northHeadingDegrees);
     Serial.println();
 
+    // delay(2000);
+
     // from here on out, headingdeg and targetAbsoluteHeading are offset by northHeadingDegrees
-    headingdeg = 0;    
+    // headingdeg = 0;    
     targetAbsoluteHeading = 0;
 
     Serial.println("Magnetometer has been calibrated!");
     eIntegral = 0;
     previousTime = millis();
 
-    delay(2000);
+    // delay(5000);
 }
 
 /**
@@ -1079,7 +1092,7 @@ void QuarterbackTurret::calculateHeadingMag() {
     }
 
     // integrate offset into measurement
-    headingdeg = ((int) headingdeg) ;//+ northHeadingDegrees;
+    headingdeg = ((int) headingdeg) /*+ 180 /*- QB_NORTH_OFFSET -*/ + northHeadingDegrees;
     if (headingdeg > 360) headingdeg = ((int) headingdeg) % 360; 
 
     /*DEBUGGING PRINTOUTS*/
