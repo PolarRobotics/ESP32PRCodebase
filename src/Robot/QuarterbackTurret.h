@@ -8,6 +8,7 @@
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
 #include <Adafruit_LIS3MDL.h>
+#include "ADXL335.h"
 
 enum TurretMode {
   manual, automatic
@@ -104,6 +105,11 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
+
+// Accelerometer Constants
+#define ACCEL_DEADZONE 0.15
+#define ACCEL_AVG_SIZE 25
+#define ACCEL_CALIB_AVG_SIZE 100
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -202,6 +208,14 @@ class QuarterbackTurret : public Robot {
     Adafruit_LIS3MDL lis3mdl;
     bool useMagnetometer = true;  //Change this if you want to use the magnetometer or any of it's functions
     bool holdTurretStillEnabled = true; //Change this if you only want to use the magnetometer for the handoff and not the hold steady
+
+    /******* ACCELEROMETER *******/
+    ADXL335 accelerometer;
+    float previousAccelX, currentAccelX, previousAccelY, currentAccelY, velocityX, velocityY;
+    float accelXRunningSum, accelYRunningSum;
+    float calibrationXValue, calibrationYValue;
+    unsigned long long previousMicros;
+
 
     /* Magnetometer calibration variables used at startup each time
         - yVal, xVal:     The current x and y values read by the magnetometer (after adjustments)
@@ -304,6 +318,10 @@ class QuarterbackTurret : public Robot {
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
+
+    /* ACCELEROMETER FUNCTIONS */
+    void calculateAcceleration();
+    void accelerometerSetup();
     
   public:
     QuarterbackTurret(

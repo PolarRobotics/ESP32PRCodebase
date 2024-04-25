@@ -1198,3 +1198,91 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     return turretPIDSpeed;
   }
 }
+
+void QuarterbackTurret::accelerometerSetup() {
+    accelerometer.begin();
+
+    float calibrationXSum = 0;
+    float calibrationYSum = 0;
+    int16_t x,y,z;
+    for (int i = 0; i < ACCEL_CALIB_AVG_SIZE; i++) {
+        accelerometer.getXYZ(&x,&y,&z);float ax,ay,az;
+        accelerometer.getAcceleration(&ax,&ay,&az);
+        calibrationXSum += ax;
+        calibrationYSum += ay;
+    }
+
+    calibrationXValue = calibrationXSum / ACCEL_CALIB_AVG_SIZE;
+    calibrationYValue = calibrationYSum / ACCEL_CALIB_AVG_SIZE;
+}
+
+void QuarterbackTurret::calculateAcceleration() {
+  previousAccelX = currentAccelX;
+  previousAccelY = currentAccelY;
+
+  int16_t x,y,z;
+  float accelerationXSum = 0;
+  float accelerationYSum = 0;
+  
+  for (int i = 0; i < ACCEL_AVG_SIZE; i++) {
+    accelerometer.getXYZ(&x,&y,&z);
+    //Serial.println("value of X/Y: ");
+    //Serial.println(x);
+    //Serial.println(y);
+    float ax,ay,az;
+    accelerometer.getAcceleration(&ax,&ay,&az);
+    //Serial.println("accleration of X/Y: ");
+    //Serial.print(ax);
+    //Serial.print(" ");
+    accelerationXSum += (ax - calibrationXValue);
+    //Serial.println(" g");
+    //Serial.print(ay);
+    accelerationYSum += (ay - calibrationYValue);
+    //Serial.println(" g");
+  }
+
+  //Serial.print("\n");
+
+  currentAccelX = accelerationXSum / ACCEL_AVG_SIZE;
+  currentAccelY = accelerationYSum / ACCEL_AVG_SIZE;
+
+  if ((abs(currentAccelX) < ACCEL_DEADZONE) &&
+    (abs(velocityX) < ACCEL_DEADZONE)) {
+    currentAccelX = 0;
+    velocityX = 0;
+  }
+
+  if ((abs(currentAccelY) < ACCEL_DEADZONE) &&
+    (abs(velocityY) < ACCEL_DEADZONE)) {
+    currentAccelY = 0;
+    velocityY = 0;
+  }
+
+  accelXRunningSum += currentAccelX;
+  accelYRunningSum += currentAccelY;
+
+  Serial.print("currentAccelX: ");
+  Serial.print(currentAccelX);
+  Serial.print(" currentAccelY: ");
+  Serial.print(currentAccelY);
+  
+  Serial.print(" accelXRunningSum: ");
+  Serial.print(accelXRunningSum);
+  Serial.print(" accelYRunningSum: ");
+  Serial.println(accelYRunningSum);
+  
+  // Calculate velocity
+  // float timestep = (micros() - previousMicros) / 1E6;
+  // Serial.print("Timestep:");
+  // Serial.print(timestep, 10);
+  // velocityX = velocityX + (currentAccelX * timestep);
+  // velocityY = velocityY + (currentAccelY * timestep);
+
+  // Display results
+  // Serial.print(" VelocityX: ");
+  // Serial.print(velocityX);
+  // Serial.print(" VelocityY: ");
+  // Serial.println(velocityY);
+
+  // previousMicros = micros();
+}
