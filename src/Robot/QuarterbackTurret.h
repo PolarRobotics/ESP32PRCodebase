@@ -8,6 +8,7 @@
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
 #include <Adafruit_LIS3MDL.h>
+#include "ADXL335.h"
 
 enum TurretMode {
   manual, automatic
@@ -107,6 +108,12 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 
+
+// Accelerometer Constants
+#define ACCEL_DEADZONE 0.15
+#define ACCEL_AVG_SIZE 25
+#define ACCEL_CALIB_AVG_SIZE 100
+
 /**
  * @brief Quarterback Turret Subclass Header
  * @authors Maxwell Phillips
@@ -199,6 +206,58 @@ class QuarterbackTurret : public Robot {
     Debouncer* dbTriangle;
     Debouncer* dbCross;
     Debouncer* dbTurretInterpolator;
+
+    /******* ACCELEROMETER *******/
+    ADXL335 accelerometer;
+    float ax,ay,az;
+
+    /* Calibration Variables 
+        - calibrationXSum, calibrationYSum:       Adds up over multiple loops to get an average for when robot is sitting still
+        - calibrationXValue, calibrationYValue:   The average value used to get acceleration values during main loop
+    */
+    float calibrationXValue = 0;
+    float calibrationYValue = 0;
+    float calibrationXSum = 0;
+    float calibrationYSum = 0;
+
+    /* Accelerometer Calculation Variables
+        - movingAverageX, movingAverageY:                     Used to smooth out bumps in data while keeping accuracy
+        - movingAverageXIndex, movingAverageYIndex:           The arrays act like queues so keeping track of what element we are on
+        - calcAverage:                                        currentValue of the average
+        - prevmovingAverageX, prevmovingAverageY:             Keeping track of the previous average values for use when deciding when to reset (used to remove error build up)
+        - prevmovingAverageXIndex, prevmovingAverageYIndex:   The arrays act like queues so keeping track of what element we are on
+        - prevMovingAvgMax, prevMovingAvgMin:                 Min and max values used to calculate the range found in the previous values (used to remove error build up)
+        - maxXAccel, minXAccel, maxYAccel, minYAccel:         Used to find the range in values as the program runs
+        - 
+    */
+    float movingAverageX[10];
+    float movingAverageY[10];
+    int movingAverageXIndex = 0;
+    int movingAverageYIndex = 0;
+    float calcAverage = 0.0;
+    float prevmovingAverageX[10];
+    float prevmovingAverageY[10];
+    int prevmovingAverageXIndex = 0;
+    int prevmovingAverageYIndex = 0;
+    float prevMovingAvgMax = -100000;
+    float prevMovingAvgMin = 100000;
+    float maxXAccel = -1000000.0;
+    float minXAccel = 1000000.0;
+    float maxYAccel = -1000000.0;
+    float minYAccel = 1000000.0;
+
+    /* Final Accelerometer Values
+        - currentAccelX, currentAccelY:         The current acceleration values in each Axis
+        - accelXRunningSum, accelYRunningSum:   The current running sum in each axis, used to slow down QB turret
+    */
+    float currentAccelX;
+    float currentAccelY = 0;
+    float accelXRunningSum;
+    float accelYRunningSum = 0;
+
+    // put function declarations here:
+    void accelerometerSetup();
+    void calculateAcceleration();
 
     /******* MAGNETOMETER ******/
     Adafruit_LIS3MDL lis3mdl;
