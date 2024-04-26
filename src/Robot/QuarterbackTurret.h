@@ -8,7 +8,7 @@
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
 #include <Adafruit_LIS3MDL.h>
-#include "ADXL335.h"
+#include <ADXL335.h>
 
 enum TurretMode {
   manual, automatic
@@ -235,8 +235,8 @@ class QuarterbackTurret : public Robot {
     int movingAverageXIndex = 0;
     int movingAverageYIndex = 0;
     float calcAverage = 0.0;
-    float prevmovingAverageX[10];
-    float prevmovingAverageY[10];
+    float prevmovingAverageX[100];
+    float prevmovingAverageY[100];
     int prevmovingAverageXIndex = 0;
     int prevmovingAverageYIndex = 0;
     float prevMovingAvgMax = -100000;

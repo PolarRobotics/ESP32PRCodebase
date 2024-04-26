@@ -33,8 +33,8 @@
 
 #include <Arduino.h>
 /*macro definitions of Analog read pins*/
-#define X_AXIS_PIN A0
-#define Y_AXIS_PIN A3
+#define X_AXIS_PIN 12
+#define Y_AXIS_PIN 13
 #define Z_AXIS_PIN A6
 
 #define ADC_AMPLITUDE 1024//amplitude of the 10bit-ADC of Arduino is 1024LSB

@@ -614,6 +614,11 @@ void QuarterbackTurret::zeroTurret() {
 
   //Calibrate the accelerometer
   accelerometerSetup();
+  accelerometerSetup();
+
+  while (true) {
+    calculateAcceleration();
+  }
 
   Serial.println(F("zero called"));
   Serial.print(F("STARTING count: "));
@@ -971,7 +976,7 @@ void QuarterbackTurret::calibMagnetometer() {
     turretMoving = true;
     setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
     //Loop until the target encoder count has been achieved
-    while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
+    while (abs(currentTurretEncoderCount) < targetTurretEncoderCount && !testForDisableOrStop()){
       // get X Y and Z data all at once
       lis3mdl.read();      
 
@@ -1001,7 +1006,14 @@ void QuarterbackTurret::calibMagnetometer() {
       //Serial.print("\tMinY:  "); Serial.print(minY); 
       //Serial.print("\tMaxY:  "); Serial.print(maxY); 
       //Serial.println();    
+
+      Serial.print("Target Enc Count: ");
+      Serial.print(targetTurretEncoderCount);
+      Serial.print("\tCurrent Enc Count: ");
+      Serial.print(abs(currentTurretEncoderCount));
+      Serial.println();
     }
+    Serial.println("Broke out of While Loop");
 
     setTurretSpeed(0, true);
 
@@ -1310,7 +1322,7 @@ void QuarterbackTurret::calculateAcceleration() {
   //Keepign the previous moving average values recorded so that we can calculate the total range and decide if we need to reset to avoid error buildup (X-Axis)
   prevMovingAvgMin = 100000;
   prevMovingAvgMax = -1000000;
-  for (int i = 0; i <10; i++) {
+  for (int i = 0; i <100; i++) {
     if (prevmovingAverageX[i] < prevMovingAvgMin) {
       prevMovingAvgMin = prevmovingAverageX[i];
     }
@@ -1318,11 +1330,11 @@ void QuarterbackTurret::calculateAcceleration() {
       prevMovingAvgMax = prevmovingAverageX[i];
     }
   }
-  if (abs(prevMovingAvgMax-prevMovingAvgMin) < .1 && accelXRunningSum != 0) {
+  if ((fabs(prevMovingAvgMax) + fabs(prevMovingAvgMin)) < .05 && accelXRunningSum != 0) {
       for (int i = 0; i < 10; i++) {
         movingAverageX[i] = 0;
       }
-      for (int i =0; i< 10; i++) {
+      for (int i =0; i< 100; i++) {
         prevmovingAverageX[i] = 0;
       }
       calcAverage = 0;
@@ -1333,7 +1345,7 @@ void QuarterbackTurret::calculateAcceleration() {
   //Keepign the previous moving average values recorded so that we can calculate the total range and decide if we need to reset to avoid error buildup (Y-Axis)
   prevMovingAvgMin = 100000;
   prevMovingAvgMax = -1000000;
-  for (int i = 0; i <10; i++) {
+  for (int i = 0; i <100; i++) {
     if (prevmovingAverageY[i] < prevMovingAvgMin) {
       prevMovingAvgMin = prevmovingAverageY[i];
     }
@@ -1341,11 +1353,11 @@ void QuarterbackTurret::calculateAcceleration() {
       prevMovingAvgMax = prevmovingAverageY[i];
     }
   }
-  if (abs(prevMovingAvgMax-prevMovingAvgMin) < .1 && accelYRunningSum != 0) {
+  if ((fabs(prevMovingAvgMax) + fabs(prevMovingAvgMin)) < .05 && accelYRunningSum != 0) {
       for (int i = 0; i < 10; i++) {
         movingAverageY[i] = 0;
       }
-      for (int i =0; i< 10; i++) {
+      for (int i =0; i< 100; i++) {
         prevmovingAverageY[i] = 0;
       }
       calcAverage = 0;
@@ -1361,9 +1373,9 @@ void QuarterbackTurret::calculateAcceleration() {
   Serial.print("Current Accel: ");
   Serial.print(currentAccelX);
   Serial.print("\tMax: ");
-  Serial.print(maxXAccel);
+  Serial.print(prevMovingAvgMax);
   Serial.print("\tMin: ");
-  Serial.print(minXAccel);
+  Serial.print(prevMovingAvgMin);
   Serial.print("\tMove Avg: ");
   Serial.print(calcAverage);
   Serial.print("\tRunning Sum: ");
