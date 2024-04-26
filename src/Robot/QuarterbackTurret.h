@@ -211,10 +211,55 @@ class QuarterbackTurret : public Robot {
 
     /******* ACCELEROMETER *******/
     ADXL335 accelerometer;
-    float previousAccelX, currentAccelX, previousAccelY, currentAccelY, velocityX, velocityY;
-    float accelXRunningSum, accelYRunningSum;
-    float calibrationXValue, calibrationYValue;
-    unsigned long long previousMicros;
+    float ax,ay,az;
+
+    /* Calibration Variables 
+        - calibrationXSum, calibrationYSum:       Adds up over multiple loops to get an average for when robot is sitting still
+        - calibrationXValue, calibrationYValue:   The average value used to get acceleration values during main loop
+    */
+    float calibrationXValue = 0;
+    float calibrationYValue = 0;
+    float calibrationXSum = 0;
+    float calibrationYSum = 0;
+
+    /* Accelerometer Calculation Variables
+        - movingAverageX, movingAverageY:                     Used to smooth out bumps in data while keeping accuracy
+        - movingAverageXIndex, movingAverageYIndex:           The arrays act like queues so keeping track of what element we are on
+        - calcAverage:                                        currentValue of the average
+        - prevmovingAverageX, prevmovingAverageY:             Keeping track of the previous average values for use when deciding when to reset (used to remove error build up)
+        - prevmovingAverageXIndex, prevmovingAverageYIndex:   The arrays act like queues so keeping track of what element we are on
+        - prevMovingAvgMax, prevMovingAvgMin:                 Min and max values used to calculate the range found in the previous values (used to remove error build up)
+        - maxXAccel, minXAccel, maxYAccel, minYAccel:         Used to find the range in values as the program runs
+        - 
+    */
+    float movingAverageX[10];
+    float movingAverageY[10];
+    int movingAverageXIndex = 0;
+    int movingAverageYIndex = 0;
+    float calcAverage = 0.0;
+    float prevmovingAverageX[10];
+    float prevmovingAverageY[10];
+    int prevmovingAverageXIndex = 0;
+    int prevmovingAverageYIndex = 0;
+    float prevMovingAvgMax = -100000;
+    float prevMovingAvgMin = 100000;
+    float maxXAccel = -1000000.0;
+    float minXAccel = 1000000.0;
+    float maxYAccel = -1000000.0;
+    float minYAccel = 1000000.0;
+
+    /* Final Accelerometer Values
+        - currentAccelX, currentAccelY:         The current acceleration values in each Axis
+        - accelXRunningSum, accelYRunningSum:   The current running sum in each axis, used to slow down QB turret
+    */
+    float currentAccelX;
+    float currentAccelY = 0;
+    float accelXRunningSum;
+    float accelYRunningSum = 0;
+
+    // put function declarations here:
+    void accelerometerSetup();
+    void calculateAcceleration();
 
 
     /* Magnetometer calibration variables used at startup each time
@@ -318,10 +363,6 @@ class QuarterbackTurret : public Robot {
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
-
-    /* ACCELEROMETER FUNCTIONS */
-    void calculateAcceleration();
-    void accelerometerSetup();
     
   public:
     QuarterbackTurret(

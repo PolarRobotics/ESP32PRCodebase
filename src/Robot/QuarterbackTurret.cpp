@@ -607,6 +607,11 @@ void QuarterbackTurret::testRoutine() {
 
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
+
+  //Zero the accelerometer while everything is sitting still (hopefully)
+  accelerometerSetup();
+
+  //Printouts for starting zeroing
   Serial.println(F("zero called"));
   Serial.print(F("STARTING count: "));
   Serial.println(currentTurretEncoderCount);
@@ -1103,6 +1108,10 @@ void QuarterbackTurret::calculateHeadingMag() {
 */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
+    //Get the acceleration values since this will be useful in the PID loop and if PID is enabled the accelerometer should be as well
+    calculateAcceleration();
+
+    //Run the PID loop
     turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, .2);
     setTurretSpeed(turretPIDSpeed, true);
   }
@@ -1171,14 +1180,14 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     }
 
     //Serial.print("DeltaT: "); Serial.print(deltaT);
-    Serial.print("\tError: [deg]:  "); Serial.print(e);
-    Serial.print("\tP: "); Serial.print((kp*e), 4);
-    Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
+    //Serial.print("\tError: [deg]:  "); Serial.print(e);
+    //Serial.print("\tP: "); Serial.print((kp*e), 4);
+    //Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
     //Serial.print("\tD:\t"); Serial.print((kd*eDerivative) , 4);
-    Serial.print("\tPWM Value: "); Serial.print(u , 4);
-    Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg, 0);
-    Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading);
-    Serial.println();
+    //Serial.print("\tPWM Value: "); Serial.print(u , 4);
+    //Serial.print("\tCurrent [deg]: "); Serial.print(headingdeg, 0);
+    //Serial.print("\tTarget [deg]: "); Serial.print(targetAbsoluteHeading);
+    //Serial.println();
 
     // Update variables for next iteration
     previousTime = currentTime;
@@ -1201,9 +1210,9 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
 
 void QuarterbackTurret::accelerometerSetup() {
     accelerometer.begin();
-
-    float calibrationXSum = 0;
-    float calibrationYSum = 0;
+    
+    calibrationXSum = 0;
+    calibrationYSum = 0;
     int16_t x,y,z;
     for (int i = 0; i < ACCEL_CALIB_AVG_SIZE; i++) {
         accelerometer.getXYZ(&x,&y,&z);float ax,ay,az;
@@ -1217,72 +1226,137 @@ void QuarterbackTurret::accelerometerSetup() {
 }
 
 void QuarterbackTurret::calculateAcceleration() {
-  previousAccelX = currentAccelX;
-  previousAccelY = currentAccelY;
-
   int16_t x,y,z;
   float accelerationXSum = 0;
   float accelerationYSum = 0;
-  
+
+  //Reading data from the accelerometer multiple times to get a good average since it fluctuates so much
   for (int i = 0; i < ACCEL_AVG_SIZE; i++) {
-    accelerometer.getXYZ(&x,&y,&z);
-    //Serial.println("value of X/Y: ");
-    //Serial.println(x);
-    //Serial.println(y);
-    float ax,ay,az;
+    accelerometer.getXYZ(&x,&y,&z);   
     accelerometer.getAcceleration(&ax,&ay,&az);
-    //Serial.println("accleration of X/Y: ");
-    //Serial.print(ax);
-    //Serial.print(" ");
     accelerationXSum += (ax - calibrationXValue);
-    //Serial.println(" g");
-    //Serial.print(ay);
     accelerationYSum += (ay - calibrationYValue);
-    //Serial.println(" g");
   }
 
-  //Serial.print("\n");
-
+  //Calculating the min and max acceleration values seen and keeping that information for debugging purposes (X-Axis)
   currentAccelX = accelerationXSum / ACCEL_AVG_SIZE;
+  if (currentAccelX < minXAccel) {
+    minXAccel = currentAccelX;
+  }
+  if (currentAccelX > maxXAccel) {
+    maxXAccel = currentAccelX;
+  }
+
+  //Calculating the min and max acceleration values seen and keeping that information for debugging purposes (Y-Axis)
   currentAccelY = accelerationYSum / ACCEL_AVG_SIZE;
+  if (currentAccelY < minYAccel) {
+    minYAccel = currentAccelY;
+  }
+  if (currentAccelY > maxYAccel) {
+    maxYAccel = currentAccelY;
+  }
 
-  if ((abs(currentAccelX) < ACCEL_DEADZONE) &&
-    (abs(velocityX) < ACCEL_DEADZONE)) {
+  //If the current acceleration does not exceed the deadzone then it is probably just noise and can be ignored (X-Axis)
+  if (abs(currentAccelX) < ACCEL_DEADZONE) {
     currentAccelX = 0;
-    velocityX = 0;
   }
 
-  if ((abs(currentAccelY) < ACCEL_DEADZONE) &&
-    (abs(velocityY) < ACCEL_DEADZONE)) {
+  //If the current acceleration does not exceed the deadzone then it is probably just noise and can be ignored (Y-Axis)
+  if (abs(currentAccelY) < ACCEL_DEADZONE) {
     currentAccelY = 0;
-    velocityY = 0;
   }
 
+  //Keeping a moving average (X-Axis)
+  movingAverageX[movingAverageXIndex] = currentAccelX;
+  movingAverageXIndex++;
+  movingAverageXIndex%=10;
+
+  //Keeping a moving average (Y-Axis)
+  movingAverageY[movingAverageYIndex] = currentAccelY;
+  movingAverageYIndex++;
+  movingAverageYIndex%=10;
+
+  //Calculating the average based off of the last few iterations (X-Axis)
+  for (int i = 0; i < 10; i++) {
+    calcAverage+= movingAverageX[i];
+  }
+  calcAverage/=10;
+  prevmovingAverageX[prevmovingAverageXIndex] = calcAverage;
+  prevmovingAverageXIndex++;
+  prevmovingAverageXIndex%=10;
+
+  //Calculating the average based off of the last few iterations (Y-Axis)
+  for (int i = 0; i < 10; i++) {
+    calcAverage+= movingAverageY[i];
+  }
+  calcAverage/=10;
+  prevmovingAverageY[prevmovingAverageYIndex] = calcAverage;
+  prevmovingAverageYIndex++;
+  prevmovingAverageYIndex%=10;
+  
+
+  //Keepign the previous moving average values recorded so that we can calculate the total range and decide if we need to reset to avoid error buildup (X-Axis)
+  prevMovingAvgMin = 100000;
+  prevMovingAvgMax = -1000000;
+  for (int i = 0; i <10; i++) {
+    if (prevmovingAverageX[i] < prevMovingAvgMin) {
+      prevMovingAvgMin = prevmovingAverageX[i];
+    }
+    if (prevmovingAverageX[i] > prevMovingAvgMax) {
+      prevMovingAvgMax = prevmovingAverageX[i];
+    }
+  }
+  if (abs(prevMovingAvgMax-prevMovingAvgMin) < .1 && accelXRunningSum != 0) {
+      for (int i = 0; i < 10; i++) {
+        movingAverageX[i] = 0;
+      }
+      for (int i =0; i< 10; i++) {
+        prevmovingAverageX[i] = 0;
+      }
+      calcAverage = 0;
+      accelXRunningSum = 0;
+      Serial.println("Reset error X");
+  }
+
+  //Keepign the previous moving average values recorded so that we can calculate the total range and decide if we need to reset to avoid error buildup (Y-Axis)
+  prevMovingAvgMin = 100000;
+  prevMovingAvgMax = -1000000;
+  for (int i = 0; i <10; i++) {
+    if (prevmovingAverageY[i] < prevMovingAvgMin) {
+      prevMovingAvgMin = prevmovingAverageY[i];
+    }
+    if (prevmovingAverageY[i] > prevMovingAvgMax) {
+      prevMovingAvgMax = prevmovingAverageY[i];
+    }
+  }
+  if (abs(prevMovingAvgMax-prevMovingAvgMin) < .1 && accelYRunningSum != 0) {
+      for (int i = 0; i < 10; i++) {
+        movingAverageY[i] = 0;
+      }
+      for (int i =0; i< 10; i++) {
+        prevmovingAverageY[i] = 0;
+      }
+      calcAverage = 0;
+      accelYRunningSum = 0;
+      Serial.println("Reset error Y");
+  }
+
+  //Keeping a running sum of both X and Y axis accelerations
   accelXRunningSum += currentAccelX;
   accelYRunningSum += currentAccelY;
 
-  Serial.print("currentAccelX: ");
+  //Debugging printouts
+  Serial.print("Current Accel: ");
   Serial.print(currentAccelX);
-  Serial.print(" currentAccelY: ");
-  Serial.print(currentAccelY);
-  
-  Serial.print(" accelXRunningSum: ");
+  Serial.print("\tMax: ");
+  Serial.print(maxXAccel);
+  Serial.print("\tMin: ");
+  Serial.print(minXAccel);
+  Serial.print("\tMove Avg: ");
+  Serial.print(calcAverage);
+  Serial.print("\tRunning Sum: ");
   Serial.print(accelXRunningSum);
-  Serial.print(" accelYRunningSum: ");
-  Serial.println(accelYRunningSum);
-  
-  // Calculate velocity
-  // float timestep = (micros() - previousMicros) / 1E6;
-  // Serial.print("Timestep:");
-  // Serial.print(timestep, 10);
-  // velocityX = velocityX + (currentAccelX * timestep);
-  // velocityY = velocityY + (currentAccelY * timestep);
-
-  // Display results
-  // Serial.print(" VelocityX: ");
-  // Serial.print(velocityX);
-  // Serial.print(" VelocityY: ");
-  // Serial.println(velocityY);
-
-  // previousMicros = micros();
+  Serial.print("\tRange: ");
+  Serial.print(abs(prevMovingAvgMax-prevMovingAvgMin));
+  Serial.println();
 }
