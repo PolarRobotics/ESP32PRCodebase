@@ -125,6 +125,11 @@ void setup() {
       );
       break;
     case quarterback_base:
+      robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+      drive = new Drive(quarterback_base, motorType, driveParams);
+      drive->setupMotors(M1_PIN, M2_PIN);
+      robot->setDriveObj(drive);
+      break;
     case receiver:
     case lineman:
     default: // Assume lineman

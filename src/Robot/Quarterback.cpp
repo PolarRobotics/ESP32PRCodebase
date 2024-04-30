@@ -226,7 +226,11 @@ int Quarterback::checkGetNewTarget() {
   unsigned long currentUpdateValueMillis = millis();
   if (((currentUpdateValueMillis - prevUpdateTargetMillis)) > 350) {
     prevUpdateTargetMillis = currentUpdateValueMillis;
-    return testAnalogOutput;
+    return 2;
   }
   return targetValue;
+}
+
+void Quarterback::setDriveObj(Drive* driveObj) {
+  this->drive = driveObj;
 }
