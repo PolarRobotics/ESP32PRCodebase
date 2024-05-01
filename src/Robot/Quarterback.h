@@ -78,12 +78,12 @@ class Quarterback : public Robot {
         - prevUpdateTargetMillis:     Used for timing of functions
         - timesSentSession:           tracking how many times we have sent a value out of the targetValue
     */
+    int testAnalogOutput = 2;
     unsigned long currentUpdateMotorMillis = millis();
     int targetValue = 0;
     unsigned long prevUpdateTargetMillis = 0;
     int timesSentSession = 0;
     unsigned long previousMillis = 0;
-    Drive* drive = nullptr;
 
   public:
     Quarterback(
@@ -102,7 +102,6 @@ class Quarterback : public Robot {
     void updateWriteMotorValues();
     int checkGetNewTarget();
     void bottomQBSetup();
-    void setDriveObj(Drive* driveObj);
 };
 
 #endif // QUARTERBACK_H
