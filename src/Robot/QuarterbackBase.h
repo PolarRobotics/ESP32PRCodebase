@@ -21,13 +21,11 @@ class QuarterbackBase : public Robot {
     Drive* drive;
 
     /* VARIABLES FOR WIFI CONNECTIVITY
-        - testAnalogOutput:           This should be replaced with the actual values of the motors when implemented
         - currentUpdateMotorMillis:   used to time when functions activate
         - targetValue:                The current value being sent by the timed function so testAnalogOutput can be updated while target value does not fluctuate mid send
         - prevUpdateTargetMillis:     Used for timing of functions
         - timesSentSession:           tracking how many times we have sent a value out of the targetValue
     */
-    int testAnalogOutput = 2;
     unsigned long currentUpdateMotorMillis = millis();
     int targetValue = 0;
     unsigned long prevUpdateTargetMillis = 0;

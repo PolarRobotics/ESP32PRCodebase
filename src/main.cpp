@@ -129,6 +129,7 @@ void setup() {
       drive = new Drive(quarterback_base, motorType, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       robot = new QuarterbackBase(drive);
+      break;
     case receiver:
     case lineman:
     default: // Assume lineman

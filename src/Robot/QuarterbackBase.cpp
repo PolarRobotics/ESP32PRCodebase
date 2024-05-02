@@ -27,13 +27,11 @@ void QuarterbackBase::updateWriteMotorValues() {
       digitalWrite(WIFI_PIN, LOW);
       //Serial.println("Write Low");
     } 
-    /*
     Serial.print("Times Sent This Session: ");
     Serial.print(timesSentSession);
     Serial.print("\tTimeStep: ");
-    Serial.print((currentMillis-previousMillis));
+    Serial.print((currentUpdateMotorMillis-previousMillis));
     Serial.println();
-    */
 }
 
 int QuarterbackBase::checkGetNewTarget() {
@@ -41,7 +39,7 @@ int QuarterbackBase::checkGetNewTarget() {
   unsigned long currentUpdateValueMillis = millis();
   if (((currentUpdateValueMillis - prevUpdateTargetMillis)) > 350) {
     prevUpdateTargetMillis = currentUpdateValueMillis;
-    return testAnalogOutput;
+    return drive->getMotorWifiValue(0);
   }
   return targetValue;
 }
