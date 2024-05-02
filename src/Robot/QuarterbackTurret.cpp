@@ -107,6 +107,8 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
   magnetometerSetup();
+
+  pinMode(ROBOT_READ_DATA_PIN, INPUT);
 }
 
 void QuarterbackTurret::action() {
@@ -220,6 +222,8 @@ void QuarterbackTurret::action() {
       }
     }
   }
+
+  updateReadMotorValues();
 
   printDebug();
 }
@@ -1210,4 +1214,42 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     //If the loop runs faster than the minimum time just return the last value and wait for next loop
     return turretPIDSpeed;
   }
+}
+
+void QuarterbackTurret::updateReadMotorValues() {
+  //Take the current value and if it switched from the previous count that if it went high
+  //If there is a lapse in signals for about 150 or more millis then reset the values and wait for next number
+  //If there is a lapse of greater than 1 second assume it disconnected and set value to safest number = 100
+  currentMotorMillis = millis();
+  bool currentState = digitalRead(ROBOT_READ_DATA_PIN);
+  if (currentState != previousState) {
+    if (currentState == true) {
+      if (timesRecievedSession == 10) {
+        timesRecievedSession = 0;
+      }
+      timesRecievedSession++;
+      previousMillis = currentMotorMillis;
+      currentSessionLatch = false;
+      //Serial.print("Flipped! ");
+      //Serial.println(timesRecievedSession);
+    }
+    previousState = currentState;
+  }
+  
+  if (currentState == false && (currentMotorMillis - previousMillis)>1000) {
+    timesRecievedSession = 10;
+    currentSessionValue = 10;
+    //Serial.println("Default Reset");
+  } else if (currentState == false && (currentMotorMillis - previousMillis)>150) {
+    //Reset for next value
+    if (!currentSessionLatch) {
+      currentSessionValue = timesRecievedSession;
+      currentSessionLatch = true;
+    }
+    timesRecievedSession = 0;
+    //Serial.println("Reset!");
+  }
+  Serial.print("Motor Speed: ");
+  Serial.print(currentSessionValue);
+  Serial.println();
 }
