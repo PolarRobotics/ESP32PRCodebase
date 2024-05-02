@@ -23,6 +23,7 @@
 #include <Robot/MecanumCenter.h>
 #include <Robot/Kicker.h>
 #include <Robot/Quarterback.h>
+#include <Robot/QuarterbackBase.h>
 #include <Robot/QuarterbackTurret.h>
 
 // Drive Includes
@@ -125,6 +126,9 @@ void setup() {
       );
       break;
     case quarterback_base:
+      drive = new Drive(quarterback_base, motorType, driveParams);
+      drive->setupMotors(M1_PIN, M2_PIN);
+      robot = new QuarterbackBase(drive);
     case receiver:
     case lineman:
     default: // Assume lineman
