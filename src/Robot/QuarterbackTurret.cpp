@@ -1228,9 +1228,9 @@ void QuarterbackTurret::updateReadMotorValues() {
   if (recievedMessage!="") {
     if (recievedMessage == "DISCONNECTED") {
       //This means that the top client ESP was unable to get a response from the bottom server ESP, not sure what we want to do here but going to set the response to 1 for now so it moves slower later
-      currentSessionValue = 1;
+      currentSessionValue = 100;
     } else {
-      currentSessionValue = recievedMessage.toDouble();
+      currentSessionValue = recievedMessage.toInt();
     }
   }
   Serial.print("Motor Speed: ");

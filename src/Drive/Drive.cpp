@@ -450,7 +450,6 @@ int Drive::getMotorWifiValue(int motorRequested) {
     if (motorRequested >= 0 && motorRequested < NUM_MOTORS) {
         float value = trackingMotorPower[motorRequested] * 100;
         valueToReturn = value;
-        valueToReturn/= 10;
     }
     return valueToReturn;
 }
