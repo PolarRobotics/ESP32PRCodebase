@@ -1223,17 +1223,27 @@ void QuarterbackTurret::updateReadMotorValues() {
   recievedMessage = "";
   while (Uart_Turret.available()) {
     char character = Uart_Turret.read();
-    recievedMessage += character;
+    if (character == '~') {
+      if (Uart_Turret.available()) {
+        recievedMessage = "";
+      }
+    } else {
+      recievedMessage += character;
+    }
   }
   if (recievedMessage!="") {
     if (recievedMessage == "DISCONNECTED") {
       //This means that the top client ESP was unable to get a response from the bottom server ESP, not sure what we want to do here but going to set the response to 1 for now so it moves slower later
-      currentSessionValue = 100;
+      motor1Value = 100;
+      motor2Value = 100;
     } else {
-      currentSessionValue = recievedMessage.toInt();
+      motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+      motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
   }
-  Serial.print("Motor Speed: ");
-  Serial.print(currentSessionValue);
+  Serial.print("Motor1: ");
+  Serial.print(motor1Value);
+  Serial.print("\tMotor2: ");
+  Serial.print(motor2Value);
   Serial.println();
 }

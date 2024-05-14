@@ -27,10 +27,11 @@ class QuarterbackBase : public Robot {
     Drive* drive;
 
     /* VARIABLES FOR WIFI CONNECTIVITY
-        - targetValue:                The current drive motor value
+        - motor1Value motor2Value:    The current drive motor values
         - UARTMessage:                The string version of the message to send from the base of the QB to it's server ESP also mounted on the base
     */
-    int targetValue = 0;
+    int motor1Value = 0;
+    int motor2Value = 0;
     String UARTMessage = "";
 
   public:

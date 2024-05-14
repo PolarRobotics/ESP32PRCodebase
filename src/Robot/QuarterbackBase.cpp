@@ -19,8 +19,9 @@ void QuarterbackBase::action() {
 }
 
 void QuarterbackBase::updateWriteMotorValues() {
-    targetValue = drive->getMotorWifiValue(0);
-    UARTMessage = String(targetValue);
+    motor1Value = drive->getMotorWifiValue(0);
+    motor2Value = drive->getMotorWifiValue(1);
+    UARTMessage = String(motor1Value) + "&" + String(motor2Value);
     UARTMessage = UARTMessage + "~";
     Uart_Base.print(UARTMessage);
     //Serial.print("Sent Message To ESP: ");

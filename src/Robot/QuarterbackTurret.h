@@ -399,7 +399,8 @@ class QuarterbackTurret : public Robot {
 
     /* UART Communication Variables and Functions
     */
-    int currentSessionValue = 0;
+    int motor1Value = 0;
+    int motor2Value = 0;
     void updateReadMotorValues();
 };
 
