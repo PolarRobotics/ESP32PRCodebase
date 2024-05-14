@@ -1,5 +1,8 @@
 #include "QuarterbackTurret.h"
 
+//This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
+HardwareSerial Uart_Turret(2);     // UART2
+
 // "define" static members to satisfy linker
 uint8_t QuarterbackTurret::turretEncoderPinA;
 uint8_t QuarterbackTurret::turretEncoderPinB;
@@ -107,6 +110,8 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
   magnetometerSetup();
+
+  Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 
 void QuarterbackTurret::action() {
@@ -220,6 +225,8 @@ void QuarterbackTurret::action() {
       }
     }
   }
+
+  updateReadMotorValues();
 
   printDebug();
 }
@@ -882,10 +889,10 @@ void QuarterbackTurret::printDebug() {
  * @date 2024-01-03
 */
 void QuarterbackTurret::magnetometerSetup() {
-  //* MAGNETOMETER STUFF
-  if (! lis3mdl.begin_I2C()) {          // hardware I2C mode, can pass in address & alt Wire
-  //if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
-  //if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
+  if (! lis3mdl.begin_I2C()) {          
+    // hardware I2C mode, can pass in address & alt Wire
+    //if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
+    //if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
     Serial.println("Failed to find LIS3MDL chip");
   }
   Serial.println("LIS3MDL Found!");
@@ -1116,7 +1123,12 @@ void QuarterbackTurret::calculateHeadingMag() {
 */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
-    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, .2);
+    int maxSpeed = .2;
+    if (motor1Value > 25 || motor2Value > 25) {
+      //We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
+      maxSpeed = .125;
+    }
+    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, maxSpeed);
     setTurretSpeed(turretPIDSpeed, true);
   }
 }
@@ -1210,4 +1222,42 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
     //If the loop runs faster than the minimum time just return the last value and wait for next loop
     return turretPIDSpeed;
   }
+}
+
+/**
+ * @brief Reads a UART communication from the other ESP mounted to the turret. This ESP currently provides the speed of both motors on the drivetrain so we know if the robot is moving
+ * @author George Rak
+ * @date 5-14-2024
+*/
+void QuarterbackTurret::updateReadMotorValues() {
+  recievedMessage = "";
+  //While there are characters available in the buffer read each one individually
+  while (Uart_Turret.available()) {
+    char character = Uart_Turret.read();
+    //Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
+    //Since they are coming so fast and there is no need to remember past values only the most recent is kept
+    if (character == '~') {
+      if (Uart_Turret.available()) {
+        recievedMessage = "";
+      }
+    } else {
+      recievedMessage += character;
+    }
+  }
+  //The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
+  if (recievedMessage!="") {
+    if (recievedMessage == "DISCONNECTED") {
+      motor1Value = 100;
+      motor2Value = 100;
+    } else {
+      //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
+      motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+      motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+    }
+  }
+  Serial.print("Motor1: ");
+  Serial.print(motor1Value);
+  Serial.print("\tMotor2: ");
+  Serial.print(motor2Value);
+  Serial.println();
 }
