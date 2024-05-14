@@ -109,6 +109,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 
+/*UART COMMUNICATION PINS*/
 #define RX2 16
 #define TX2 17
 
@@ -120,62 +121,73 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 class QuarterbackTurret : public Robot {
   private: 
 
-    //* motor instances
+    /*MOTOR INSTANCES*/
     MotorControl cradleActuator;
     MotorControl turretMotor;
     MotorControl flywheelLeftMotor;
     MotorControl flywheelRightMotor;
     
-    //* pins that must be persistent
+    /*PIN DECLARATIONS (PERSISTENT)*/
     static uint8_t turretEncoderPinA;
     static uint8_t turretEncoderPinB;
     uint8_t turretLaserPin;
 
-    //* joystick inputs
+    /*JOYSTICK INPUTS*/
     float stickTurret;   // used to normalize stick input from [0, 255] to [-1.0, 1.0]
     float stickFlywheel; // same as above
 
-    // mode
+    /*MODES AND CAPSTONE INTEGRATIONS*/
     TurretMode mode; // default manual
     TargetReceiver target; // default receiver_1
 
-    //* state
-    // default false, set to true upon homing/reset, but toggleable via function
+    /*MSC VARIABLES
+      -enabled              default false, set true when homing / reset complete (toggleable via function)
+      -initialized          default false, set true when homing / reset complete (stays true) -> decides whether or not to just run zero turret or entire setup routine
+      -runningMacro         default false, set true while a macro is running
+    */
     bool enabled; 
-
-    // default false, set to true upon homing/reset. once true, stays true
-    // determines whether or not to initiate entire startup/reset routine or just zero the turret
     bool initialized; 
-
-    // default false, set to true while a macro (loadFromCenter or handoff) is running
     bool runningMacro;
 
-    //* assembly
-    AssemblyAngle currentAssemblyAngle; // initial state unknown, will reset to straight
-    AssemblyAngle targetAssemblyAngle; // default straight
-    bool assemblyMoving; // default false
+    /*FALCON PYLONS
+      -currentAssemblyAngle       initial state is unknown, will reset to straight
+      -targetAssemblyAngle        defaults to straight
+      -assemblyMoving             defaults to false
+    */
+    AssemblyAngle currentAssemblyAngle;
+    AssemblyAngle targetAssemblyAngle;
+    bool assemblyMoving;
 
-    //* cradle
-    CradleState currentCradleState; // initial state unknown, will reset to back
-    CradleState targetCradleState; // default back
-    bool cradleMoving; // default false
+    /*CRADEL
+      -currentCradleState         initial state is unknown, will reset to back
+      -targetCradleState          defaults to back
+      -cradleMoving               defaults to false
+      -cradleStartTime            
+    */
+    CradleState currentCradleState;
+    CradleState targetCradleState;
+    bool cradleMoving;
     uint32_t cradleStartTime;
 
 
-    //* flywheel
-    FlywheelSpeed currentFlywheelStage; // default stopped
-    FlywheelSpeed targetFlywheelStage;  // default stopped
+    /*FLYWHEEL
+      -currentFlywheelStage       defaults to stopped
+      -targetFlywheelStage        defaults to stopped
+      -currentFlywheelSpeed       defaults to 0
+      -targetFlywheelsSpeed       defaults to 0
+      -flywheelManualOverride     defaults to false, true when stick is controlling flywheel
+    */
+    FlywheelSpeed currentFlywheelStage;
+    FlywheelSpeed targetFlywheelStage;
+    float currentFlywheelSpeed;
+    float targetFlywheelSpeed;
+    bool flywheelManualOverride;
 
-    float currentFlywheelSpeed; // default 0
-    float targetFlywheelSpeed;  // default 0
-
-    bool flywheelManualOverride; // default false, true when stick controlling flywheel
-
-    //* turret
+    /*TURRET*/
     float currentTurretSpeed; // default 0
     float targetTurretSpeed;  // default 0
 
-    // robot-relative headings
+    /*ROBOT RELATIVE HEADINGS*/
     int16_t currentRelativeHeading; // default undefined
     int16_t targetRelativeHeading;  // default 0
 
@@ -188,19 +200,19 @@ class QuarterbackTurret : public Robot {
     bool turretMoving;
     uint8_t manualHeadingIncrementCount; // default 0
 
-    // world-relative headings
+    /*WORLD RELATIVE HEADINGS*/
     int16_t currentAbsoluteHeading; // default 0
     int16_t targetAbsoluteHeading;  // default 0
 
     uint8_t turretLaserState;
 
-    // debouncers
+    /*DEBOUNCERS*/
     Debouncer* dbOptions;
     Debouncer* dbSquare;
     Debouncer* dbDpadUp;
     Debouncer* dbDpadDown;
 
-    // debouncers for delay
+    //for delay
     Debouncer* dbCircle;
     Debouncer* dbTriangle;
     Debouncer* dbCross;
@@ -289,37 +301,28 @@ class QuarterbackTurret : public Robot {
       - Relative velocities should be taken into account with trajectory calculations
     */
 
-    //UART VARIABLES
+    /*UART VARIABLES*/
     String recievedMessage = "";
 
-    
 
-    // private helper function to avoid code duplication between force and normal case
+    /*MSC PRIVATE FUNCTION DECLARATIONS
+      -moveCradleSubroutine       Avoids code duplication on ball fondler
+      -moveTurret                 Moves turret / turntable to specific heading (relative to robot not the field)
+      -updateTurretMotionStatus   Allows for asynchronous turret movements (Stops when turret reaches target position)
+      -getCurrentHeading          Calculates current heading from the current encoder count
+      -findNearestHeading         Finds the smallest absolute value difference from either the current or provided angle (overloaded function) [Ex: findNearestHeading(270, 0) returns -90]
+      -NormalizeAngle             Used in angle calculations to take the angle back to 0-360 value (can't use modulus on negative numbers without adverse effects)
+      -CalculateRotation          helperfunction for findNearestHeading
+    */
     void moveCradleSubroutine();
-
-    // moves turret/turntable to specific heading. currently relative to robot, not field.
-    //* private helper function
     void moveTurret(int16_t heading, TurretUnits units, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = false); 
-
-    //* private helper function to allow managing turret movement asynchronously, and stop it when it reaches the target position
     void updateTurretMotionStatus();
-
-    //* private helper function to calculate new value for currentRelativeHeading from currentTurretEncoderCount
     int16_t getCurrentHeading();
-
-    //* private helper function to calculate the heading with the smallest absolute value difference from the current (or provided)
-    // for example, if called with target = 270 degrees and current = 0, this function would return -90,
-    // because it is closer to go counterclockwise 90 degrees than to go clockwise 270 degrees.
-    // note that the current heading should be positive, but the negative sign on a target heading is used to determine direction.
-    // overloaded to allow calling with currentRelativeHeading (cannot set a class member as a default argument)
     int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
 
-    //Reading in the pin values
-    
-    
   public:
     QuarterbackTurret(
       uint8_t flywheelLeftPin,    // M1
