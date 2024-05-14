@@ -1123,7 +1123,12 @@ void QuarterbackTurret::calculateHeadingMag() {
 */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
-    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, .2);
+    int maxSpeed = .2;
+    if (motor1Value > 25 || motor2Value > 25) {
+      //We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
+      maxSpeed = .125;
+    }
+    turretPIDSpeed = turretPIDController(targetAbsoluteHeading, kp, kd, ki, maxSpeed);
     setTurretSpeed(turretPIDSpeed, true);
   }
 }
