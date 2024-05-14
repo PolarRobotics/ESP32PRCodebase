@@ -889,10 +889,10 @@ void QuarterbackTurret::printDebug() {
  * @date 2024-01-03
 */
 void QuarterbackTurret::magnetometerSetup() {
-  //* MAGNETOMETER STUFF
-  if (! lis3mdl.begin_I2C()) {          // hardware I2C mode, can pass in address & alt Wire
-  //if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
-  //if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
+  if (! lis3mdl.begin_I2C()) {          
+    // hardware I2C mode, can pass in address & alt Wire
+    //if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
+    //if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
     Serial.println("Failed to find LIS3MDL chip");
   }
   Serial.println("LIS3MDL Found!");
@@ -1224,10 +1224,18 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
   }
 }
 
+/**
+ * @brief Reads a UART communication from the other ESP mounted to the turret. This ESP currently provides the speed of both motors on the drivetrain so we know if the robot is moving
+ * @author George Rak
+ * @date 5-14-2024
+*/
 void QuarterbackTurret::updateReadMotorValues() {
   recievedMessage = "";
+  //While there are characters available in the buffer read each one individually
   while (Uart_Turret.available()) {
     char character = Uart_Turret.read();
+    //Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
+    //Since they are coming so fast and there is no need to remember past values only the most recent is kept
     if (character == '~') {
       if (Uart_Turret.available()) {
         recievedMessage = "";
@@ -1236,12 +1244,13 @@ void QuarterbackTurret::updateReadMotorValues() {
       recievedMessage += character;
     }
   }
+  //The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
   if (recievedMessage!="") {
     if (recievedMessage == "DISCONNECTED") {
-      //This means that the top client ESP was unable to get a response from the bottom server ESP, not sure what we want to do here but going to set the response to 1 for now so it moves slower later
       motor1Value = 100;
       motor2Value = 100;
     } else {
+      //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
       motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
       motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
