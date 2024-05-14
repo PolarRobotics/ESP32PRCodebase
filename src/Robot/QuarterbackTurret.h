@@ -9,6 +9,8 @@
 #include <Utilities/Debouncer.h>
 #include <Adafruit_LIS3MDL.h>
 
+#include <HardwareSerial.h>
+
 enum TurretMode {
   manual, automatic
 };
@@ -107,7 +109,9 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.3, 0.5, 0.7,
 //* Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 
-#define ROBOT_READ_DATA_PIN 12
+#define RX2 16
+#define TX2 17
+
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -284,6 +288,10 @@ class QuarterbackTurret : public Robot {
       - Testing needs done to see how much flywheels beign on affects magnetometer
       - Relative velocities should be taken into account with trajectory calculations
     */
+
+    //UART VARIABLES
+    String recievedMessage = "";
+
     
 
     // private helper function to avoid code duplication between force and normal case
@@ -389,22 +397,9 @@ class QuarterbackTurret : public Robot {
 
     void turretDirectionChanged();
 
-    /* VARIABLES FOR ESP #2 
-    - ssid, password:         login credentials for the wifi server
-    - currentMotorMillis:     used to time when functions activate
-    - timesRecievedSession:   Used to track the total count as it is sent, each count is 10% motor power so values of 0-10 are acceptable
-    - previousState:          Used to track when the digitalRead of the pin changes states
-    - currentSessionValue:    Related to timesRecievedSession but only updated once the total count is in so that it doesn't fluctuate constantly
-    - currentSessionLatch:    Need to reset the current session value only once after 150 ms is exceeded so that it doesn't drop to 0 every time
-    - AsyncWebServer:         Start an Asynchronous web server on port 80
+    /* UART Communication Variables and Functions
     */
-    unsigned long currentMotorMillis = millis();
-    int timesRecievedSession = 0;
-    bool previousState = false;
     int currentSessionValue = 0;
-    bool currentSessionLatch = false;
-    unsigned long previousMillis = 0;
-
     void updateReadMotorValues();
 };
 

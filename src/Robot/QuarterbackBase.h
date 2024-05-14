@@ -10,6 +10,12 @@
 // Wifi Connectivity Pin
 #define WIFI_PIN 18
 
+//UART Pins
+#define RX2 16
+#define TX2 17
+
+#include <HardwareSerial.h>
+
 
 /**
  * @brief Quarterback Base Subclass Header
@@ -21,22 +27,16 @@ class QuarterbackBase : public Robot {
     Drive* drive;
 
     /* VARIABLES FOR WIFI CONNECTIVITY
-        - currentUpdateMotorMillis:   used to time when functions activate
-        - targetValue:                The current value being sent by the timed function so testAnalogOutput can be updated while target value does not fluctuate mid send
-        - prevUpdateTargetMillis:     Used for timing of functions
-        - timesSentSession:           tracking how many times we have sent a value out of the targetValue
+        - targetValue:                The current drive motor value
+        - UARTMessage:                The string version of the message to send from the base of the QB to it's server ESP also mounted on the base
     */
-    unsigned long currentUpdateMotorMillis = millis();
     int targetValue = 0;
-    unsigned long prevUpdateTargetMillis = 0;
-    int timesSentSession = 0;
-    unsigned long previousMillis = 0;
+    String UARTMessage = "";
 
   public:
     QuarterbackBase (Drive* drive);
     void action() override; //! robot subclass must override action
     void updateWriteMotorValues();
-    int checkGetNewTarget();
     void bottomQBSetup();
 };
 

@@ -1,5 +1,8 @@
 #include "QuarterbackTurret.h"
 
+//This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
+HardwareSerial Uart_Turret(2);     // UART2
+
 // "define" static members to satisfy linker
 uint8_t QuarterbackTurret::turretEncoderPinA;
 uint8_t QuarterbackTurret::turretEncoderPinB;
@@ -108,7 +111,7 @@ QuarterbackTurret::QuarterbackTurret(
 
   magnetometerSetup();
 
-  pinMode(ROBOT_READ_DATA_PIN, INPUT);
+  Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 
 void QuarterbackTurret::action() {
@@ -1217,37 +1220,18 @@ float QuarterbackTurret::turretPIDController(int setPoint, float kp, float kd, f
 }
 
 void QuarterbackTurret::updateReadMotorValues() {
-  //Take the current value and if it switched from the previous count that if it went high
-  //If there is a lapse in signals for about 150 or more millis then reset the values and wait for next number
-  //If there is a lapse of greater than 1 second assume it disconnected and set value to safest number = 100
-  currentMotorMillis = millis();
-  bool currentState = digitalRead(ROBOT_READ_DATA_PIN);
-  if (currentState != previousState) {
-    if (currentState == true) {
-      if (timesRecievedSession == 10) {
-        timesRecievedSession = 0;
-      }
-      timesRecievedSession++;
-      previousMillis = currentMotorMillis;
-      currentSessionLatch = false;
-      //Serial.print("Flipped! ");
-      //Serial.println(timesRecievedSession);
-    }
-    previousState = currentState;
+  recievedMessage = "";
+  while (Uart_Turret.available()) {
+    char character = Uart_Turret.read();
+    recievedMessage += character;
   }
-  
-  if (currentState == false && (currentMotorMillis - previousMillis)>1000) {
-    timesRecievedSession = 10;
-    currentSessionValue = 10;
-    //Serial.println("Default Reset");
-  } else if (currentState == false && (currentMotorMillis - previousMillis)>150) {
-    //Reset for next value
-    if (!currentSessionLatch) {
-      currentSessionValue = timesRecievedSession;
-      currentSessionLatch = true;
+  if (recievedMessage!="") {
+    if (recievedMessage == "DISCONNECTED") {
+      //This means that the top client ESP was unable to get a response from the bottom server ESP, not sure what we want to do here but going to set the response to 1 for now so it moves slower later
+      currentSessionValue = 1;
+    } else {
+      currentSessionValue = recievedMessage.toDouble();
     }
-    timesRecievedSession = 0;
-    //Serial.println("Reset!");
   }
   Serial.print("Motor Speed: ");
   Serial.print(currentSessionValue);

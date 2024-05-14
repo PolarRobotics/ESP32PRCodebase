@@ -1,10 +1,16 @@
 #include "QuarterbackBase.h"
 
+//This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
+HardwareSerial Uart_Base(2);     // UART2
+
 QuarterbackBase::QuarterbackBase(Drive* drive) {
     this->drive = drive;
 
     // Setup digital WiFi pin
     pinMode(WIFI_PIN, OUTPUT);
+
+    //Setup UART Pins
+    Uart_Base.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 
 void QuarterbackBase::action() {
@@ -13,33 +19,7 @@ void QuarterbackBase::action() {
 }
 
 void QuarterbackBase::updateWriteMotorValues() {
-    targetValue = checkGetNewTarget();
-    currentUpdateMotorMillis = millis();
-    if (timesSentSession < targetValue && (currentUpdateMotorMillis-previousMillis)>50) {
-      digitalWrite(WIFI_PIN, HIGH);
-      previousMillis = currentUpdateMotorMillis;
-      timesSentSession++;
-      //Serial.println("Write High");
-    } else if ((currentUpdateMotorMillis - previousMillis)>200) {
-      timesSentSession = 0;
-      previousMillis = currentUpdateMotorMillis;
-    } else if ((currentUpdateMotorMillis-previousMillis) > 25) {
-      digitalWrite(WIFI_PIN, LOW);
-      //Serial.println("Write Low");
-    } 
-    Serial.print("Times Sent This Session: ");
-    Serial.print(timesSentSession);
-    Serial.print("\tTimeStep: ");
-    Serial.print((currentUpdateMotorMillis-previousMillis));
-    Serial.println();
-}
-
-int QuarterbackBase::checkGetNewTarget() {
-  //This should only get updated every 350 millis
-  unsigned long currentUpdateValueMillis = millis();
-  if (((currentUpdateValueMillis - prevUpdateTargetMillis)) > 350) {
-    prevUpdateTargetMillis = currentUpdateValueMillis;
-    return drive->getMotorWifiValue(0);
-  }
-  return targetValue;
+    targetValue = drive->getMotorWifiValue(0);
+    UARTMessage = String(targetValue);
+    Uart_Base.print(UARTMessage);
 }
