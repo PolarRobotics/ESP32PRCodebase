@@ -62,6 +62,7 @@ esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE
 // MAC Addresses to match to PS5 Controllers
 const char* macTest = "bc:c7:46:03"; // length 11
 const char* macTest2 = "bc:c7:46:04"; // length 11
+const char* RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -70,6 +71,8 @@ bool addressIsController(const char* addrCharPtr) {
   if (strncmp(addrCharPtr, macTest, 11) == 0)
     return true;
   else if (strncmp(addrCharPtr, macTest2, 11) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, RhysController, 11) == 0)
     return true;
   else return false;
 }
@@ -85,8 +88,9 @@ bool startDiscovery() {
       // Tests if the address of the device found is a controller, 
       // or if the device is named 'Wireless Controller'
       // If so, foundController is asserted.
-      if (addressIsController(&pDevice->getAddress().toString().c_str()[0])
-        || strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0)
+      if (addressIsController(&pDevice->getAddress().toString().c_str()[0]) 
+        || (strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0) 
+        || (strcmp(pDevice->getName().c_str(), "DualSense Wireless Controller") == 0))
         foundController = true;
     } 
   );
@@ -223,7 +227,7 @@ void activatePairing(bool doRePair, int discoverTime) {
         Serial.print(F(" | "));
         Serial.println(device->getRSSI());
 
-        if (addressIsController(addrCharPtr) || strcmp(device->getName().c_str(), "Wireless Controller") == 0) {
+        if (addressIsController(addrCharPtr) || (strcmp(device->getName().c_str(), "Wireless Controller") == 0)) {
           Serial.print(F("Connecting to PS5 Controller @ "));
           Serial.println(addrCharPtr);
           ps5.begin(addrCharPtr);

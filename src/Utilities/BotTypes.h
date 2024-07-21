@@ -103,14 +103,14 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 2,  "pi",        receiver,           small_ampflow, { 0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
   { 3,  "rho",       lineman,            big_ampflow,   { 0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
   { 4,  "2.72",      lineman,            big_ampflow,   { 0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
-  { 5,  ":)",        lineman,            small_ampflow, { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
-  { 6,  ">=",        lineman,            big_ampflow,   { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
+  { 5,  ":)",        lineman,            big_ampflow,   { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
+  { 6,  ">=",        lineman,            small_ampflow, { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
   { 7,  "32.2",      receiver,           small_ampflow, { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 7:  32.2
   { 8,  "9.8",       lineman,            big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 8:  9.8
   { 9,  "c",         runningback,        falcon,        { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
   { 10, "phi",       center,             small_ampflow, { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
-  { 11, "inf",       quarterback_old,    small_ampflow, { 0.5625f,   11.50f,  9.00f,  36.00f }},  //* 11: ∞
-  { 12, "theta",     kicker,             small_ampflow, { 0.34375f,  10.00f,  9.00f,  36.00f }},  //* 12: Θ
+  { 11, "inf",       quarterback_old,    small_ampflow, { 0.5625f,   11.50f,  9.00f,  24.00f }},  //* 11: ∞
+  { 12, "theta",     kicker,             small_ampflow, { 0.34375f,  10.00f,  5.50f,  18.00f }},  //* 12: Θ
   { 13, "y=x",       mecanum_center,     mecanum,       { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 13: y=x
   { 14, "qb_base",   quarterback_base,   big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 14: unassigned
   { 15, "qb_turret", quarterback_turret, falcon,        { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 15: unassigned
