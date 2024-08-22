@@ -2,33 +2,24 @@
 
 using namespace std;
 
-// TODO: This should be moved to ConfigManager.h (after combine)
-#define CODE_VERSION_PREF_KEY "version"
-#define NO_VERSION_PLACEHOLDER "NO_VERSION"
 
 ConfigManager::ConfigManager() {
   this->config = new bot_config_t();
 }
-
-// TODO: This can either be removed or reworked (needs to call base constructor if so)
-// ConfigManager::ConfigManager(bool writable) {
-//   this->writable = writable;
-//   this->config = new bot_config_t();
-// }
 
 ConfigManager::~ConfigManager() {
   delete this->config;
 }
 
 /**
- * @brief reads the bot properties from the preferences or pseudo eeprom
+ * @brief reads the bot properties from the preferences (pseudo eeprom)
  * and stores those properties to the config data structure, 
  * which can be accessed through getters.
  * 
- * the bot configuration is stored in the "bot_config" "namespace" for preferences,
- * this is a grouping of members, anything under the given namespace is grouped under said namespace
- * data is accessed by using a key, which is basically a pointer to the location of the 
- * data you are trying to read/write  
+ * the bot configuration is stored in the "bot_config" "namespace" for preferences.
+ * this is a grouping of members, anything under the given namespace is grouped under said namespace.
+ * data is accessed by using a key, which is basically a pointer 
+ * to the location of the data you are trying to read/write  
  */
 void ConfigManager::read() {
     // open the bot_config namespace, readonly is true (defaults to false)
@@ -53,19 +44,21 @@ void ConfigManager::read() {
 
 /**
  * @brief gets the code version from the configuration
- * @return the version as an ESP32 'String'
+ * @return the version as an Arduino/ESP32 'String'
  */
 String ConfigManager::version() {
-  // determine if code version key exists
-  bool good = preferences.begin(CODE_VERSION_PREF_KEY, true);
-  if (!good) return NO_VERSION_PLACEHOLDER;
+  // // determine if code version key exists
+  // bool good = preferences.begin(CODE_VERSION_PREF_KEY, true);
+  // if (!good) return NO_VERSION_PLACEHOLDER;
 
-  // if key exists, retrieve it
-  String str = preferences.getString(CODE_VERSION_PREF_KEY, NO_VERSION_PLACEHOLDER);
+  // // if key exists, retrieve it
+  // String str = preferences.getString(CODE_VERSION_PREF_KEY, NO_VERSION_PLACEHOLDER);
 
-  // close code version namespace and return the key as a string
-  preferences.end();
-  return str;
+  // // close code version namespace and return the key as a string
+  // preferences.end();
+  // return str;
+
+  return PR_CODEBASE_VERSION;
 }
 
 /**
@@ -127,7 +120,8 @@ drive_param_t ConfigManager::getDriveParams() {
 const char * ConfigManager::toString() {
     string temp = "\nBot info: ";
     temp.append("\ncode version: ");
-    temp.append(version().c_str());
+    // temp.append(version().c_str());
+    temp.append(PR_CODEBASE_VERSION);
     temp.append("\nbot array index #: ");
     temp.append(to_string(config->index));
     temp.append("\nbot name: ");
@@ -183,12 +177,12 @@ bool ConfigManager::write(bot_config_t* cfg) {
     // close the namespace
     preferences.end();
 
-    // store code version to preferences
-    // determine if code version key exists
-    good = preferences.begin(CODE_VERSION_PREF_KEY, false); 
-    if (!good) return false;
-    preferences.putString(CODE_VERSION_PREF_KEY, PR_CODEBASE_VERSION);
-    preferences.end();
+    // // store code version to preferences
+    // // determine if code version key exists
+    // good = preferences.begin(CODE_VERSION_PREF_KEY, false); 
+    // if (!good) return false;
+    // preferences.putString(CODE_VERSION_PREF_KEY, PR_CODEBASE_VERSION);
+    // preferences.end();
 
     return true;
   } else return false;
