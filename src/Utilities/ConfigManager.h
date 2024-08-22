@@ -15,6 +15,9 @@
   #define DEFAULT_WRITABLE 0
 #endif
 
+// #define CODE_VERSION_PREF_KEY "version"
+// #define NO_VERSION_PLACEHOLDER "NO_VERSION"
+
 class ConfigManager {
   private:
     bool writable = DEFAULT_WRITABLE;
