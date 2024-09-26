@@ -30,9 +30,9 @@ void ConfigManager::read() {
     
     // read the bot and motor type
     this->config->bot_type = (BotType)preferences.getUChar("bot_type");
-    this->config->mot_type = (MotorType)preferences.getUChar("motor_type");
 
     // read drive parameters
+    this->config->drive_params.motor_type = (MotorType)preferences.getUChar("motor_type");
     this->config->drive_params.gear_ratio = (float)preferences.getFloat("gear_ratio");
     this->config->drive_params.wheel_base = (float)preferences.getFloat("wheel_base");
     this->config->drive_params.r_min = (float)preferences.getFloat("r_min");
@@ -78,33 +78,6 @@ BotType ConfigManager::getBotType() {
     return this->config->bot_type;
 }
 
-/**
- * @brief getMotorType gets the motor type (small, bit, mecaummotor) from the configuration
- * @return MotorType the stored motor type enumeration
- */
-MotorType ConfigManager::getMotorType() {
-    return this->config->mot_type;
-}
-
-// TODO: Can these two functions be removed
-/**
- * @brief getGearRatio returns the gear ratio (input tooth count / output tooth count)
- * @return float the stored gear ratio decimal
-*/
-// float ConfigManager::getGearRatio() {
-//     return this->config->gear_ratio;
-// }
-
-/**
- * @brief getWheelBase returns the wheelbase the distance between the centers of the two drive tires
- * for a standard two-wheel differential drive bot
- * 
- * @return float stored wheelbase value
-*/
-// float ConfigManager::getWheelBase() {
-//     return this->config->wheel_base;
-// }
-
 drive_param_t ConfigManager::getDriveParams() {
     return this->config->drive_params;
 }
@@ -129,7 +102,7 @@ const char * ConfigManager::toString() {
     temp.append("\nbot type: ");
     temp.append(getBotTypeString(config->bot_type));
     temp.append("\nmotor type: ");
-    temp.append(getMotorTypeString(config->mot_type));
+    temp.append(getMotorTypeString(config->drive_params.motor_type));
     temp.append("\ngear ratio: ");
     temp.append(to_string(config->drive_params.gear_ratio));
     temp.append("\nwheel base: ");
@@ -166,9 +139,9 @@ bool ConfigManager::write(bot_config_t* cfg) {
 
     // store the bot and motor type to preferences
     preferences.putUChar("bot_type", static_cast<uint8_t>(cfg->bot_type));
-    preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->mot_type));
 
     // store drive parameters (gear ratio, wheelbase, r_min, r_max)
+    preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->drive_params.motor_type));
     preferences.putFloat("gear_ratio", cfg->drive_params.gear_ratio);
     preferences.putFloat("wheel_base", cfg->drive_params.wheel_base);
     preferences.putFloat("r_min", cfg->drive_params.r_min);
@@ -201,9 +174,9 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
     if (botIndex < 0 || botIndex > (NUM_BOTS - 1) || !this->writable) return false;
     
     this->config->index = botConfigArray[botIndex].index;
-    this->config->bot_type = botConfigArray[botIndex].bot_type;
-    this->config->mot_type = botConfigArray[botIndex].mot_type;
     this->config->bot_name = botConfigArray[botIndex].bot_name;
+    this->config->bot_type = botConfigArray[botIndex].bot_type;
+    this->config->drive_params.motor_type = botConfigArray[botIndex].drive_params.motor_type;
     this->config->drive_params.gear_ratio = botConfigArray[botIndex].drive_params.gear_ratio;
     this->config->drive_params.wheel_base = botConfigArray[botIndex].drive_params.wheel_base;
     this->config->drive_params.r_min = botConfigArray[botIndex].drive_params.r_min;
@@ -230,9 +203,9 @@ bool ConfigManager::setConfig(uint8_t botIndex) {
 bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio, float wheelbase, float rmin, float rmax) {
   if (this->writable) {
     this->config->index = botindex;
-    this->config->bot_type = bottype;
-    this->config->mot_type = motortype;
     this->config->bot_name = "Custom Robot";
+    this->config->bot_type = bottype;
+    this->config->drive_params.motor_type = motortype;
     this->config->drive_params.gear_ratio = gearratio;
     this->config->drive_params.wheel_base = wheelbase;
     this->config->drive_params.r_min = rmin;

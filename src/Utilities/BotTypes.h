@@ -51,7 +51,6 @@ typedef struct BotConfig {
   uint8_t index;
   const char* bot_name;
   BotType bot_type; // primary robot position
-  MotorType mot_type;
   drive_param_t drive_params;
   // float gear_ratio;
   // float wheel_base;
@@ -98,26 +97,26 @@ typedef struct BotConfig {
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
 // idx  bot_name     bot_type            motor_type     gear_ratio wheel_base r_min   r_max
-  { 0,  "i++",       lineman,            small_ampflow, { 0.6f,      12.25f,  9.00f,  36.00f }},  //* 0:  i++
-  { 1,  "sqrt(-1)",  lineman,            big_ampflow,   { 0.53333f,  11.25f,  9.00f,  36.00f }},  //* 1:  sqrt(-1)
-  { 2,  "pi",        receiver,           small_ampflow, { 0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
-  { 3,  "rho",       lineman,            big_ampflow,   { 0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
-  { 4,  "2.72",      lineman,            big_ampflow,   { 0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
-  { 5,  ":)",        lineman,            big_ampflow,   { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
-  { 6,  ">=",        lineman,            small_ampflow, { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
-  { 7,  "32.2",      receiver,           small_ampflow, { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 7:  32.2
-  { 8,  "9.8",       lineman,            big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 8:  9.8
-  { 9,  "c",         runningback,        falcon,        { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
-  { 10, "phi",       center,             small_ampflow, { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
-  { 11, "inf",       quarterback_old,    small_ampflow, { 0.5625f,   11.50f,  9.00f,  24.00f }},  //* 11: ∞
-  { 12, "theta",     kicker,             small_ampflow, { 0.34375f,  10.00f,  5.50f,  18.00f }},  //* 12: Θ
-  { 13, "y=x",       mecanum_center,     mecanum,       { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 13: y=x
-  { 14, "qb_base",   quarterback_base,   big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 14: unassigned
-  { 15, "qb_turret", quarterback_turret, falcon,        { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 15: unassigned
-  { 16, "l-man-v1",  lineman,            small_12v,     { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 16: generic lineman V1
-  { 17, "420",       lineman,            small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }},  //* 17: 420 
-  { 18, "24",        lineman,            small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }},  //* 18: 24 
-  { 19, "25",        lineman,            small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }}   //* 19: 25
+  { 0,  "i++",       lineman,            { small_ampflow, { 0.6f,      12.25f,  9.00f,  36.00f }},  //* 0:  i++
+  { 1,  "sqrt(-1)",  lineman,            { big_ampflow,   { 0.53333f,  11.25f,  9.00f,  36.00f }},  //* 1:  sqrt(-1)
+  { 2,  "pi",        receiver,           { small_ampflow, { 0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
+  { 3,  "rho",       lineman,            { big_ampflow,   { 0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
+  { 4,  "2.72",      lineman,            { big_ampflow,   { 0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
+  { 5,  ":)",        lineman,            { big_ampflow,   { 1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
+  { 6,  ">=",        lineman,            { small_ampflow, { 1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
+  { 7,  "32.2",      receiver,           { small_ampflow, { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 7:  32.2
+  { 8,  "9.8",       lineman,            { big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 8:  9.8
+  { 9,  "c",         runningback,        { falcon,        { 0.5f,       8.00f,  6.00f,  36.00f }},  //* 9:  c
+  { 10, "phi",       center,             { small_ampflow, { 0.6f,      11.50f,  9.00f,  36.00f }},  //* 10: Φ
+  { 11, "inf",       quarterback_old,    { small_ampflow, { 0.5625f,   11.50f,  9.00f,  24.00f }},  //* 11: ∞
+  { 12, "theta",     kicker,             { small_ampflow, { 0.34375f,  10.00f,  5.50f,  18.00f }},  //* 12: Θ
+  { 13, "y=x",       mecanum_center,     { mecanum,       { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 13: y=x
+  { 14, "qb_base",   quarterback_base,   { big_ampflow,   { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 14: unassigned
+  { 15, "qb_turret", quarterback_turret, { falcon,        { 0.5f,      11.50f,  9.00f,  36.00f }},  //* 15: unassigned
+  { 16, "l-man-v1",  lineman,            { small_12v,     { 1.0f,      11.00f,  9.00f,  36.00f }},  //* 16: generic lineman V1
+  { 17, "420",       lineman,            { small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }},  //* 17: 420 
+  { 18, "24",        lineman,            { small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }},  //* 18: 24 
+  { 19, "25",        lineman,            { small_12v,     { 1.0f,      11.00f,  5.50f,  18.00f }}   //* 19: 25
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break

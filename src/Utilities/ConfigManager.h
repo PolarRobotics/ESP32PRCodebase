@@ -27,7 +27,7 @@ class ConfigManager {
     // Members of Config
     uint8_t bot_name_index;
     BotType bot_type;
-    MotorType motor_type;
+    // MotorType motor_type;
     
     // Write Function
     bool write(bot_config_t* cfg);
@@ -41,7 +41,6 @@ class ConfigManager {
     String version();
     int getBotIndex();
     BotType getBotType();
-    MotorType getMotorType();
     drive_param_t getDriveParams();
     const char * toString();
     bool setConfig(uint8_t botindex);

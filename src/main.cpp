@@ -39,7 +39,6 @@ Lights& lights = Lights::getInstance();
 
 // Robot Information from EEPROM/Preferences
 BotType robotType;
-MotorType motorType;
 drive_param_t driveParams;
 
 // Config
@@ -70,11 +69,7 @@ void setup() {
   config.read();
   Serial.println(config.toString());
   robotType = config.getBotType();
-  motorType = config.getMotorType();
   driveParams = config.getDriveParams();
-  // gearRatio = config.getGearRatio();
-  // wheelBase = config.getWheelBase();
-
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType) {
@@ -85,7 +80,7 @@ void setup() {
     // An initialization of `lights` if needed depending on the bot type
     case kicker:
       robot = new Kicker(SPECBOT_PIN1);
-      drive = new Drive(kicker, motorType, driveParams);
+      drive = new Drive(kicker, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback_old:
@@ -101,19 +96,19 @@ void setup() {
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
-      drive = new Drive(center, motorType, driveParams);
+      drive = new Drive(center, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case runningback:
       robot = new Lineman();
-      drive = new DriveQuick(driveParams);
+      drive = new Drive(runningback, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case receiver:
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      drive = new Drive(lineman, motorType, driveParams);
+      drive = new Drive(lineman, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
   }
 
@@ -162,17 +157,17 @@ void loop() {
     // determine BSN percentage (boost, slow, or normal)
     if (ps5.Touchpad()){
       drive->emergencyStop();
-      drive->setBSN(Drive::BRAKE);
+      drive->setSpeedScalar(Drive::BRAKE);
     } else if (ps5.R1()) {
-      drive->setBSN(Drive::BOOST);
+      drive->setSpeedScalar(Drive::BOOST);
       // ps5.setLed(0, 255, 0);   // set LED red
     } else if (ps5.L1()) {
-      drive->setBSN(Drive::SLOW);
-    } else if (ps5.R2() && motorType == falcon) {
+      drive->setSpeedScalar(Drive::SLOW);
+    } else if (ps5.R2() && driveParams.motor_type == falcon) {
       // used to calibrate the max pwm signal for the falcon 500 motors
-      drive->setBSNValue(FALCON_CALIBRATION_FACTOR);
+      drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
     } else {
-      drive->setBSN(Drive::NORMAL);
+      drive->setSpeedScalar(Drive::NORMAL);
     }
 
     if (ps5.Share()) 
