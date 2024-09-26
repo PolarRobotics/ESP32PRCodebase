@@ -29,13 +29,18 @@
 //these should = normal speed, QB needs 0.5 for both 
 
 // Controller Defines
-#define STICK_DEADZONE 0.035 //0.0390625F // 8.0 / 127.0
+#define STICK_DEADZONE 0.075 //0.0390625F // 8.0 / 127.0
 #define THRESHOLD 0.00001
 
 // Motor Percent Defines
 #define FALCON_CALIBRATION_FACTOR 1.0f
 // the minimum power that can be written to the motor, prevents stalling
 #define MOTOR_ZERO_OFFST 0.05f
+
+// BSN defines for the small 12v motors
+#define SMALL_12V_BOOST_PCT          0.15f
+#define SMALL_12V_NORMAL_PCT         0.1f // 0.5
+#define SMALL_12V_SLOW_PCT           0.05f
 
 #define BRAKE_BUTTON_PCT 0
 

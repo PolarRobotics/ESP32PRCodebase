@@ -4,7 +4,7 @@
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
- * this class takes the the the stick input, scales the turning value for each motor and ramps that value over time,
+ * this class takes the stick input, scales the turning value for each motor and ramps that value over time,
  * then sets the ramped value to the motors
  * @authors Rhys Davies (@rdavies02), Max Phillips (@RyzenFromFire)
  *
@@ -48,10 +48,14 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
   this->R_Min = driveParams.r_min;
   this->R_Max = driveParams.r_max;
 
-  if (botType == quarterback) {
+  if (botType == quarterback_old) {
     this->BIG_BOOST_PCT = 0.8; 
     this->BIG_NORMAL_PCT = 0.4; 
     this->BIG_SLOW_PCT = 0.3;
+  } else if (botType == center) {
+    this->BIG_BOOST_PCT = 0.5;  
+    this->BIG_NORMAL_PCT = 0.4; 
+    this->BIG_SLOW_PCT = 0.25;
   } else {
     this->BIG_BOOST_PCT = 0.7;  
     this->BIG_NORMAL_PCT = 0.6; 
@@ -126,21 +130,28 @@ void Drive::setMotorType(MotorType motorType) {
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
 */
 void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
-    // left stick all the way foreward is 0, backward is 255
-    // +: forward, -: backward. needs to be negated so that forward is forward and v.v. subtracting 1 bumps into correct range
-    // stickForwardRev = (0 - (leftY / 127.5 - 1)); 
-    // stickTurn = (rightX / 127.5 - 1); // +: right turn, -: left turn. subtracting 1 bumps into correct range
+    // left stick all the way forward is 0, backward is 255
+    // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
     stickForwardRev = (leftY / 127.5f);
-    stickTurn = (rightX / 127.5f);  
+    stickTurn = (rightX / 127.5f);
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
+    // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
     if (fabs(stickForwardRev) < STICK_DEADZONE)
       stickForwardRev = 0;
+    else if (stickForwardRev > 0)
+      stickForwardRev = (stickForwardRev - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    else if (stickForwardRev < 0)
+      stickForwardRev = (stickForwardRev + STICK_DEADZONE) / (1 - STICK_DEADZONE);
     
     if (fabs(stickTurn) < STICK_DEADZONE)
       stickTurn = 0;
-    
+    else if (stickTurn > 0)
+      stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    else if (stickTurn < 0)
+      stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+
 }
 
 float Drive::getForwardPower() {

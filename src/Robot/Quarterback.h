@@ -8,7 +8,7 @@
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 // Flywheel defines 
-#define FLYWHEEL_SPEED_FULL 0.3
+#define FLYWHEEL_SPEED_FULL 0.4
 #define FLYWHEEL_STOP_SPEED 0
 
 #define FW_TIME_INCREMENT 25

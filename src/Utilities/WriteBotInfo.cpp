@@ -2,6 +2,7 @@
 
 // #include <PolarRobotics.h>
 #include <Utilities/ConfigManager.h>
+#include <Pairing/pairing.h>
 
 // Preferences preferences;
 ConfigManager config;
@@ -52,6 +53,25 @@ void setup() {
   Serial.println(F("Readback:"));
   config.read(); // read the configuration from eeprom
   Serial.print(F(config.toString())); // print the configuration to the serial monitor
+
+  // const char* retrievedAddr;
+  // getAddress(retrievedAddr);
+  // Serial.print(F("Retrieved Mac Address from Config: "));
+  // Serial.print(retrievedAddr);
+  // Serial.println();
+
+  // delay(100);
+
+  // Serial.print(F("Storing Mac Address"));
+  // storeAddress("10:18:49:57:49:ef", true);
+  // Serial.println();
+
+  // delay(100);
+
+  // getAddress(retrievedAddr);
+  // Serial.print(F("Retrieved Mac Address from Config: "));
+  // Serial.print(retrievedAddr);
+  // Serial.println();
 
   Serial.println(F("Done"));
 }

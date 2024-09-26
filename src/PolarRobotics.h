@@ -13,7 +13,12 @@
 #include <Utilities/MotorTypes.h>
 #include <Utilities/DriveParameters.h>
 
-#define PR_CODEBASE_VERSION "2.3.1 @ dev/main"
+// #define PR_CODEBASE_VERSION "2.4.5 @ production"
+
+// PR_CODEBASE_VERSION is now defined dynamically at the start of the build process
+#ifndef PR_CODEBASE_VERSION
+#define PR_CODEBASE_VERSION "PR_CODEBASE_VERSION not defined!"
+#endif
 
 // [PIN DECLARATIONS]
 // please follow: 
