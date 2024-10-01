@@ -23,6 +23,8 @@
 #include <Robot/MecanumCenter.h>
 #include <Robot/Kicker.h>
 #include <Robot/Quarterback.h>
+#include <Robot/QuarterbackBase.h>
+#include <Robot/QuarterbackTurret.h>
 
 // Drive Includes
 #include <Drive/Drive.h>
@@ -89,7 +91,6 @@ void setup() {
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
-      //! TODO: compensate for MecanumCenter.setup()
       drive = new DriveMecanum();
       ((DriveMecanum*) drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
       break;
@@ -102,6 +103,26 @@ void setup() {
       robot = new Lineman();
       drive = new Drive(runningback, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
+      break;
+    case quarterback_turret:
+      robot = new QuarterbackTurret(
+        M1_PIN, // left flywheel
+        M2_PIN, // right flywheel
+        M3_PIN, // cradle
+        M4_PIN, // turret
+        SPECBOT_PIN1, // assembly stepper step
+        SPECBOT_PIN2, // assembly stepper dir
+        SPECBOT_PIN3, // magnetometer sda
+        SPECBOT_PIN4, // magnetometer scl
+        ENC1_CHA, // turret encoder
+        ENC1_CHB, // turret encoder
+        ENC2_CHA  // zeroing laser
+      );
+      break;
+    case quarterback_base:
+      drive = new Drive(quarterback_base, driveParams);
+      drive->setupMotors(M1_PIN, M2_PIN);
+      robot = new QuarterbackBase(drive);
       break;
     case receiver:
     case lineman:
@@ -146,61 +167,70 @@ void loop() {
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
-
-    if (robotType == mecanum_center) {
-      ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-    } else {
-      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-    }
-
-    // determine BSN percentage (boost, slow, or normal)
-    if (ps5.Touchpad()){
-      drive->emergencyStop();
-      drive->setSpeedScalar(Drive::BRAKE);
-    } else if (ps5.R1()) {
-      drive->setSpeedScalar(Drive::BOOST);
-      // ps5.setLed(0, 255, 0);   // set LED red
-    } else if (ps5.L1()) {
-      drive->setSpeedScalar(Drive::SLOW);
-    } else if (ps5.R2() && driveParams.motor_type == falcon) {
-      // used to calibrate the max pwm signal for the falcon 500 motors
-      drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-    } else {
-      drive->setSpeedScalar(Drive::NORMAL);
-    }
-
-    if (ps5.Share()) 
-      lights.setLEDStatus(Lights::DISCO);
     
-    // Manual LED State Toggle (Home/Away/Off)
-    if (ps5.Options()) 
-      lights.togglePosition();
-    
-    // If the robot is able to hold the ball, it is able to be tackled:
-    if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
-      // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
-      if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
-        lights.setLEDStatus(Lights::TACKLED);
-        lights.tackleTime = millis();
-      } 
-      // leave the tackled state after some time and the tackle sensor pin went back to high
-      else if ((millis() - lights.tackleTime) >= lights.switchTime && 
-          lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) {
-        switch (lights.homeStatus()) {
-          case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
-          case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
-          case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
-        }
+    //* QBv3 Turret doesn't have drive, so this is a temporary measure to avoid NPEs and chaos
+    // TODO: find better solution
+    if (robotType != quarterback_turret) {
+      if (robotType == mecanum_center) {
+        ((DriveMecanum*) drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
+      } else {
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
       }
-    }
 
-    //* Update the motors based on the inputs from the controller
-    //* Can change functionality depending on subclass, like robot.action()
-    drive->update();
+      // determine BSN percentage (boost, slow, or normal)
+      if (ps5.Touchpad()){
+        drive->emergencyStop();
+        drive->setSpeedScalar(Drive::BRAKE);
+      } else if (ps5.R1()) {
+        drive->setSpeedScalar(Drive::BOOST);
+        // ps5.setLed(0, 255, 0);   // set LED red
+      } else if (ps5.L1()) {
+        drive->setSpeedScalar(Drive::SLOW);
+      } else if (ps5.R2() && driveParams.motor_type == falcon) {
+        // used to calibrate the max pwm signal for the falcon 500 motors
+        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+      } else {
+        drive->setSpeedScalar(Drive::NORMAL);
+      }
 
-    if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime)) {
-      lights.updateLEDS();
-      lights.updateTime = millis();
+      if (ps5.Share()) 
+        lights.setLEDStatus(Lights::DISCO);
+      
+      // Manual LED State Toggle (Home/Away/Off)
+      if (ps5.Options()) 
+        lights.togglePosition();
+      
+      // If the robot is able to hold the ball, it is able to be tackled:
+      if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
+        // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
+        if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
+          lights.setLEDStatus(Lights::TACKLED);
+          lights.tackleTime = millis();
+        } 
+        // leave the tackled state after some time and the tackle sensor pin went back to high
+        else if ((millis() - lights.tackleTime) >= lights.switchTime && 
+            lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH) {
+          switch (lights.homeStatus()) {
+            case Lights::HOME: lights.setLEDStatus(Lights::HOME); break;
+            case Lights::AWAY: lights.setLEDStatus(Lights::AWAY); break;
+            case Lights::OFF:  lights.setLEDStatus(Lights::OFF);  break;
+          }
+        }
+
+        if (lights.returnStatus() == lights.DISCO)
+          lights.updateLEDS();
+
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+      }
+
+      if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime)) {
+        lights.updateLEDS();
+        lights.updateTime = millis();
+      }
     }
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
@@ -213,9 +243,13 @@ void loop() {
     delay(5); // necessary for lights to be happy
       
   } else { // no response from PS5 controller within last 300 ms, so stop
+    if (robotType != quarterback_turret) {
       // Emergency stop if the controller disconnects
       drive->emergencyStop();
       lights.setLEDStatus(Lights::UNPAIRED);
+    } else {
+      ((QuarterbackTurret*) robot)->emergencyStop();
+    }
   }
 }
 
@@ -223,12 +257,18 @@ void loop() {
  * @brief onConnection: Function to be called on controller connect
  */
 void onConnection() {
-  if(ps5.isConnected()) {
+  if (ps5.isConnected()) {
     Serial.println(F("Controller Connected."));
     // ps5.setLed(0, 255, 0);   // set LED green
     lights.setLEDStatus(Lights::PAIRED);
   }
-  drive->emergencyStop();
+
+  // TODO: perm sln
+  if (robotType != quarterback_turret) {
+    drive->emergencyStop();
+  } else {
+    ((QuarterbackTurret*) robot)->emergencyStop();
+  }
 }
 
 /**
@@ -237,5 +277,11 @@ void onConnection() {
  */
 void onDisconnect() {
     Serial.println(F("Controller Disconnected."));
-    drive->emergencyStop();
+
+    // TODO: perm sln
+    if (robotType != quarterback_turret) {
+      drive->emergencyStop();
+    } else {
+      ((QuarterbackTurret*) robot)->emergencyStop();
+    }
 }

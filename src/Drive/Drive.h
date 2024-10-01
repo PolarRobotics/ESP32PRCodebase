@@ -86,6 +86,7 @@ class Drive {
     float turnPower;
 
     float requestedMotorPower[NUM_MOTORS];
+    float trackingMotorPower[NUM_MOTORS];
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
 
@@ -115,6 +116,7 @@ class Drive {
     void printSetup();
     virtual void printDebugInfo();
     virtual void printCsvInfo();
+    int getMotorWifiValue(int motorRequested);
 
     //* The following variables are initialized in the constructor
     // maximum speed for these is 1.0

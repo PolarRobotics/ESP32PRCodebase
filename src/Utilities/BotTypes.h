@@ -80,6 +80,7 @@ typedef struct BotConfig {
 #define BOT_CENTER         10
 #define BOT_INF            11
 #define BOT_QB             11
+#define BOT_QB_OLD         11
 #define BOT_THETA          12
 #define BOT_KICKER         12
 #define BOT_MC             13

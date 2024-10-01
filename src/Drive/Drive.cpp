@@ -445,5 +445,17 @@ void Drive::update() {
         M1.write(requestedMotorPower[0]);
         M2.write(requestedMotorPower[1]);
     }
+    
+    trackingMotorPower[0] = requestedMotorPower[0];
+    trackingMotorPower[1] = requestedMotorPower[1];
+}
+
+int Drive::getMotorWifiValue(int motorRequested) {
+    int valueToReturn = 0;
+    if (motorRequested >= 0 && motorRequested < NUM_MOTORS) {
+        float value = trackingMotorPower[motorRequested] * 100;
+        valueToReturn = value;
+    }
+    return valueToReturn;
 }
 
