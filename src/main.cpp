@@ -27,7 +27,6 @@
 // Drive Includes
 #include <Drive/Drive.h>
 #include <Drive/DriveMecanum.h>
-#include <Drive/DriveQuick.h>
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
@@ -85,7 +84,7 @@ void setup() {
       break;
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback_old, motorType, driveParams);
+      drive = new Drive(quarterback_old, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case mecanum_center:
