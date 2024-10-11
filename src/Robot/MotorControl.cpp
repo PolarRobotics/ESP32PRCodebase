@@ -70,17 +70,73 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, float gearRatio) {
   this->gear_ratio = gearRatio;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
+  //! Change to use a LUT for each robot (including the Gear ratio), rather than just using the motor max rpm and scaling that by the max rpm
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
 
   // call the logic to attach the motor pin and setup, return 255 on an error
   return Motor.attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
 }
 
+
 /**
- * @brief write, wrapper function for MotorInterface, to be removed in future
- * !TODO: remove in future
+ * @brief ramp gradually increases the motor power each iteration of the main loop,
+ * this function is critical in ensuring the bot has proper traction with the floor,
+ * think of it as the slope y=mx+b
+ *
+ * FUTURE: none...this is perfection (...atm...:0 )
+ *
+ * @authors Grant Brautigam, Julia DeVore, Lena Frate
+ * Created: fall 2023
+ *
+ * @param requestedPower, accelRate
+ * @return int
+ */
+int MotorControl::ramp(int requestedPower,  float accelRate) {
+    timeElapsed = (millis() - lastRampTime)*.001;
+    int abs_requestedPower = abs(requestedPower);
+    // Serial.print("  time elapsed: ");
+    // Serial.print(timeElapsed);
+
+    // Serial.print("  acceleration: ");
+    // Serial.print(accelRate);
+
+    // Serial.print("  requested power: ");
+    // Serial.print(requestedPower);
+
+    // Serial.print("  currentPower: ");
+    // Serial.print(currentPower);
+
+    // Serial.print("\n");
+
+    lastRampTime = millis();
+    if (abs_requestedPower > requestedRPM) // need to speed up
+    {
+        requestedRPM = requestedRPM + accelRate * timeElapsed;
+        if (requestedRPM > abs_requestedPower) 
+            requestedRPM = abs_requestedPower; // to prevent you from speeding up past the requested speed
+    }
+    else // need to slow down
+    {
+        requestedRPM = requestedRPM - accelRate * timeElapsed *2; 
+        if (requestedRPM < abs_requestedPower) 
+            requestedRPM = abs_requestedPower; // to prevent you from slowing down below the requested speed
+    }
+    
+    return requestedRPM;
+
+}
+
+void MotorControl::write(float pwr) {
+  Motor.write(pwr);
+}
+
+/**
+ * @brief writeRPM converts an input ROM value to a motor "percent" value to be sent to the sabretooth
+ * 
+ * @param rpm rpm value to be converted to a percent
 */
-void MotorControl::write(int rpm) {
+void MotorControl::writeRPM(int rpm)
+{
 
   // curve fit for only big ampflow
   if (rpm < 0)
@@ -89,51 +145,6 @@ void MotorControl::write(int rpm) {
   pct = copysign(.0087f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.5616f), rpm);
 
   Motor.write(pct);
-}
-
-void MotorControl::displayPinInfo() {
-  Serial.print(F("Motor: "));
-  Serial.print(this->motorIndex);
-  Serial.print(F(" on Pin #"));
-  Serial.print(servos[this->motorIndex].pin);
-  Serial.print(F(" Channel: "));
-  Serial.print(servos[this->motorIndex].channel);
-  Serial.print(F(" Enc Chan A Pin: "));
-  Serial.print(this->enc_a_pin);
-  Serial.print(F(" Enc Chan B Pin: "));
-  Serial.print(this->enc_b_pin);
-  Serial.print(F("\r\n"));
-
-    // Serial.print(F("\r\nDuty Cycle: "));
-    // Serial.print(power2Duty(pwr));
-}
-
-/**
- * @brief power2Duty convert the [-1, 1] motor value to a timeon value is microseconds, 
- * then converts to a duty cycle and then scales that to a 16-bit integer, the resolution of the channel
- * link to math model: https://www.desmos.com/calculator/kmrh5pjrdf
- * @author Rhys Davies
- * Updated 2-26-2023
- * 
- * input range:  [-1, 1]
- * output range: [0, 65,536] (Really 26215 to 52429)
- * 
- * @param power the input power
-*/
-uint16_t MotorControl::power2Duty(float power) {
-  // this can be written in compiler code, but we are trying to save on flash memory
-  // linearly convert a [-1, 1] motor power to a microseconds value between 1000us and 2000us
-  this->tempTimeon = (power + 1) * 500 + 1000;
-  return (tempTimeon / (PWM_PERIOD * 1000)) * (PWM_MAXDUTY / 1000);
-}
-
-/**
- * @brief writelow hopefully helps to prevent the issue with motors spinning at 
- * max speed on boot, sending bots into the stratosphere
- * 
- */
-void MotorControl::writelow() {
-    digitalWrite(servos[this->motorIndex].pin, LOW);
 }
 
 /**
@@ -153,24 +164,21 @@ void MotorControl::stop() {
  * 
 */
 void MotorControl::setTargetSpeed(int target_rpm) {
- //Serial.println("here");
- if (target_rpm > 0.001 || target_rpm < 0.001)
- {
-  ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+  //Serial.println("here");
+  if (target_rpm > 0.001 || target_rpm < 0.001) {
+    ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
 
-  // if there are working encoders its safe to use the PL loop, 
-  // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
-  if (CL_enable) 
-    set_speed = PILoop(ramped_speed);  
-  else 
-    set_speed = ramped_speed;
+    // if there are working encoders its safe to use the PL loop, 
+    // if the encoder fails or is not present the PI loop MUST be bypased to aviod an out of control robot
+    if (CL_enable) 
+      set_speed = PILoop(ramped_speed);  
+    else 
+      set_speed = ramped_speed;
 
-  this->write(set_speed); //convert speed to the coresponding motor power and write to the motor 
- }
- else
-  this->stop();
-
-
+    this->write(set_speed); //convert speed to the coresponding motor power and write to the motor 
+  }
+  else
+    this->stop();
 }
 
 /**
@@ -283,53 +291,7 @@ float MotorControl::RPM2Percent(int rpm) {
   // return copysign(.0087f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.5616f), rpm);
 }
 
-/**
- * @brief ramp slowly increases the motor power each iteration of the main loop,
- * this function is critical in ensuring the bot has proper traction with the floor,
- * think of it as the slope y=mx+b
- *
- * FUTURE: none...this is perfection (...atm...:0 )
- *
- * @authors Grant Brautigam, Julia DeVore, Lena Frate
- * Created: fall 2023
- *
- * @param requestedPower, accelRate
- * @return int
- */
-int MotorControl::ramp(int requestedPower,  float accelRate) {
-    timeElapsed = (millis() - lastRampTime)*.001;
-    int abs_requestedPower = abs(requestedPower);
-    // Serial.print("  time elapsed: ");
-    // Serial.print(timeElapsed);
 
-    // Serial.print("  acceleration: ");
-    // Serial.print(accelRate);
-
-    // Serial.print("  requested power: ");
-    // Serial.print(requestedPower);
-
-    // Serial.print("  currentPower: ");
-    // Serial.print(currentPower);
-
-    // Serial.print("\n");
-
-    lastRampTime = millis();
-    if (abs_requestedPower > requestedRPM) // need to speed up
-    {
-        requestedRPM = requestedRPM + accelRate * timeElapsed;
-        if (requestedRPM > abs_requestedPower) 
-            requestedRPM = abs_requestedPower; // to prevent you from speeding up past the requested speed
-    }
-    else // need to slow down
-    {
-        requestedRPM = requestedRPM - accelRate * timeElapsed *2; 
-        if (requestedRPM < abs_requestedPower) 
-            requestedRPM = abs_requestedPower; // to prevent you from slowing down below the requested speed
-    }
-    
-    return requestedRPM;
-
-}
 
 /**
  * @brief NEEDS SPELLCHECK setTargetSpeed is the "main loop" of motor control. It is the profered function to set the speed of a motor
@@ -346,13 +308,3 @@ void MotorControl::setTargetSpeed(int target_rpm) {
   this->stop(); // stopping the motor
 
 }
-
-/**
- * @brief NEEDS SPELLCHECK stop derectly writes o to the motor. It also resets the integral adder inside the PI loop. 
- * This is an esay way to rapidly stop motion on an indeviual motor
- * 
- */
-void MotorControl::stop() {
-    Motor.write(0);
-}
-

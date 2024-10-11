@@ -15,7 +15,7 @@ class MotorControl {
 private:
   MotorType motor_type; // the type of motor to be assigned to this object
   float gear_ratio;     // the input / output gear ratio
-  float deadZone = 0.001;
+  // float deadZone = 0.001;
 
   bool uesCurveFit = false;
 
@@ -26,6 +26,7 @@ private:
   float pct;
 
   // for ramp
+  
   float requestedRPM;     
   float lastRampTime;
   float timeElapsed;
@@ -62,22 +63,23 @@ public:
   MotorControl();
   uint8_t setup(int mot_pin, MotorType type = big_ampflow, float gearRatio = 1); 
 
-  //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
-  void write(int rpm);
   void write(float pwr);
-  void writelow();
+  void writeRPM(int rpm);
   void stop();
+
+  int ramp(int requestedPower, float accelRate);
+  
+  int Percent2RPM(float pct);
+  float RPM2Percent(int rpm);
+  
   void setTargetSpeed(int target_rpm);
   void setCurrentSpeed(int speed);
 
   void sendRPM(int rpm);
 
-  int Percent2RPM(float pct);
-  float RPM2Percent(int rpm);
-
-  int ramp(int requestedPower, float accelRate);
-
   void setTargetSpeed(int target_rpm);
-  void stop();
+  int PILoop(int target_speed);
+  int integrate(int current_error);
+  void integrateReset();
 
 };
