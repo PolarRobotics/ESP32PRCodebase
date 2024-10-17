@@ -88,42 +88,41 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, float gearRatio) {
  * @authors Grant Brautigam, Julia DeVore, Lena Frate
  * Created: fall 2023
  *
- * @param requestedPower, accelRate
+ * @param requestedRPM, accelRate
  * @return int
  */
-int MotorControl::ramp(int requestedPower,  float accelRate) {
-    timeElapsed = (millis() - lastRampTime)*.001;
-    int abs_requestedPower = abs(requestedPower);
-    // Serial.print("  time elapsed: ");
-    // Serial.print(timeElapsed);
+int MotorControl::ramp(int requestedRPM,  float accelRate) {
+  timeElapsed = (millis() - lastRampTime)*.001;
+  abs_requestedRPM = abs(requestedRPM);
+  // Serial.print("  time elapsed: ");
+  // Serial.print(timeElapsed);
 
-    // Serial.print("  acceleration: ");
-    // Serial.print(accelRate);
+  // Serial.print("  acceleration: ");
+  // Serial.print(accelRate);
 
-    // Serial.print("  requested power: ");
-    // Serial.print(requestedPower);
+  // Serial.print("  requested power: ");
+  // Serial.print(requestedPower);
 
-    // Serial.print("  currentPower: ");
-    // Serial.print(currentPower);
+  // Serial.print("  currentPower: ");
+  // Serial.print(currentPower);
 
-    // Serial.print("\n");
+  // Serial.print("\n");
 
-    lastRampTime = millis();
-    if (abs_requestedPower > requestedRPM) // need to speed up
-    {
-        requestedRPM = requestedRPM + accelRate * timeElapsed;
-        if (requestedRPM > abs_requestedPower) 
-            requestedRPM = abs_requestedPower; // to prevent you from speeding up past the requested speed
-    }
-    else // need to slow down
-    {
-        requestedRPM = requestedRPM - accelRate * timeElapsed *2; 
-        if (requestedRPM < abs_requestedPower) 
-            requestedRPM = abs_requestedPower; // to prevent you from slowing down below the requested speed
-    }
-    
-    return requestedRPM;
-
+  lastRampTime = millis();
+  if (abs_requestedRPM > requestedRPM) // need to speed up
+  {
+      requestedRPM = requestedRPM + accelRate * timeElapsed;
+      if (requestedRPM > abs_requestedRPM) 
+          requestedRPM = abs_requestedRPM; // to prevent you from speeding up past the requested speed
+  }
+  else // need to slow down
+  {
+      requestedRPM = requestedRPM - accelRate * timeElapsed *2; 
+      if (requestedRPM < abs_requestedRPM) 
+          requestedRPM = abs_requestedRPM; // to prevent you from slowing down below the requested speed
+  }
+  
+  return requestedRPM;
 }
 
 void MotorControl::write(float pwr) {
@@ -135,9 +134,7 @@ void MotorControl::write(float pwr) {
  * 
  * @param rpm rpm value to be converted to a percent
 */
-void MotorControl::writeRPM(int rpm)
-{
-
+void MotorControl::writeRPM(int rpm) {
   // curve fit for only big ampflow
   if (rpm < 0)
      pct = copysign(.0012f*pow(constrain(abs(rpm), -this->max_rpm, this->max_rpm), 0.7895f), rpm);
@@ -193,7 +190,7 @@ int MotorControl::getCurrentSpeed() {
 }
 
 void MotorControl::setCurrentSpeed(int speed) {
- current_speed = speed;
+  current_speed = speed;
 }
 
 /**

@@ -27,7 +27,8 @@ private:
 
   // for ramp
   
-  float requestedRPM;     
+  float requestedRPM;
+  int abs_requestedRPM;
   float lastRampTime;
   float timeElapsed;
 
@@ -67,17 +68,17 @@ public:
   void writeRPM(int rpm);
   void stop();
 
-  int ramp(int requestedPower, float accelRate);
+  int ramp(int requestedRPM, float accelRate);
   
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
   
   void setTargetSpeed(int target_rpm);
   void setCurrentSpeed(int speed);
+  int getCurrentSpeed();
 
   void sendRPM(int rpm);
 
-  void setTargetSpeed(int target_rpm);
   int PILoop(int target_speed);
   int integrate(int current_error);
   void integrateReset();
