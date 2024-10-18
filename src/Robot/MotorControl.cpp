@@ -2,14 +2,6 @@
 
 #include "MotorControl.h"
 
-// void ext_read_encoder0() {
-//   GlobalClassPointer[0]->readEncoder();
-// }
-
-// void ext_read_encoder1() {
-//   GlobalClassPointer[1]->readEncoder();
-// }
-
 /**
  * @brief 
  * A class similar to the servo class, implements a method of choosing timers and channels 
@@ -57,11 +49,10 @@ MotorControl::MotorControl() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
-  this->has_encoder = has_encoder;
+uint8_t MotorControl::setup(int mot_pin, MotorType type, float gearRatio) {
+  
   this->motor_type = type;
   this->gear_ratio = gearRatio;
-  this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
@@ -76,6 +67,35 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float
 */
 void MotorControl::write(float pct) {
   Motor.write(pct);
+}
+
+/**
+ * @brief writes to the motor using an RPM number 
+ *        When useCurevFir is true the RPM number is converted to 
+ *        motor percentage based on real data collected in experiments
+ * @author Grant Brautigam
+ * @param rpm you want the motors at
+ * Updated 03-25-2024
+*/
+void MotorControl::sendRPM(int rpm){
+  
+  if (uesCurveFit) {
+    if (rpm < 0)
+      negativeDir = true;
+    else 
+      negativeDir = false;
+
+    rpm = rpm / gear_ratio; // needed because mechanical engineering :)
+    
+    coeff = getMotorCurveCoeff(motor_type, negativeDir);
+
+    pct = copysign(coeff.a*pow(abs(rpm), coeff.b), rpm);
+
+    Motor.write(pct);
+  } else {
+    Motor.write(RPM2Percent(rpm));
+  }
+
 }
 
 int MotorControl::Percent2RPM(float pct)
@@ -139,58 +159,27 @@ float MotorControl::ramp(float requestedPower,  float accelRate) {
 }
 
 /**
- * @brief 
- * @author Grant Brautigam
- * Updated 9-11-2023
- * 
- * called on an interrupt
- * 
- * when the encoder interrupt is called, read the b pin to see what state it is in
- * this eliminates the need for two seperate interrupts
+ * @brief NEEDS SPELLCHECK setTargetSpeed is the "main loop" of motor control. It is the profered function to set the speed of a motor
+ * it calls other inportent functions like ramp and PILoop
  * 
 */
-void MotorControl::readEncoder() {
+void MotorControl::setTargetSpeed(int target_rpm) {
+ if (target_rpm > deadZone || target_rpm < -1 * deadZone) // dead zone
+ {
+  float ramped_speed = ramp(target_rpm, 1200.0f); // first call ramp for traction control and to make sure the PI loop dose not use large accerations
+  this->sendRPM(ramped_speed); //convert speed to the coresponding motor power and write to the motor 
+ }
+ else
+  this->stop(); // stopping the motor
 
-  b_channel_state = digitalRead(this->enc_b_pin);
-
-  if (b_channel_state == 1) {
-    if (encoderACount >= rollover) {
-      encoderACount = 0;
-    } else {
-      encoderACount = encoderACount + 1;
-    }
-
-  } else {
-    if (encoderACount == 0) {
-      encoderACount = rollover;
-    } else {
-      encoderACount = encoderACount - 1;
-    }  
-  }
 }
 
 /**
- * @brief 
- * @author Grant Brautigam
- * Updated 9-11-2023
-*/
-int MotorControl::calcSpeed(int current_count) {  
-  current_time = millis();
-
-  //first check if the curret count has rolled over
-  if (abs(current_count - prev_current_count) >= rollover_threshold) {
-    if ((current_count-rollover_threshold)>0) {
-      omega = float ((current_count-rollover)-prev_current_count)/(current_time-prev_current_time);
-    } else {
-      omega = float ((current_count+rollover)-prev_current_count)/(current_time-prev_current_time);
-    }
-  } else {
-    omega = float (current_count-prev_current_count)/(current_time-prev_current_time);
-  }
-
-  prev_current_count = current_count;
-  prev_current_time = current_time;
-
-  return omega*156.25f; // 156.25 for 384, 312.5 for 192, 1250 for 48
+ * @brief NEEDS SPELLCHECK stop derectly writes o to the motor. It also resets the integral adder inside the PI loop. 
+ * This is an esay way to rapidly stop motion on an indeviual motor
+ * 
+ */
+void MotorControl::stop() {
+    Motor.write(0);
 }
 

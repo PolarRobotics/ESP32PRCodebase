@@ -39,10 +39,11 @@ Drive::Drive(BotType botType, MotorType motorType) {
   Drive(botType, motorType, {1, 9, 6, 36});
 }
 
-Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction) {
+Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bool hasEncoders, int turnFunction, bool hasGyro) {
   this->botType = botType;
   this->motorType = motorType;
   this->hasEncoders = hasEncoders;
+  this->hasGyro = false;
   this->gearRatio = driveParams.gear_ratio;
   this->wheelBase = driveParams.wheel_base;
   this->R_Min = driveParams.r_min;
@@ -88,6 +89,27 @@ Drive::Drive(BotType botType, MotorType motorType, drive_param_t driveParams, bo
     
   } 
 
+  // Gyro
+  if (hasGyro){
+    CL_enable = true;
+
+    switch (botType) {
+        case BotType::lineman: { k_p = 1500; break; }
+        case BotType::receiver: { k_p = 1500; break; }
+        case BotType::runningback: { k_p = 1500; break; }
+        case BotType::quarterback: { k_p = 1500; break; }
+    }
+    
+    k_i = 0;
+
+    integral_sum = 0;
+    prev_current_error = 0;
+    prev_integral_time = 0;
+
+    // mpu->begin(0x68);
+    // mpu->setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
+    // mpu->setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
+  }
 }
 
 void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
@@ -96,24 +118,10 @@ void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
     // M1->setup(lpin), M2->setup(rpin);
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    M1.setup(lpin, this->motorType, this->gearRatio);
+    M2.setup(rpin, this->motorType, this->gearRatio);
 }
 
-/**
- * setupMotors
- * @brief to be called when setting up a motor with an encoder
- * 
- * 
-*/
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    // this->M1 = new MotorControl(motorType, true, this->gearRatio);
-    // this->M2 = new MotorControl(motorType, true, this->gearRatio);
-    
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
-}
 
 void Drive::setMotorType(MotorType motorType) {
     this->motorType = motorType;
@@ -225,6 +233,7 @@ float Drive::getBSN() {
 */
 void Drive::generateMotionValues(float tankModePct) {
     if (fabs(stickForwardRev) < STICK_DEADZONE) { // fwd stick is zero
+        drivingStraight = false;
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             requestedMotorPower[0] = 0, requestedMotorPower[1] = 0; // not moving, set motors to zero
         } else if (stickTurn > STICK_DEADZONE) { // turning right, but not moving forward much so use tank mode
@@ -237,6 +246,7 @@ void Drive::generateMotionValues(float tankModePct) {
     } else { // fwd stick is not zero
         if (fabs(stickTurn) < STICK_DEADZONE) { // turn stick is zero
             // just move forward directly
+            drivingStraight = true;
             requestedMotorPower[0] = BSNscalar * stickForwardRev;
             requestedMotorPower[1] = BSNscalar * stickForwardRev;
         } else { // moving forward and turning
@@ -247,12 +257,22 @@ void Drive::generateMotionValues(float tankModePct) {
             to turn right. The left motor should get set to 1 and the right motor should get set to
             some value less than 1, this value is determined by the function calcTurningMotorValue
             */
-            if (stickTurn > STICK_DEADZONE) { // turn Right
+            drivingStraight = false;
+            if(stickTurn > STICK_DEADZONE) { // turn Right
+                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[0])) {
+                //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
+                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                // }
                 calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
 
                 requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
                 requestedMotorPower[1] = copysign(turnMotorValues[1], stickForwardRev);
             } else if (stickTurn < -STICK_DEADZONE) { // turn Left
+                // switch(abs((BSNscalar * stickForwardRev)) > abs(lastRampPower[1])) {
+                //     case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
+                //     case false: calcTurning(stickTurn, abs(BSNscalar * stickForwardRev)); break;
+                // }
+
                 calcTurning(abs(stickTurn), abs(BSNscalar * stickForwardRev));
                 
                 requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
@@ -317,11 +337,8 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr) {
 }
 
 void Drive::emergencyStop() {
-    // M1->writelow(), M2->writelow();
-    // M1.writelow(), M2.writelow();
-
-    M1.write(0); 
-    M2.write(0);
+    M1.stop(); 
+    M2.stop();
 }
 
 void Drive::printSetup() {
@@ -414,6 +431,51 @@ void Drive::printCsvInfo() {
     Serial.print(F(",header5,"));
     Serial.println(5); // last line is -ALWAYS- println or else the python script will break
 }
+
+void Drive::setCurrentAngleSpeed(float speed) {
+  currentAngleSpeed = speed;
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrate uses trapizodial intgration to calculate the running integral sum for the PI controller
+ * 
+*/
+int Drive::integrate(int current_error) {
+  integral_sum = integral_sum + (current_error + prev_current_error); //*(millis()-prev_integral_time)/100;
+  prev_integral_time = millis();
+  prev_current_error = current_error;
+  
+  return integral_sum; 
+}
+
+/**
+ * @brief NEEDS SPELLCHECK integrateReset resets the varibles in integral
+ * 
+*/
+void Drive::integrateReset() {
+  integral_sum = 0;
+  prev_current_error = 0;
+  prev_integral_time = millis();
+}
+
+/**
+ * @brief NEEDS SPELLCHECK PILoop is the closed loop controller. this is the main function for CL  
+ * @author Grant Brautigam
+ * Updated 11-19-2023
+ * 
+*/
+int Drive::PILoop() {  
+  if (abs(currentAngleSpeed) >= ERROR_THRESHOLD) { // the motor wants to stop, skip and reset the PI loop  
+    motorDiffCorrection = 1500*currentAngleSpeed + k_i*integrate(currentAngleSpeed);
+    //Serial.println(motorDiffCorrection);
+  } else {
+    motorDiffCorrection = 0;
+    integrateReset();
+  }
+
+  return constrain(motorDiffCorrection, 0, 5000); 
+}
+
 /**
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the
@@ -427,18 +489,31 @@ void Drive::printCsvInfo() {
 void Drive::update() {
     // Generate turning motion
     generateMotionValues();
-    
-    // get the ramp value
-    requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-    requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+    //delay(100);
+    if (CL_enable) {
+        motorDiff = PILoop()*.5;
+        // Serial.print(motorDiff);
+        // Serial.print("  ");
+        // Serial.print("Rotation Z, ");
+        // Serial.print(g.gyro.z - 0.03);
+        // Serial.println("");
+    } else {
+        motorDiff = 0;
+    }
 
-    // Set the ramp value to a function, needed for generateMotionValues
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
+    //Serial.println(motorDiff);
+
+    if (drivingStraight){
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0]) + motorDiff); // results in 800ish rpm from encoder
+        //Serial.print("HERE");
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1]) - motorDiff); // results in 800ish rpm from encoder
+    } else {
+        M1.setTargetSpeed(M1.Percent2RPM(requestedMotorPower[0])); // results in 800ish rpm from encoder
+        M2.setTargetSpeed(M2.Percent2RPM(requestedMotorPower[1])); // results in 800ish rpm from encoder
+    }
     
-    // M1->write(requestedMotorPower[0]);
-    // M2->write(requestedMotorPower[1]);
-    M1.write(requestedMotorPower[0]);
-    M2.write(requestedMotorPower[1]);
+
+    printDebugInfo();
+
 }
 
