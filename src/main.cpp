@@ -9,11 +9,13 @@
 
 #include <Arduino.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include <vector>
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <Pairing/pairing.h>
 #include <Utilities/ConfigManager.h>
+#include <Utilities/PrintSerial.h>
 
 // Robot Includes
 #include <Robot/Lights.h>
@@ -34,6 +36,7 @@
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
 Lights& lights = Lights::getInstance();
+PrintSerial& printserial = PrintSerial::getInstance();
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -139,9 +142,11 @@ void setup() {
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
-
+  
   // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
+
+  printserial.setDriveObj(drive);
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -225,6 +230,23 @@ void loop() {
         lights.updateTime = millis();
       }
     }
+
+    //* Update the motors based on the inputs from the controller
+    //* Can change functionality depending on subclass, like robot.action()
+    drive->update();
+
+    //* Data Acquisition *//
+    // Include values you want to monitor
+    //std::vector<float> serialValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+    // Include headers of the values
+    //std::vector<String> serialHeaders = {"header1","header2","header3","header4","header5"}; 
+
+    // printserial.printDebugInfo(serialValues); // prints info to serial monitor in a clean format (not usable by scripts)
+    printserial.updateValues();
+    printserial.printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+
+    if (lights.returnStatus() == lights.DISCO)
+      lights.updateLEDS();
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
 
