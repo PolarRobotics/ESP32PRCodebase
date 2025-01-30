@@ -114,8 +114,8 @@ class Drive {
     void generateMotionValues(float tankModePct = TANK_MODE_PCT);
     virtual void update();
     void printSetup();
-    virtual void printDebugInfo();
-    virtual void printCsvInfo();
+    // virtual void printDebugInfo();
+    // virtual void printCsvInfo();
     int getMotorWifiValue(int motorRequested);
 
     //* The following variables are initialized in the constructor
