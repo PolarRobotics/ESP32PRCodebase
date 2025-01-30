@@ -148,6 +148,8 @@ void setup() {
 
   printserial.setDriveObj(drive);
 
+  printserial.setDriveObj(drive);
+
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
 }
