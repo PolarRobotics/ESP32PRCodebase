@@ -58,11 +58,12 @@ bool foundController = false;
 // Bluetooth connection security and role for ESP32
 esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
+bool doDiscovery = false; // default false, only true if PAIRING_PIN jumped to HIGH
 
 // MAC Addresses to match to PS5 Controllers
 const char* macTest = "bc:c7:46:03"; // length 11
 const char* macTest2 = "bc:c7:46:04"; // length 11
-const char* RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
+const char* RhysController = "10:18:49:57"; // length 11, full: "10:18:49:57:49:ef"
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -129,45 +130,40 @@ void getAddress(const char* &addr) {
   else addr = &str.c_str()[0]; // get value of char ptr string
 }
 
-/// @brief Search for PS5 Controllers and pair to the first one found
-/// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
-/// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
-void activatePairing(bool doRePair, int discoverTime) {
-  Serial.begin(115200);
-  // pinMode(LED_BUILTIN, OUTPUT);
+/// @brief Pairs to controller whose address is stored in ESP32 Preferences
+/// @param time time to wait before terminating re-pairing process
+/// @param addrCharPtr address to connect to, read but not written to
+void pairToLastController(int time, const char* &addrCharPtr) {
+  // see if we have a stored MAC address and try to pair to it
+  if (addrCharPtr != nullptr) {
+    Serial.print(F("Connecting to PS5 Controller @ "));
+    Serial.println(addrCharPtr);
+    ps5.begin(addrCharPtr);
+    int timer = 0;
 
-  // if we just returned a char*, it would be deleted and point to nowhere useful
-  // so we have to pass in and mutate a (reference to a) char array.
-  const char* addrCharPtr = nullptr;
-  getAddress(addrCharPtr); 
+    // wait until discovery time passes or we connect to a controller
+    while (timer < time && !ps5.isConnected()) {
+      delay(LOOP_DELAY);
+      timer += LOOP_DELAY;
 
-  if (doRePair) {
-    // see if we have a stored MAC address and try to pair to it
-    if (addrCharPtr != nullptr) {
-      Serial.print(F("Connecting to PS5 Controller @ "));
-      Serial.println(addrCharPtr);
-      ps5.begin(addrCharPtr);
-      int timer = 0;
-
-      // wait until discovery time passes or we connect to a controller
-      while (timer < discoverTime && !ps5.isConnected()) {
-        delay(LOOP_DELAY);
-        timer += LOOP_DELAY;
-
-        // slow blink when searching for previous device
-        if (timer % (5 * LOOP_DELAY) == 0) {
-          toggleBuiltInLED();
-        }
+      // slow blink when searching for previous device
+      if (timer % (5 * LOOP_DELAY) == 0) {
+        toggleBuiltInLED();
       }
+    }
 
-      // return if we get a connection at this point
-      if (ps5.isConnected()) {
-        Serial.println(F("PS5 Controller Connected!"));
-        yeet;
-      } // otherwise look for devices to pair with
-    } 
-  }
+    // return if we get a connection at this point
+    if (ps5.isConnected()) {
+      Serial.println(F("PS5 Controller Connected!"));
+      yeet;
+    }
+  } 
+}
 
+/// @brief Looks for new controllers to pair to
+/// @param time time to wait before terminating discovery process
+/// @param addrCharPtr address to connect to, written to and read
+void searchForNewController(int time, const char* &addrCharPtr) {
   // begin broadcasting as "ESP32" as master role
   if (!SerialBT.begin("ESP32", true)) { 
     Serial.println(F("SerialBT failed!")); // function returns false if failed
@@ -176,14 +172,14 @@ void activatePairing(bool doRePair, int discoverTime) {
   SerialBT.enableSSP(); // according to SRC of this code, doesn't seem to change anything
 
   Serial.println(F("Searching for devices..."));
-  BTScanResults* btDeviceList = SerialBT.getScanResults();  // may be accessing from different threads!
+  BTScanResults* btDeviceList = SerialBT.getScanResults(); // may be accessing from different threads!
 
   // Beginning of Asynchronous Discovery Process
   if (startDiscovery()) {
     int timer = 0;
 
     // recall foundController is set by the callback in `startDiscovery` when a valid PS5 controller is found
-    while (timer < discoverTime && !foundController) { 
+    while (timer < time && !foundController) { 
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
       Lights::getInstance().updateLEDS();
@@ -195,7 +191,7 @@ void activatePairing(bool doRePair, int discoverTime) {
       else if ((timer % 1000) % (4 * LOOP_DELAY) == 0)
         toggleBuiltInLED();
       else if ((timer % 1000) % (3 * LOOP_DELAY) == 0 &&
-               (timer % 1000) % (9 * LOOP_DELAY) != 0) // also does 600
+              (timer % 1000) % (9 * LOOP_DELAY) != 0) // also does 600
         toggleBuiltInLED();
     }
 
@@ -205,7 +201,7 @@ void activatePairing(bool doRePair, int discoverTime) {
     delay(5000); //! why is this delay here? does removing it affect anything? this was in the original code, I must never have noticed it.
     
     // If we find devices, list them and try to pair if it is a valid controller.
-    if(btDeviceList->getCount() > 0) {
+    if (btDeviceList->getCount() > 0) {
       BTAddress addr;
       int channel = 0;
       Serial.println(F("Found devices:"));
@@ -253,4 +249,30 @@ void activatePairing(bool doRePair, int discoverTime) {
     Serial.println(F("Asynchronous discovery failed."));
     setBuiltInLED(false);
   }
+}
+
+/// @brief Search for PS5 Controllers and pair to the first one found
+/// @param discoverTime the time limit to search for new devices, in milliseconds
+/// @param rePairTime the time limit to repair to existing devices, in milliseconds
+void activatePairing(int discoverTime, int rePairTime) {
+  Serial.begin(115200);
+
+  // if we just returned a char*, it would be deleted and point to nowhere useful
+  // so we have to pass in and mutate a (reference to a) char array.
+  const char* addrCharPtr = nullptr;
+  getAddress(addrCharPtr); 
+
+  #if USE_PIN_PAIRING // only search for new controller when pairing pin is high
+  Serial.print(F("PAIRING PIN "));
+  Serial.println(digitalRead(PAIRING_PIN));
+
+  if (digitalRead(PAIRING_PIN) == HIGH) { //! search for new devices
+    searchForNewController(discoverTime, addrCharPtr);
+  } else { //! if PAIRING_PIN is LOW, reconnect to previous controller
+    pairToLastController(rePairTime, addrCharPtr);
+  }
+  #else // always try to re-pair first, then search for new controller if none is found
+  pairToLastController(rePairTime, addrCharPtr);
+  searchForNewController(discoverTime, addrCharPtr);
+  #endif
 }

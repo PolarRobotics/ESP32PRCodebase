@@ -20,6 +20,10 @@
 #define PR_CODEBASE_VERSION "PR_CODEBASE_VERSION not defined!"
 #endif
 
+#ifndef USE_PIN_PAIRING
+#define USE_PIN_PAIRING false
+#endif
+
 // [PIN DECLARATIONS]
 // please follow: 
 // https://docs.google.com/spreadsheets/d/17pdff4T_3GTAkoctwm2IMg07Znoo-iJkyDGN5CqXq3w/edit#gid=0
@@ -46,8 +50,14 @@
 
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
+
 // receiver, tackled, etc...
 #define TACKLE_PIN 13
+
+// pairing jumper pin
+// jump HIGH to activate pairing discovery
+// otherwise robot will only connect to last controller
+#define PAIRING_PIN 23
 
 enum BOT_STATE {
   PAIRING,

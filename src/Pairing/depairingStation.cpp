@@ -49,7 +49,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   setBuiltInLED(false);
 
-  activatePairing(false, 1048576); // easy power of two, long enough that it should be fine
+  activatePairing(1000000, 0); // search for new devices forever, do not re-pair ever
 
   // Serial.print(F("\r\nConnected"));
 
