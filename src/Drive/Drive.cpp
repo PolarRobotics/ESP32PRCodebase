@@ -339,7 +339,7 @@ void Drive::printSetup() {
 */
 void Drive::update() {
     // !TODO Clean up when robots are rewired:
-    if (this->botType == runningback) {
+    if (this->botType == running_back) {
         // Generate turning motion
         generateMotionValues();
         //printDebugInfo();

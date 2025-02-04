@@ -103,9 +103,9 @@ void setup() {
       drive = new Drive(center, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
-    case runningback:
+    case running_back:
       robot = new Lineman();
-      drive = new Drive(runningback, driveParams);
+      drive = new Drive(running_back, driveParams);
       drive->setupMotors(M1_PIN, M2_PIN);
       break;
     case quarterback_turret:
@@ -203,7 +203,7 @@ void loop() {
         lights.togglePosition();
       
       // If the robot is able to hold the ball, it is able to be tackled:
-      if (robotType == receiver || robotType == quarterback_old || robotType == runningback) {
+      if (robotType == receiver || robotType == quarterback_old || robotType == running_back) {
         // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
         if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW) {
           lights.setLEDStatus(Lights::TACKLED);
