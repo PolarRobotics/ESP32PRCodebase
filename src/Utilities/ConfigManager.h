@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CFG_MGR_H
 #define CFG_MGR_H
 

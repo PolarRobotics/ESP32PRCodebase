@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef MOTOR_TYPES_H
 #define MOTOR_TYPES_H
 

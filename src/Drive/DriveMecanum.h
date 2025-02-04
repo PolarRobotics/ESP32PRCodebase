@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef DRIVE_MECANUM_H
 #define DRIVE_MECANUM_H
 

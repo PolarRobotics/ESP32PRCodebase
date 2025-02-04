@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef QUARTERBACK_BASE_H
 #define QUARTERBACK_BASE_H
 

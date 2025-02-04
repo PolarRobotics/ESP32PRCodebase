@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef BOT_TYPES_H
 #define BOT_TYPES_H
 

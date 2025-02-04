@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef MECANUM_CENTER_H
 #define MECANUM_CENTER_H
 

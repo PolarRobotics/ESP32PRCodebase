@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef PRINTSERIAL_H
 #define PRINTSERIAL_H
 

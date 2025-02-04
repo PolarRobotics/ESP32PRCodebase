@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOTOR_CONTROL_H
+#define MOTOR_CONTROL_H
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
@@ -58,3 +59,5 @@ public:
   void readEncoder();
   int calcSpeed(int current_count);
 };
+
+#endif // MOTOR_CONTROL_H

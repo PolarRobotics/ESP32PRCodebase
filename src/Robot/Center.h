@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef OLD_CENTER_H
 #define OLD_CENTER_H
 
