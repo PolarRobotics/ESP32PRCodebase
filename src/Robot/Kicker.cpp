@@ -1,3 +1,11 @@
+//! New kicker code isn't really functional (as of 2025-02-03)
+//* Need to decide control scheme and adjust action() appropriately.
+
+// Max's Notes from last time he talked to trent (like 2024-12-04 or something):
+// - Startup: home to limit switch, wait half a second, then go back to ~135 degrees from the limit switch
+// - Limit switch represents fire position.
+// - Rotate towards back of the robot.
+
 #include "Kicker.h"
 
 /**
@@ -10,7 +18,7 @@
  * then fall back a certain number of degrees (~15 degrees for now).
  * 
  * @param kickerPin The pin of the kicker arm's motor
- * @param limitswitchPin the pin of the kicker arm's limit switch
+ * @param limitSwitchPin the pin of the kicker arm's limit switch
  * @param kickerEncoderPinA The pin of signal A from the encoder
  * @param kickerEncoderPinB THe pin of signal B from the encoder
  */
@@ -55,10 +63,6 @@ void Kicker::kickerEncoderISR() {
 
 /**
  * @brief Kicker Action
- * 
- * Manually control the motor using the Triangle and X (cross) buttons.
- * Triangle for winding
- * Cross for unwinding
  */
 void Kicker::action() {
   // Control the motor on the kicker manually

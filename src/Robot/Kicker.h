@@ -16,7 +16,7 @@
 #define KICKER_ENABLE_DB_DELAY 100L
 
 /**
- * @brief Kicker Class
+ * @brief Kicker V2 Class
  * 
  * Contains logic for the operation of the encoder, motorized kicking arm, and adjusting the angle
  * automatically upon startup. Other features include manual control of kicking arm in case the
@@ -47,7 +47,6 @@ public:
   );
   void action() override; //! robot subclass must override action
   void enable();
-  void test();
   void turnForward();
   void turnReverse();
   void stop();

@@ -5,9 +5,10 @@ constexpr Pair<BotType, const char*>
 botTypeStrings[NUM_POSITIONS] = {
   { lineman,            "lineman"            },
   { receiver,           "receiver"           },
-  { running_back,        "running_back"        },
+  { running_back,       "running_back"       },
   { center,             "center"             },
   { kicker,             "kicker"             },
+  { kicker_old,         "kicker_old"         },
   { mecanum_center,     "mecanum_center"     },
   { quarterback_old,    "quarterback_old"    },
   { quarterback_base,   "quarterback_base"   },
