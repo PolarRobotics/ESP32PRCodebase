@@ -1,5 +1,7 @@
 #include "Debouncer.h"
 
+//* for how to use this class: see Debouncer.h
+
 // based on: https://arduinogetstarted.com/tutorials/arduino-button-debounce
 
 // Input: debounce delay (milliseconds)
@@ -21,8 +23,6 @@ Debouncer::Debouncer(unsigned long delay, bool activeLow) {
 
 }
 
-// takes only input of 0 or 1, and outputs 0 or 1
-// @param inputState: "current" call to debounce 
 uint8_t Debouncer::debounce(uint8_t inputState) {
   // Serial.print(F("start: l_stab:"));
   // Serial.print(lastStableState);
@@ -66,6 +66,10 @@ uint8_t Debouncer::debounce(uint8_t inputState) {
   // Serial.println(inputState);
 
   return lastStableState;
+}
+
+uint8_t Debouncer::isActive() {
+  return lastStableState == ACTIVE_STATE;
 }
 
 uint8_t Debouncer::wasToggled() {
