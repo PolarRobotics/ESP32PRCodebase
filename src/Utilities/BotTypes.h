@@ -114,8 +114,8 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 11, "inf",       quarterback_old,    { small_ampflow,   0.5625f,    11.50f,  9.00f,  24.00f }},  //* 11: ∞
   { 12, "theta",     kicker_old,         { pancake_ampflow, 0.5f,       10.00f,  9.00f,  36.00f }},  //* 12: Θ
   { 13, "y=x",       mecanum_center,     { mecanum,         1.0f,       11.00f,  9.00f,  36.00f }},  //* 13: y=x
-  { 14, "qb_base",   quarterback_base,   { big_ampflow,     0.5f,       11.50f,  9.00f,  36.00f }},  //* 14: beta (bottom)
-  { 15, "qb_turret", quarterback_turret, { falcon,          0.5f,       11.50f,  9.00f,  36.00f }},  //* 15: beta (top)
+  { 14, "qb_base",   quarterback_base,   { big_ampflow,     0.7273f,    11.50f,  9.00f,  36.00f }},  //* 14: beta (bottom)
+  { 15, "qb_turret", quarterback_turret, { falcon,          1.0f,       11.50f,  9.00f,  36.00f }},  //* 15: beta (top)
   { 16, "l-man-v1",  lineman,            { small_12v,       1.0f,       11.00f,  9.00f,  36.00f }},  //* 16: generic lineman V1
   { 17, "420",       lineman,            { small_12v,       1.0f,       11.00f,  5.50f,  18.00f }},  //* 17: 420 
   { 18, "24",        lineman,            { small_12v,       1.0f,       11.00f,  5.50f,  18.00f }},  //* 18: 24 
