@@ -126,6 +126,7 @@ void setup() {
         ENC1_CHB, // turret encoder
         ENC2_CHB  // zeroing laser
       );
+      drive = new Drive(); // TODO: instantiate this to prevent PrintSerial from causing NPE/crash
       break;
     case quarterback_base:
       drive = new Drive(quarterback_base, driveParams);
@@ -151,8 +152,6 @@ void setup() {
   
   // Once paired, set lights to appropriate status
   lights.setLEDStatus(Lights::PAIRED);
-
-  printserial.setDriveObj(drive);
 
   printserial.setDriveObj(drive);
 
