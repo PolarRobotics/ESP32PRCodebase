@@ -273,6 +273,8 @@ void activatePairing(int discoverTime, int rePairTime) {
   }
   #else // always try to re-pair first, then search for new controller if none is found
   pairToLastController(rePairTime, addrCharPtr);
-  searchForNewController(discoverTime, addrCharPtr);
+  if (!ps5.isConnected()) {
+    searchForNewController(discoverTime, addrCharPtr);
+  }
   #endif
 }
