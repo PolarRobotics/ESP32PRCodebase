@@ -120,7 +120,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 17, "420",       lineman,            { small_12v,       1.0f,       11.00f,  5.50f,  18.00f }},  //* 17: 420 
   { 18, "24",        lineman,            { small_12v,       1.0f,       11.00f,  5.50f,  18.00f }},  //* 18: 24 
   { 19, "25",        lineman,            { small_12v,       1.0f,       11.00f,  5.50f,  18.00f }},  //* 19: 25
-  { 20, "tau",       kicker,             { small_ampflow,   1.0f,       11.00f,  5.50f,  18.00f }}   //* 20: tau
+  { 20, "tau",       kicker,             { small_ampflow,   0.5f,        9.00f,  9.00f,  36.00f }}   //* 20: tau
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break
