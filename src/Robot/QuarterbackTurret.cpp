@@ -416,12 +416,12 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power, bool rel
 void QuarterbackTurret::updateTurretMotionStatus() {
   // if (utmsCtr >= UTMS_CTR_MAX) {
   //   utmsCtr = 0;
-    Serial.print(F("update called with ctec = "));
-    Serial.print(currentTurretEncoderCount);
-    Serial.print(F("; ttec = "));
-    Serial.print(targetTurretEncoderCount);
-    Serial.print(F("; error (ct) = "));
-    Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
+    // Serial.print(F("update called with ctec = "));
+    // Serial.print(currentTurretEncoderCount);
+    // Serial.print(F("; ttec = "));
+    // Serial.print(targetTurretEncoderCount);
+    // Serial.print(F("; error (ct) = "));
+    // Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
   // } else {
   //   utmsCtr++;
   // }
@@ -1260,16 +1260,16 @@ void QuarterbackTurret::calculateHeadingMag() {
     if (headingDeg > 360) headingDeg = ((int) headingDeg) % 360; 
 
     /*DEBUGGING PRINTOUTS*/
-    // Serial.print("X:  "); Serial.print(lis3mdl.x); 
-    // Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
-    // Serial.print("\tMinX:  "); Serial.print(mag_xMin); 
-    // Serial.print("\tMaxX:  "); Serial.print(mag_xMax); 
-    // Serial.print("\tMinY:  "); Serial.print(mag_yMin); 
-    // Serial.print("\tMaxY:  "); Serial.print(mag_yMax); 
-    // Serial.print("\txAdapt:  "); Serial.print(mag_xVal);
-    // Serial.print("\tyAdapt:  "); Serial.print(mag_yVal);
-    // Serial.print("\tHeading [deg]:   "); Serial.print(headingDeg);
-    // Serial.println();
+    Serial.print("X:  "); Serial.print(lis3mdl.x); 
+    Serial.print("\tY:  "); Serial.print(lis3mdl.y); 
+    Serial.print("\tMinX:  "); Serial.print(mag_xMin); 
+    Serial.print("\tMaxX:  "); Serial.print(mag_xMax); 
+    Serial.print("\tMinY:  "); Serial.print(mag_yMin); 
+    Serial.print("\tMaxY:  "); Serial.print(mag_yMax); 
+    Serial.print("\txAdapt:  "); Serial.print(mag_xVal);
+    Serial.print("\tyAdapt:  "); Serial.print(mag_yVal);
+    Serial.print("\tHeading [deg]:   "); Serial.print(headingDeg);
+    Serial.println();
     }
 }
 #pragma endregion
