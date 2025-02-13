@@ -250,7 +250,7 @@ void loop() {
 
     // printserial.printDebugInfo(serialValues); // prints info to serial monitor in a clean format (not usable by scripts)
     printserial.updateValues();
-    printserial.printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+    // printserial.printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
     if (lights.returnStatus() == lights.DISCO)
       lights.updateLEDS();
