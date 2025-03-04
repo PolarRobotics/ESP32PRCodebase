@@ -84,13 +84,16 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
 
   // Gyro
   if (hasGyro) {
-    if (mpu.begin()){
+    // Wire.begin(0);
+
+    if (mpu.begin(0x68)){
       Serial.println(F("Reading data from Gyroscope"));
       
       // set up the gyroscopes parameters
-      mpu.begin(0x68);
+      // mpu.begin(0x68, &Wire, 0);
       mpu.setGyroRange(MPU6050_RANGE_250_DEG);  // 250, 500, 1000, 2000
       mpu.setFilterBandwidth(MPU6050_BAND_260_HZ);  // 260, 184, 94, 44, 21, 10, 5
+      mpu.setCycleRate(MPU6050_CYCLE_40_HZ);
       // DriveStraight Gains:
       switch (botType) {
         case BotType::lineman: { k_p = 1500; break; }

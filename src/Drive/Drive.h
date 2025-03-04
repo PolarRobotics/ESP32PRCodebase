@@ -46,6 +46,7 @@
 
 // Error threshold for DriveStraight controller
 #define ERROR_THRESHOLD 0.02f
+#define GYRO_ERROR_THRESHOLD 0.04f // +/- 0.04
 
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType (defined in MotorTypes.h) to be used effectively
