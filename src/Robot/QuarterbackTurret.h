@@ -467,7 +467,6 @@ class QuarterbackTurret : public Robot {
     void printDebug();
     void testRoutine();
 
-
     //====================================//
     //   Quarterback Subsystem Controls   //
     //====================================//
