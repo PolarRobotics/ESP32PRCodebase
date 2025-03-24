@@ -1,5 +1,6 @@
 Import("env")
 import subprocess
+import os
 from datetime import datetime
 
 # sources
@@ -36,3 +37,12 @@ version = f"branch '{branch}' at commit {commit}, built/uploaded {formatted_time
 env.Append(
     CPPDEFINES=[("PR_CODEBASE_VERSION", env.StringifyMacro(version))],
 )
+
+# Get the value of PR_GUI_BOT_INDEX' passed from the command line or environment variables
+bot_index = os.environ.get('PR_GUI_BOT_INDEX', '0')  # Default to 0 if not provided
+
+# Append the build flag to the environment
+env.Append(
+    CPPDEFINES=[("BOT_INDEX", bot_index)],
+)
+print(f"bot index is: {bot_index}")
