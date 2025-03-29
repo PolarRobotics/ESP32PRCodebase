@@ -43,11 +43,19 @@ enum CombinePosition {
 };
 
 enum FlywheelSpeed {
-  slow_inwards, stopped, slow_outwards, lvl1_outwards, lvl2_outwards, lvl3_outwards, maximum
+  slow_inwards,        // for intaking the ball (from the center)
+  stopped,             // zero
+  slow_outwards,       // for handoff maneuver to a running back directly behind the QB
+  stack_pass_outwards, // for handoff maneuver to a *second* running back stacked *behind* a running back directly behind the QB
+  lvl1_outwards,       // for 6' pass for combine
+  lvl2_outwards,       // for 12' pass for combine
+  lvl3_outwards,       // for 18' pass for combine
+  maximum              // 100% power
 };
-#define QB_TURRET_NUM_SPEEDS 7
-// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.225, 0.35, 0.45, 1.0}; // with top prongs
-const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}; // without top prongs
+#define QB_TURRET_NUM_SPEEDS 8
+// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.15, 0.225, 0.35, 0.45, 1.0}; // with top prongs
+const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.15, 0.215, 0.31, 0.3875, 1.0}; // without top prongs
+// TODO: test/tune stack_pass_outwards speed 
 
 //================================//
 //  Debounce and Delay Constants  //
@@ -67,11 +75,14 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0
 //================================//
 //        Speed Constants         //
 //================================//
-#define QB_MIN_PWM_VALUE 0.1
-#define QB_HOME_PCT 0.125
-#define QB_HANDOFF  0.3
-#define QB_HOME_MAG 0.1
-#define QB_ASM_SPEED 0.3
+#define QB_PID_MIN_PWM_VALUE 0.1    // Small PWM signals fail to make the motor turn leading to error in PID calculations.
+#define QB_ZERO_TURRET_SPEED 0.125  // speed to use while zeroing/homing the turret
+#define QB_DEFAULT_TURRET_SPEED 0.3 // default turret speed (percentage, positive/magnitude only) [0.0, 1.0]
+#define QB_HOME_MAG_SPEED 0.1       // turret speed to use while homing magnetometer
+#define QB_DEFAULT_STAB_SPEED 0.2   // default turret speed for auto-stabilization ("hold turret still" functionality)
+#define QB_REDUCED_STAB_SPEED 0.125 // reduced turret speed for auto-stabilization if base motors are moving (from UART)
+
+#define QB_ASM_SPEED 0.3 // default speed for turret assembly to use when moving forward/back (not a turret rotation speed)
 
 //========================================//
 //   Turret Angle Calculation Constants   //
@@ -79,20 +90,14 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0
 // QB_COUNTS_PER_ENCODER_REV      Number of ticks per encoder revolution
 // QB_COUNTS_PER_TURRET_REV       Encoder Gear: 18t; Turret Track: 152t. Encoder spins 8.4 times for every turret revolution = 8500 ticks/rev
 // QB_COUNTS_PER_TURRET_DEGREE    (8500/360) = 23.61... ticks per degree
-// QB_TURRET_SLOP_COUNTS          Backlash between input and output on the turret is high -> leads to problems when switching directions
-//                                    540 ticks on encoder before turret actually starts to move (Empirically measured)
 #define QB_COUNTS_PER_ENCODER_REV 1250
 #define QB_COUNTS_PER_TURRET_REV 10556 // actually 10555.55555...6, but rounded up
 #define QB_COUNTS_PER_TURRET_DEGREE 29.321
-#define QB_TURRET_SLOP_COUNTS 540 // deprecated
 // #define QB_FALCON_TO_TURRET_RATIO 27 / 1
-// #define QB_ENCODER_TO_FALCON_RATIO 5 / 1
+// #define QB_ENCODER_TO_FALCON_RATIO 5 / 1  //! no longer accurate
 // #define QB_ENCODER_TO_TURRET_RATIO  /* = */ QB_FALCON_TO_TURRET_RATIO / QB_ENCODER_TO_FALCON_RATIO // (27 / 5) = 5.4
 // #define QB_COUNTS_PER_TURRET_REV    /* = */ QB_ENCODER_TO_TURRET_RATIO * QB_COUNTS_PER_ENCODER_REV // 5400
 // #define QB_COUNTS_PER_TURRET_DEGREE /* = */ QB_COUNTS_PER_TURRET_REV / 360
-// #define QB_TURRET_SLOP_GEAR_TEETH   /* = */ 10 // slop is about 10 gear teeth
-// #define QB_TURRET_SLOP_PCT          /* = */ QB_DIRECTION_CHANGE_SLOP_GEAR_TEETH / 100
-// #define QB_TURRET_SLOP_COUNTS       /* = */ QB_DIRECTION_CHANGE_SLOP_PCT * QB_COUNTS_PER_TURRET_REV
 
 //===============================//
 //    Turret Homing Constants    //
@@ -125,12 +130,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0
 // Enable or Disable Auto Mode for testing
 #define QB_AUTO_ENABLED false
 
-//===============================//
-//    UART Communication Pins    //
-//===============================//
-// TODO: move to appropriate area and pass into constructor
-#define RX2 16 // reciever pin
-#define TX2 17 // transmitter pin
+// Enable or Disable UART communication
+#define QB_UART_ENABLED false
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -214,7 +215,6 @@ class QuarterbackTurret : public Robot {
     bool cradleMoving;
     uint32_t cradleStartTime;
 
-
     //===============================//
     //        Flywheel State         //
     //===============================//
@@ -236,8 +236,6 @@ class QuarterbackTurret : public Robot {
     // targetTurretSpeed    default = 0
     float currentTurretSpeed;
     float targetTurretSpeed;
-    int8_t utmsCtr = 0; // temp ctr for debugging so updateTurretMotionStatus doesn't spam as much
-    #define UTMS_CTR_MAX 15
 
     //=====================================//
     //   Private Encoder State Variables   //
@@ -309,7 +307,7 @@ class QuarterbackTurret : public Robot {
     //  Magnetometer Calibration  //
     //============================//
     //* used at each startup
-    // TODO: make a class or struct for all these
+    // TODO [2025-03-28]: get rid of all this
     // mag_xVal, mag_yVal:     The current x and y values read by the magnetometer (after adjustments)
     // mag_xMax, mag_xMin:     During calibration the max and min X values are recorded
     // mag_yMax, mag_yMin:     During calibration the max and min Y values are recorded
@@ -332,12 +330,12 @@ class QuarterbackTurret : public Robot {
         - headingRad:     The current calculated heading in radians using the X and Y values after calibration
         - headingDeg:     The current calculated heading in degrees -> uses headingRad
     */
-    float headingRad; // TODO: merge with robot abs pot vars
-    float headingDeg; // TODO: merge with robot abs pot vars
+    float headingRad; // TODO [2025-03-28]: refactor to one set of absolute positioning vars
+    float headingDeg; // TODO [2025-03-28]: refactor to one set of absolute positioning vars
 
-    //==================================//
-    //    Magnetometer PID Variables    //
-    //==================================//
+    //=====================//
+    //    PID Variables    //
+    //=====================//
     // PID_ERROR_AVG_ARRAY_LENGTH       The length of the array used for averaging the error
 
     // prevErrorVals        Array of previous error values used to average the last few error values together
@@ -353,10 +351,9 @@ class QuarterbackTurret : public Robot {
     // ki:                  Integral gain used in PID
     // kd:                  Derivative gain used in PID
     // turretPIDSpeed:      The calculated PWM value used in the PID loop
-    // minMagSpeed:         Small PWM signals fail to make the motor turn leading to error in PID calculations. 
-    //                        This sets a bottom bound on the PWM signal that can be calculated by the PID loop
+
     #define PID_ERROR_AVG_ARRAY_LENGTH 5
-    // TODO: convert to appropriate (u)int#_t types
+    // TODO [2025-03-28]: convert to appropriate (u)int#_t types
     int prevErrorVals[PID_ERROR_AVG_ARRAY_LENGTH] = { 0, 0, 0, 0, 0 };
     int prevErrorIndex = 0;
     bool firstAverage = true;
@@ -367,7 +364,6 @@ class QuarterbackTurret : public Robot {
     float ki = 0.0012;
     float kd = 0.0;
     float turretPIDSpeed = 0;
-    float minMagSpeed = .075;
 
     //============================//
     //   Magnetometer Functions   //
@@ -377,12 +373,14 @@ class QuarterbackTurret : public Robot {
     //                            outputs to the correct angles
     // calculateHeadingMag    Uses the values calculated during calibration to find the current heading of the turret 
     //                            with respect to the original 0 position
-    // holdTurretStill        Checks if the calibration has been completed and hold turret stil is enabled then enables the PID loop
-    void magnetometerSetup();
-    void calibMagnetometer();
-    void calculateHeadingMag();
-    void holdTurretStill();
-    float turretPIDController(float current, float target, float kp, float kd, float ki, float maxSpeed);
+    // holdTurretStill        Checks if the calibration has been completed and holdTurretStillEnabled is true, then enables the PID loop
+    void magnetometerSetup(); // TODO [2025-03-28]: yeet
+    void calibMagnetometer(); // TODO [2025-03-28]: yeet
+    void calculateHeadingMag(); // TODO [2025-03-28]: rename? and change implementation to use BNO055
+    void holdTurretStill(); // TODO [2025-03-28]: rename? 
+
+    // TODO [2025-03-28]: rename/refactor?
+    float turretPIDController(float current, float target, float kp, float kd, float ki, float maxSpeed); 
 
     /* MAGNETOMETER CURRENT STATE NOTES / PLAN (from April 9th, 2024 7:56 PM)
       - the PID controller works pretty well, tested on table rotating quickly
@@ -392,7 +390,7 @@ class QuarterbackTurret : public Robot {
       - Ability to change holding angle of turret with joystick needs evaluated for correctness
       - Turret flywheel equation needs generated for requested distance
       - Scan and Score capstone integration needs done to control angle and throw distance
-      - Testing needs done to see how much flywheels beign on affects magnetometer
+      - Testing needs done to see how much flywheels being on affects magnetometer
       - Relative velocities should be taken into account with trajectory calculations
     */
 #pragma endregion
@@ -400,20 +398,23 @@ class QuarterbackTurret : public Robot {
     //====================================//
     //     Private UART Communication     //
     //====================================//
-    String recievedMessage = "";
+    String recievedMessage = ""; // esp32 type string
+    uint8_t uartPinRX;
+    uint8_t uartPinTX;
+    bool uartSetupSuccessful = false; // will be true if UART pins are provided in the constructor
 
     //=============================//
     //   Misc. Private Functions   //
     //=============================//
     void moveAssemblySubroutine();
     void moveCradleSubroutine();
-    void moveTurret(int16_t heading, TurretUnits units, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = false); 
+    void moveTurret(int16_t heading, TurretUnits units, float power = QB_ZERO_TURRET_SPEED, bool relativeToRobot = true, bool ramp = false); 
     void updateTurretMotionStatus();
-    int16_t getCurrentHeading();
-    int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
+    int16_t getCurrentRelativeHeading(); // TODO [2025-03-28]: refactor? review uses (action, handoff)
+    int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading); // TODO [2025-03-28]: yeet?
     int16_t findNearestHeading(int16_t targetHeading);
-    int NormalizeAngle(int angle);
-    int CalculateRotation(float currentAngle, float targetAngle);
+    int NormalizeAngle(int angle); // TODO [2025-03-28]: rename, maybe refactor?
+    int CalculateRotation(float currentAngle, float targetAngle); // TODO [2025-03-28]: rename, maybe refactor?
 #pragma endregion
 
 #pragma region Public
@@ -436,15 +437,17 @@ class QuarterbackTurret : public Robot {
       uint8_t magnetometerSclPin, // S4
       uint8_t turretEncoderPinA,  // E1A
       uint8_t turretEncoderPinB,  // E1B
-      uint8_t turretLaserPin      // E2A
+      uint8_t turretLaserPin,     // E2A
+      uint8_t uartPin1 = 0,       // Optional
+      uint8_t uartPin2 = 0        // Optional
     );
 
-    bool magnetometerCalibrated = false;
+    bool magnetometerCalibrated = false; // TODO [2025-03-28]: rename to apsReady or something
 
     //===================================//
     //   Quarterback General Functions   //
     //===================================//
-    // action                   robot sublass must override action    
+    // action                   robot subclass must override action    
     void action() override;
 
     // [Startup]
@@ -479,10 +482,12 @@ class QuarterbackTurret : public Robot {
     // setFlywheelSpeed               Sets the speed of the flywheels using stick inputs
     // setFlywheelSpeedStage          Set the speed as one of the defined enums
     // adjustFlywheelSpeedStage       Move to the next level up or down in the list of speeds
-    void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false); 
+    void setTurretSpeed(float absoluteSpeed); 
+    // TODO [2025-03-28]: probably refactor "relativeToRobot = true" to be inverse ("absolute = false")
+    // TODO               or alternatively maybe detect automatically whether it should be used (?)
     void moveTurret(int16_t heading, bool relativeToRobot = true, bool ramp = true); 
-    void moveTurret(int16_t heading, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = true);
-    void moveTurretAndWait(int16_t heading, float power = QB_HOME_PCT, bool relativeToRobot = true, bool ramp = true);
+    void moveTurret(int16_t heading, float power = QB_ZERO_TURRET_SPEED, bool relativeToRobot = true, bool ramp = true);
+    void moveTurretAndWait(int16_t heading, float power = QB_ZERO_TURRET_SPEED, bool relativeToRobot = true, bool ramp = true);
     void aimAssembly(AssemblyAngle angle, bool force = false); 
     void moveCradle(CradleState state, bool force = false); 
     void setFlywheelSpeed(float absoluteSpeed); 
@@ -506,7 +511,6 @@ class QuarterbackTurret : public Robot {
     void loadFromCenter();
     void handoff();
     
-    
     //==========================================//
     //  Public Encoder State Variables for ISR  //
     //==========================================//
@@ -520,10 +524,6 @@ class QuarterbackTurret : public Robot {
     //===============================================//
     // must be static. simple function called when encoder interrupts are triggered. updates [currentTurretEncoderCount].
     static void turretEncoderISR(); 
-
-    // If the direction changes then some things need to happen differently because of the incredible amount of backlash
-    // TODO: remove? may not be needed with new encoder system
-    void turretDirectionChanged(); 
 
     //===================================//
     //     Public UART Communication     //

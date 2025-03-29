@@ -59,6 +59,10 @@
 // otherwise robot will only connect to last controller
 #define PAIRING_PIN 23
 
+// uart pins for cross-robot communication (currently only used for QB V3 turret)
+#define UART_RX2 16
+#define UART_TX2 17
+
 enum BOT_STATE {
   PAIRING,
   CONNECTED,

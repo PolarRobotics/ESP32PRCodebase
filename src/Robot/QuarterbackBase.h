@@ -6,14 +6,9 @@
 #include <Drive/Drive.h>
 
 // Wifi Connectivity Pin
-#define WIFI_PIN 18
-
-//UART Pins
-#define RX2 16
-#define TX2 17
+#define WIFI_PIN SPECBOT_PIN1 // 18
 
 #include <HardwareSerial.h>
-
 
 /**
  * @brief Quarterback Base Subclass Header

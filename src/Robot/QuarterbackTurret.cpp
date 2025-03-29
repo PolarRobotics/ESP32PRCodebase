@@ -1,7 +1,8 @@
 #include "QuarterbackTurret.h"
 
-//This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
-HardwareSerial Uart_Turret(2);     // UART2
+// This for some reason has to be declared in the .cpp file and not the .h file
+// so that it does not conflict with the same declaration in other .h files
+HardwareSerial qbTurretUART(2);     // UART2
 
 // "define" static members to satisfy linker
 uint8_t QuarterbackTurret::turretEncoderPinA;
@@ -30,7 +31,9 @@ QuarterbackTurret::QuarterbackTurret(
   uint8_t magnetometerSclPin, // S4
   uint8_t turretEncoderPinA,  // E1A
   uint8_t turretEncoderPinB,  // E1B
-  uint8_t turretLaserPin      // E2A
+  uint8_t turretLaserPin,     // E2A
+  uint8_t uartPinRX,
+  uint8_t uartPinTX
 ) {
   
   // set all state variables to default values,
@@ -91,15 +94,12 @@ QuarterbackTurret::QuarterbackTurret(
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
   // initiate motor objects
-  // TODO: initiate assembly/tilter stepper motor with lib
   cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
-  turretMotor.setup(turretPin, falcon); // TODO: add encoder
+  turretMotor.setup(turretPin, falcon); // TODO: add encoder // 2025-03-28: to what?
   assemblyMotor.setup(assemblyPin, small_12v);
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
-  
-  
   // initialize debouncers
   this->dbShare = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
@@ -113,11 +113,18 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
   this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
-  this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
+  // TODO [2025-03-28]: consider removing
+  // this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY); 
 
   magnetometerSetup();
 
-  Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
+  // UART
+  if (QB_UART_ENABLED && uartPinRX != 0 && uartPinTX != 0) {
+    this->uartPinRX = uartPinRX;
+    this->uartPinTX = uartPinTX;
+    qbTurretUART.begin(115200, SERIAL_8N1, uartPinRX, uartPinTX);
+    this->uartSetupSuccessful = true;
+  }
 }
 #pragma endregion
 
@@ -243,23 +250,19 @@ void QuarterbackTurret::action() {
           }
 
           // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+          turretPIDSpeed = turretPIDController((float)getCurrentRelativeHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
           setTurretSpeed(turretPIDSpeed);
 
-          // if (utmsCtr <= UTMS_CTR_MAX) {
-          //   utmsCtr = 0;
-            Serial.print(F("combine mode -- ctec = "));
-            Serial.print(currentTurretEncoderCount);
-            Serial.print(F("; ttec = "));
-            Serial.println(targetTurretEncoderCount);
-          // } else {
-          //   utmsCtr++;
-          // }
+          // Serial.print(F("combine mode -- ctec = "));
+          // Serial.print(currentTurretEncoderCount);
+          // Serial.print(F("; ttec = "));
+          // Serial.println(targetTurretEncoderCount);
         } else  
         //* Right Stick X: Turret Control
         // Left = CCW, Right = CW
         if (fabs(stickTurret) > STICK_DEADZONE) {
-          //* Use absolute positioning and position-based control iff. magnetometer functionality is enabled
+          // // Use absolute positioning and position-based control iff. magnetometer functionality is enabled
+          //* Use absolute positioning if enabled (and hold turret still)
           if (useMagnetometer && holdTurretStillEnabled) {
             // only change position every 4 loops
             if (manualHeadingIncrementCount == 0) {
@@ -279,7 +282,7 @@ void QuarterbackTurret::action() {
             setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
           }
         } else {
-          //Check if magnetometer functionality is enabled
+          //* If turret is not being controlled, hold turret still if absolute positioning is enabled
           if (useMagnetometer && holdTurretStillEnabled) {
             calculateHeadingMag();
             holdTurretStill();
@@ -311,7 +314,9 @@ void QuarterbackTurret::action() {
     }
   }
 
-  updateReadMotorValues();
+  if (this->uartSetupSuccessful) {
+    updateReadMotorValues();
+  }
 
   printDebug();
 }
@@ -320,17 +325,12 @@ void QuarterbackTurret::action() {
 // note that because the direction is flipped to be more intuitive for the driver,
 // the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
 // positive direction is also positive encoder direction, and vice versa
-void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare) {
+void QuarterbackTurret::setTurretSpeed(float absoluteSpeed) {
   // Serial.print(F("setTurretSpeed called with speed = "));
   // Serial.println(absoluteSpeed);
   if (enabled) {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
     turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
-
-    // handle mechanical slop when changing directions
-    // if (!overrideEncoderTare) {
-    //   turretDirectionChanged();
-    // }
 
     currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
   } else {
@@ -340,7 +340,7 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
 
 #pragma region Old Rel Turret
 void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot, bool ramp) {
-  moveTurret(heading, degrees, QB_HOME_PCT, relativeToRobot, ramp);
+  moveTurret(heading, degrees, QB_ZERO_TURRET_SPEED, relativeToRobot, ramp);
 }
 
 void QuarterbackTurret::moveTurret(int16_t heading, float power, bool relativeToRobot, bool ramp) {
@@ -385,13 +385,13 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float pow
           sign = -1;
         }
 
-        setTurretSpeed(QB_HANDOFF/4 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_DEFAULT_TURRET_SPEED/4 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF/3 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_DEFAULT_TURRET_SPEED/3 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF/2 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_DEFAULT_TURRET_SPEED/2 * sign); //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_DEFAULT_TURRET_SPEED * sign); //! temp constant, implement P loop soon
 
         // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
       }
@@ -414,17 +414,12 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power, bool rel
 #pragma endregion
 
 void QuarterbackTurret::updateTurretMotionStatus() {
-  // if (utmsCtr >= UTMS_CTR_MAX) {
-  //   utmsCtr = 0;
-    // Serial.print(F("update called with ctec = "));
-    // Serial.print(currentTurretEncoderCount);
-    // Serial.print(F("; ttec = "));
-    // Serial.print(targetTurretEncoderCount);
-    // Serial.print(F("; error (ct) = "));
-    // Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
-  // } else {
-  //   utmsCtr++;
-  // }
+  // Serial.print(F("update called with ctec = "));
+  // Serial.print(currentTurretEncoderCount);
+  // Serial.print(F("; ttec = "));
+  // Serial.print(targetTurretEncoderCount);
+  // Serial.print(F("; error (ct) = "));
+  // Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
   // determines if encoder is within "spec"
   if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD) {
     turretMoving = false;
@@ -432,19 +427,8 @@ void QuarterbackTurret::updateTurretMotionStatus() {
   }
 }
 
-// deprecated
-void QuarterbackTurret::turretDirectionChanged() {
-  if (currentTurretSpeed > 0 && targetTurretSpeed < 0) { // going CW, trying to go CCW
-    currentTurretEncoderCount -= slopError;
-    targetTurretEncoderCount -= slopError;
-  } else if (currentTurretSpeed < 0 && targetTurretSpeed > 0) { // going CCW, trying to go CW
-    currentTurretEncoderCount += slopError;
-    targetTurretEncoderCount += slopError;
-  }
-}
-
 //* get current heading in degrees
-int16_t QuarterbackTurret::getCurrentHeading() {
+int16_t QuarterbackTurret::getCurrentRelativeHeading() {
   return (int)((double) currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE) % 360;
 }
 
@@ -708,14 +692,14 @@ void QuarterbackTurret::loadFromCenter() {
 
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
-  aimAssembly(straight);
-  int16_t targetHeading = (getCurrentHeading() + 130) % 360;
+  aimAssembly(straight); 
+  int16_t targetRelativeHeading = (getCurrentRelativeHeading() + 130) % 360; // TODO [2025-03-28]: 
   calculateHeadingMag();
   targetAbsoluteHeading = headingDeg + 180;
   targetAbsoluteHeading %= 360;
 
   if (useMagnetometer) {
-    //moveTurretAndWait(targetHeading);
+    //moveTurretAndWait(targetRelativeHeading);
     //Use the magnetometer to make sure we get close to the requested angle
     //calculateHeadingMag();
     //holdTurretStill();
@@ -725,14 +709,14 @@ void QuarterbackTurret::handoff() {
     while ((currentTime + 4000) > millis()) {
       calculateHeadingMag();
       turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, .01, 0, 0, .25);
-      setTurretSpeed(turretPIDSpeed, true);
+      setTurretSpeed(turretPIDSpeed);
     }
     cradleActuator.write(1.0);
     delay(2000);
   } else {
-    targetHeading += 10;
-    targetHeading %= 360;
-    moveTurretAndWait(targetHeading);
+    targetRelativeHeading += 10;
+    targetRelativeHeading %= 360;
+    moveTurretAndWait(targetRelativeHeading);
     cradleActuator.write(1.0);
     setFlywheelSpeedStage(slow_outwards);
     delay(2000);
@@ -764,6 +748,7 @@ void QuarterbackTurret::testRoutine() {
   this->runningMacro = false;
 }
 
+// TODO [2025-03-28]: refactor this big time
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
 
@@ -776,7 +761,7 @@ void QuarterbackTurret::zeroTurret() {
   targetRelativeHeading = 0;
 
   // set speed
-  setTurretSpeed(QB_HOME_PCT);
+  setTurretSpeed(QB_ZERO_TURRET_SPEED);
 
   // pin will only read high if the main power is off or the laser sensor is triggered
   while (
@@ -880,7 +865,7 @@ void QuarterbackTurret::zeroTurret() {
 
   Serial.println(F("motor stopped, now moving in opposite direction"));
 
-  setTurretSpeed(-QB_HOME_PCT);
+  setTurretSpeed(-QB_ZERO_TURRET_SPEED);
 
   // moving with a positive power increases the current encoder count, and vice versa
   // since we are moving with a negative power, the encoder count will be decreasing
@@ -932,7 +917,7 @@ void QuarterbackTurret::zeroTurret() {
   Serial.println(targetCount);
 
   // finally, move to the target count, then stop
-  // setTurretSpeed(QB_HOME_PCT);
+  // setTurretSpeed(QB_ZERO_TURRET_SPEED);
 
 
   while (
@@ -957,6 +942,7 @@ void QuarterbackTurret::zeroTurret() {
   currentTurretEncoderCount = 0;
   Serial.println(F("zeroed"));
 
+  // TODO [2025-03-28]: get rid of this
   //Now that the encoder is zeroed we can just zero the magnetometer
   if (useMagnetometer) {
     delay(250);
@@ -966,6 +952,7 @@ void QuarterbackTurret::zeroTurret() {
   this->runningMacro = false;
 }
 
+// TODO [2025-03-28]: revise this?
 void QuarterbackTurret::reset() {
   this->enabled = true;
   this->runningMacro = true;
@@ -1012,7 +999,7 @@ void QuarterbackTurret::emergencyStop() {
   setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
   setTurretSpeed(0);
   cradleActuator.write(0);
-  // TODO: stop assembly stepper motor
+  assemblyMotor.write(0);
 }
 #pragma endregion
 
@@ -1038,6 +1025,7 @@ void QuarterbackTurret::printDebug() {
 }
 
 #pragma region Magnetometer
+// TODO [2025-03-28]: yeet
 /**
  * @brief Sets up magnetometer
  * @authors Rhys Davies, Corbin Hibler
@@ -1104,6 +1092,7 @@ void QuarterbackTurret::magnetometerSetup() {
                           true); // enabled!
 }
 
+// TODO [2025-03-28]: yeet
 /**
  * @brief Spins the turret 360 degrees slowly to allow magnetometer to calibrate itself on startup
  * @author George Rak
@@ -1127,7 +1116,7 @@ void QuarterbackTurret::calibMagnetometer() {
     int degreesMove = 360;
     targetTurretEncoderCount = (int) round((double) degreesMove * QB_COUNTS_PER_TURRET_DEGREE);
     turretMoving = true;
-    setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
+    setTurretSpeed(QB_HOME_MAG_SPEED * copysign(1, degreesMove));
     //Loop until the target encoder count has been achieved
     while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop()){
       // get X Y and Z data all at once
@@ -1161,7 +1150,7 @@ void QuarterbackTurret::calibMagnetometer() {
       //Serial.println();    
     }
 
-    setTurretSpeed(0, true);
+    setTurretSpeed(0);
 
     //Updating variables that will be used to handle other two possible sign cases for each value
     if ((mag_xMax+mag_xMin) < 0) {
@@ -1213,6 +1202,7 @@ void QuarterbackTurret::calibMagnetometer() {
     // delay(5000);
 }
 
+// TODO [2025-03-28]: rename? and change implementation to use BNO055
 /**
  * @brief Uses the data collected at calibration to calculate the current heading relative to magnetic north
  * @author George Rak
@@ -1275,6 +1265,7 @@ void QuarterbackTurret::calculateHeadingMag() {
 #pragma endregion
 
 #pragma region PID
+// TODO [2025-03-28]: rename?
 /**
  * @brief Checks if the turret should be held still and runs the PID loop setting turret speed equal to PWM value calculated
  * @author George Rak
@@ -1282,22 +1273,25 @@ void QuarterbackTurret::calculateHeadingMag() {
 */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
-    int maxSpeed = .2;
-    if (motor1Value > 25 || motor2Value > 25) {
-      //We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
+    float maxSpeed = .2;
+    if (uartSetupSuccessful && (this->motor1Value > 25 || this->motor2Value > 25)) {
+      // We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
       maxSpeed = .125;
     }
 
-    //Run the PID loop
-    turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, .2);
-    setTurretSpeed(turretPIDSpeed, true);
+    // Run the PID loop
+    turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, maxSpeed);
+    setTurretSpeed(turretPIDSpeed);
   }
 }
 
+// TODO [2025-03-28]: rename/refactor?
+// TODO:                generatePIDSpeed() perhaps?
 /**
  * @brief PID controller to hold the turret still (gains tuned, not calculated)
  * @author George Rak
  * @date 4-9-2024
+ * @param current the current heading in degrees 
 */
 float QuarterbackTurret::turretPIDController(float current, float target, float kp, float kd, float ki, float maxSpeed) {
   if (maxSpeed > .5) { maxSpeed = .5; }
@@ -1346,7 +1340,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     else if (u < -maxSpeed) { u = -maxSpeed; }
 
     // If PWM value is less than the minimum PWM value needed to move the robot, 
-    if (abs(u) < QB_MIN_PWM_VALUE) { u = 0.0; }
+    if (abs(u) < QB_PID_MIN_PWM_VALUE) { u = 0.0; }
 
     // If the robot gets within an acceptable range then send error etc to 0
     if (abs(e) < QB_TURRET_PID_THRESHOLD) {
@@ -1386,36 +1380,37 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 }
 #pragma endregion
 
-#pragma region Stabilization
+#pragma region UART
 /**
- * @brief Reads a UART communication from the other ESP mounted to the turret. This ESP currently provides the speed of both motors on the drivetrain so we know if the robot is moving
+ * @brief Reads a UART communication from the other ESP mounted to the turret. 
+ *        This ESP currently provides the speed of both motors on the drivetrain so we know if the robot is moving
  * @author George Rak
  * @date 5-14-2024
 */
 void QuarterbackTurret::updateReadMotorValues() {
   recievedMessage = "";
-  //While there are characters available in the buffer read each one individually
-  while (Uart_Turret.available()) {
-    char character = Uart_Turret.read();
-    //Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
-    //Since they are coming so fast and there is no need to remember past values only the most recent is kept
+  // While there are characters available in the buffer read each one individually
+  while (qbTurretUART.available()) {
+    char character = qbTurretUART.read();
+    // Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
+    // Since they are coming so fast and there is no need to remember past values only the most recent is kept
     if (character == '~') {
-      if (Uart_Turret.available()) {
+      if (qbTurretUART.available()) {
         recievedMessage = "";
       }
     } else {
       recievedMessage += character;
     }
   }
-  //The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
-  if (recievedMessage!="") {
+  // The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
+  if (recievedMessage != "") {
     if (recievedMessage == "DISCONNECTED") {
-      motor1Value = 100;
-      motor2Value = 100;
+      this->motor1Value = 100;
+      this->motor2Value = 100;
     } else {
       //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
-      motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
-      motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+      this->motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+      this->motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
   }
   // Serial.print("Motor1: ");
