@@ -5,6 +5,8 @@
 #include "PolarRobotics.h"
 #include "Utilities/PID.h"
 
+#include "Drive/DriveTypes.h"
+
 // Gyro Includes
 #include <Adafruit_MPU6050.h>
 #include <Wire.h>
@@ -80,22 +82,8 @@ class Drive {
     float turnSensitivityScalar = 0.0f;
     float domainAdjustment = 0.0f;
 
-    typedef enum {
-      idle,
-      positive,
-      negative,
-      tank_left,
-      tank_right,
-      positive_left,
-      positive_right,
-      negative_left,
-      negative_right,
-      hold_positive,
-      hold_negative,
-      hold_position_angle
-    } drive_state_t;
-
-    drive_state_t DriveState;
+    // DriveState - the current state of the DIFFERNETIAL drive system
+    differential_drive_state_t DriveState;
 
     //* DriveStraight:
     // Gyroscope

@@ -26,7 +26,7 @@
  */
 
 //! Must call base class constructor with appropriate arguments
-DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum) {
+DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::torquenado) {
   // initialize array
   for (int i = 0; i < MC_NUM_MOTORS; i++) {
     mecanumMotorPwr[i] = 0.0f;

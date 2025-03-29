@@ -5,7 +5,7 @@ motorTypeStrings[NUM_MOTOR_TYPES] = {
   { big_ampflow,      "big_ampflow"     },
   { small_ampflow,    "small_ampflow"   },
   { pancake_ampflow,  "pancake_ampflow" },
-  { mecanum,          "mecanum"         },
+  { torquenado,       "torquenado"      },
   { falcon,           "falcon"          },
   { small_12v,        "small_12v"       }
 };
@@ -37,7 +37,7 @@ coeffs_t getMotorCurveCoeff(MotorType motor, bool negativeDir){
     switch (motor) {
       case MotorType::big_ampflow: return {.0012f, .7895f};
       case MotorType::small_ampflow: return {1.0f, 1.0f};
-      case MotorType::mecanum: return {1.0f, 1.0f};
+      case MotorType::torquenado: return {1.0f, 1.0f};
       case MotorType::falcon: return {1.0f, 1.0f};
     }
   } else {
@@ -45,7 +45,7 @@ coeffs_t getMotorCurveCoeff(MotorType motor, bool negativeDir){
     switch (motor) {
       case MotorType::big_ampflow: return {.0087f, .5616f};
       case MotorType::small_ampflow: return {1.0f, 1.0f};
-      case MotorType::mecanum: return {1.0f, 1.0f};
+      case MotorType::torquenado: return {1.0f, 1.0f};
       case MotorType::falcon: return {1.0f, 1.0f};
     }
   }

@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "Drive/Drive.h"
 #include "Robot/MotorControl.h"
-#include "Drive.h"
 
 #pragma region Constructors
 
@@ -417,7 +416,7 @@ void Drive::printDebugInfo() {
     // Serial.println(requestedPower - currentRampPower[mtr], 10);
 
     Serial.print(F("  DriveState: "));
-    Serial.print(DriveState);
+    Serial.print(getDriveStateString(DriveState));
     Serial.print(F("  DriveStraight: "));
     Serial.print(drivingStraight ? F("true ") : F("false"));
     Serial.print(F("  currentAngleSpeed: "));
