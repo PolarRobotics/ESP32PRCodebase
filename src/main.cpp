@@ -128,7 +128,7 @@ void setup() {
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(PWM0_PIN, PWM1_PIN);
   }
 
   // drive->printSetup();

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Arduino.h>
+#include <Robot/PWM_Module.h>
 #include <PolarRobotics.h>
-// #include <MotorInterface.h>
-#include <MotorInterface.h>
+//#include <MotorInterface.h>
 
 
 // Enum for Increasing or Decreasing Flywheel Speed
@@ -17,8 +17,8 @@ private:
   float gear_ratio;     // the input / output gear ratio
 
   // Servo:
-  MotorInterface Motor;
-
+  //MotorInterface Motor;
+  PWM_Module Motor;
   // for ramp
   float requestedRPM;     
   float lastRampTime;

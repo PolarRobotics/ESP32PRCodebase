@@ -8,7 +8,7 @@ PWM_Module::PWM_Module() {
         this->motorIndex = 255;
 
     if(MotorCount == 0){
-        pwm.setPWMFreq(PWM_FREQ); // assign frequency to PWM module at first instance
+        pwm_test_module.setPWMFreq(PWM_FREQ); // assign frequency to PWM module at first instance
     }
 }
 
@@ -17,13 +17,13 @@ uint8_t PWM_Module::attach(int pin, int min = MIN_PWM_US, int max = MAX_PWM_US) 
         motors[this->motorIndex].pin = pin;                  // assign this servo a pin
         this->min = min; 
         this->max = max;
-        pwm.setPWM(this->motorIndex, 0, 0); // No need to set channel
+        pwm_test_module.setPWM(this->motorIndex, 0, 0); // No need to set channel
     }
     return this->motorIndex;
 }
 
 void PWM_Module::write(float pwr) {
-    pwm.setPWM(this->motorIndex, 0, power2Duty(pwr));
+    pwm_test_module.setPWM(this->motorIndex, 0, power2Duty(pwr));
 }
 
 uint16_t PWM_Module::power2Duty(float power) {

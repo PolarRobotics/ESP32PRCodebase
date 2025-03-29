@@ -3,7 +3,6 @@
 #ifndef KICKER_H
 #define KICKER_H
 
-#include <MotorInterface.h>
 #include <Robot/Robot.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>

@@ -31,6 +31,8 @@
 #define M2_PIN 33 // | rightMotor | rightFront |
 #define M3_PIN 26 // |    N/A     | leftRear   |
 #define M4_PIN 27 // |    N/A     | rightRear  |
+#define PWM0_PIN 0
+#define PWM1_PIN 1
 
 // Pins for special bot features, conveyor, flywheels, etc...
 #define SPECBOT_PIN1 18
