@@ -19,10 +19,9 @@
 // can make this value closer to 2000us if we have issues with the ST not updating fast enough
 #define PWM_PERIOD 0.0025   // 2500 us
 #define PWM_FREQ 1/PWM_PERIOD
-#ifndef PWM_MODULE
-#define PWM_MODULE
-Adafruit_PWMServoDriver pwm_test_module = Adafruit_PWMServoDriver(PWM_ADDRESS);
-#endif
+
+extern Adafruit_PWMServoDriver pwm_test_module; // Declare as extern
+
 typedef struct servo{
     uint8_t pin;
 }servo_t;
