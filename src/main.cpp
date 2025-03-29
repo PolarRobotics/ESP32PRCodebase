@@ -124,7 +124,9 @@ void setup() {
         SPECBOT_PIN4, // magnetometer scl
         ENC1_CHA, // turret encoder
         ENC1_CHB, // turret encoder
-        ENC2_CHB  // zeroing laser
+        ENC2_CHB, // zeroing laser
+        UART_RX2,
+        UART_TX2
       );
       drive = new Drive(); // TODO: instantiate this to prevent PrintSerial from causing NPE/crash
       break;
