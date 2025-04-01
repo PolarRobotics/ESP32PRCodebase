@@ -35,7 +35,9 @@ void APS::I2CSetup() {
   i2c_set_timeout((i2c_port_t)I2C_PORT_NUMBER,
                   (I2C_APB_CLK_FREQ / Config.master.clk_speed) * 1024);
 
-  vTaskDelay(750 / portTICK_PERIOD_MS);
+  // vTaskDelay puts the current method into blocked 
+  // mode, runs other things in the meantime
+  vTaskDelay(750 / portTICK_PERIOD_MS); 
 };
 
 /**
