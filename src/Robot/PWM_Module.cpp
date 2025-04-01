@@ -2,7 +2,8 @@
 #include <Robot/PWM_Module.h>
 
 // Define the pwm_test_module variable
-Adafruit_PWMServoDriver pwm_test_module = Adafruit_PWMServoDriver(PWM_ADDRESS);
+// Adafruit_PWMServoDriver pwm_test_module = Adafruit_PWMServoDriver(PWM_ADDRESS);
+// Adafruit_PWMServoDriver PWM_Module::pwm_test_module = Adafruit_PWMServoDriver(PWM_ADDRESS);
 
 PWM_Module::PWM_Module() {
     if(MotorCount < MAX_NUM_MOTORS)
@@ -11,6 +12,8 @@ PWM_Module::PWM_Module() {
         this->motorIndex = 255;
 
     if(MotorCount == 0){
+        pwm_test_module = Adafruit_PWMServoDriver(PWM_ADDRESS);
+        pwm_test_module.begin(); // initialize the PWM module
         pwm_test_module.setPWMFreq(PWM_FREQ); // assign frequency to PWM module at first instance
     }
 }
