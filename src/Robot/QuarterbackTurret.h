@@ -15,6 +15,7 @@
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h>        // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
+#include <Utilities/APS.h>        // Absolute Positioning System
 #include <Adafruit_LIS3MDL.h>     // Magnetometer
 #include <HardwareSerial.h>       // For ESP-to-ESP UART
 
