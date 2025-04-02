@@ -244,14 +244,10 @@ class QuarterbackTurret : public Robot {
     // * see also header [[Public Encoder State Variables for ISR]]
     // targetTurretEncoderCount       default = 0. complementary to [currentTurretEncoderCount]
     // errorEncoderCount              the error [currentTurretEncoderCount - targetTurretEncoderCount]
-    // slopError                      any error due to mechanical backlash in the gears, set by robot during homing / reset
-    // stopError                      number of encoder counts needed for motor to stop moving
     // turretMoving                   set to true when the turret is moving asynchronously or in the normal program
     // manualHeadingIncrementCount    default = 0
     int32_t targetTurretEncoderCount;
     int32_t errorEncoderCount;
-    int32_t slopError;                // TODO: remove with new encoder
-    int32_t stopError;                // TODO: remove with new encoder (?)
     bool turretMoving;
     uint8_t manualHeadingIncrementCount;
 
