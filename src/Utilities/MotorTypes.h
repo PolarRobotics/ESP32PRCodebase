@@ -26,8 +26,8 @@ const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
   3500, // index 2 24v AmpFlow motor P40-350-24
   6000, // index 3 small 12v mecanum motors
   6380, // index 4 the falcon motors on the runningback
-  6700, // index 4 the falcon motors on the runningback
-  4000  // index 5 //!TEMP, NEED TO CONFIRM NUMBER the small 12v motors on the old robots
+  6700, // index 5 for the neo vortex motors on the new runningback
+  4000  // index 6 //!TEMP, NEED TO CONFIRM NUMBER the small 12v motors on the old robots
 };
 
 const char* getMotorTypeString(MotorType type);

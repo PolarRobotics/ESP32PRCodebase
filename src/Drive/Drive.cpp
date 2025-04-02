@@ -408,7 +408,7 @@ void Drive::update() {
     // !TODO Clean up when robots are rewired:
     if (this->motorType == falcon) {
         // Generate turning motion
-        generateMotionValues();
+        generateMotionValues(RB_TANK_MODE_PCT);
         //printDebugInfo();
 
         // calculate the value to set to the motors to based on the acceleration rate
@@ -430,7 +430,7 @@ void Drive::update() {
     }
     else { // CASE FOR ANY OTHER ROBOT
         // Generate turning motion
-        generateMotionValues(RB_TANK_MODE_PCT);
+        generateMotionValues();
         //printDebugInfo();
 
         // calculate the value to set to the motors to based on the acceleration rate
