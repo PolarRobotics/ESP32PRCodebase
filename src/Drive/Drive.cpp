@@ -406,7 +406,7 @@ void Drive::printCsvInfo() {
 */
 void Drive::update() {
     // !TODO Clean up when robots are rewired:
-    if (this->botType == runningback) {
+    if (this->motorType == falcon) {
         // Generate turning motion
         generateMotionValues();
         //printDebugInfo();

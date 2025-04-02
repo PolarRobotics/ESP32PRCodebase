@@ -61,7 +61,7 @@ typedef struct BotConfig {
   // BotType secondary_type;
 } bot_config_t;
 
-#define NUM_BOTS 20
+#define NUM_BOTS 21
 
 // Bot Aliases
 #define BOT_IPP            0
@@ -93,6 +93,7 @@ typedef struct BotConfig {
 #define BOT_420            17
 #define BOT_24             18
 #define BOT_25             19
+#define BOT_1_21           20 
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
@@ -117,7 +118,8 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 16, "l-man-v1",  lineman,            { small_12v,      1.0f,      11.00f,  9.00f,  36.00f }},  //* 16: generic lineman V1
   { 17, "420",       lineman,            { small_12v,      1.0f,      11.00f,  5.50f,  18.00f }},  //* 17: 420 
   { 18, "24",        lineman,            { small_12v,      1.0f,      11.00f,  5.50f,  18.00f }},  //* 18: 24 
-  { 19, "25",        lineman,            { small_12v,      1.0f,      11.00f,  5.50f,  18.00f }}   //* 19: 25
+  { 19, "25",        lineman,            { small_12v,      1.0f,      11.00f,  5.50f,  18.00f }},  //* 19: 25
+  { 20, "1.21",      runningback,        { neo_vortex,     0.4f,       8.00f,  6.00f,  36.00f }}   //* 19: 1.21 (new RB)
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break
