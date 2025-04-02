@@ -3,6 +3,8 @@
 #ifndef _DRIVE_TYPES_H
 #define _DRIVE_TYPES_H
 
+#define NUM_DRIVE_TYPES 5 // this number MUST match the number of drive types in the enum below
+
 typedef enum {
   none,         // no drive type, used for robots that dont need to move on the ground (i.e. QB turret)
   differential, // for two-powered wheel configurations (default config for most robots)
@@ -13,7 +15,7 @@ typedef enum {
   omni          // for wheels in an omni configuration (i.e. 4 omni wheels)
 } drive_type_t;
 
-#define NUM_DIFF_DRIVE_STATES 12 // this number MUST match the number of states in the enum below
+#define NUM_DRIVE_STATES 12 // this number MUST match the number of states in the enum below
 
 typedef enum {
   idle,
@@ -29,6 +31,8 @@ typedef enum {
   hold_negative,
   hold_position_angle
 } differential_drive_state_t;
+
+const char* getDriveTypeString(drive_type_t drive_type);
 
 const char* getDriveStateString(differential_drive_state_t state);
 
