@@ -17,17 +17,23 @@
  * Intended behavior is for the robot to turn on, wind the arm until it hits the limit switch, and
  * then fall back a certain number of degrees (~15 degrees for now).
  * 
- * @param kickerPin The pin of the kicker arm's motor
+ * @param triggerMotorPin The pin of the kicker arm's motor
  * @param limitSwitchPin the pin of the kicker arm's limit switch
  * @param kickerEncoderPinA The pin of signal A from the encoder
  * @param kickerEncoderPinB THe pin of signal B from the encoder
  */
-Kicker::Kicker(uint8_t kickerPin, uint8_t limitSwitchPin, uint8_t kickerEncoderPinA, uint8_t kickerEncoderPinB) {
+Kicker::Kicker(uint8_t triggerMotorPin, uint8_t limitSwitchPin, uint8_t kickerEncoderPinA, uint8_t kickerEncoderPinB) {
+  // Safety Setup
   enabled = false;
-  this->kickerPin = kickerPin;
-  this->limitSwitchPin = limitSwitchPin;
-  windupMotor.setup(kickerPin, small_12v);
   this->dbEnable = new Debouncer(KICKER_ENABLE_DB_DELAY);
+  this->dbHome = new Debouncer(KICKER_ENABLE_DB_DELAY);
+
+  // Motor Setup
+  this->triggerMotorPin = triggerMotorPin;
+  this->limitSwitchPin = limitSwitchPin;
+
+  //* Note: trigger motor is not actually a small_12v motor, but close enough at least for now
+  triggerMotor.setup(triggerMotorPin, small_12v); 
   
   // Encoder Setup
   this->kickerEncoderPinA = kickerEncoderPinA;
@@ -67,19 +73,31 @@ void Kicker::kickerEncoderISR() {
 void Kicker::action() {
   // Control the motor on the kicker manually
   if (enabled) {
-    if (dbEnable->debounceAndPressed(ps5.Circle()))
+    if (dbEnable->debounceAndPressed(ps5.Square())) {
       enabled = false;
-    else if (ps5.Triangle())
+    }
+    // else if (dbHome->debounceAndPressed(ps5.Circle())) {
+    //   homeTriggerMotor();
+    // }
+    else if (ps5.Triangle()) { // not a macro
       turnForward();
-    else if (ps5.Cross())
+    }
+    else if (ps5.Cross()) {
       turnReverse();
-    else
+    }
+    else {
       stop();
-    
-    Serial.println(F("kicker enabled"));
+    }
   } else {
-    if (dbEnable->debounceAndPressed(ps5.Circle()))
+    if (dbEnable->debounceAndPressed(ps5.Square())) {
       enable();
+      Serial.println(F("kicker enabled"));
+    } 
+    // else if (dbHome->debounceAndPressed(ps5.Circle())) {
+    //   enable();
+    //   Serial.println(F("kicker enabled"));
+    //   homeTriggerMotor();
+    // }
   }
 }
 
@@ -93,54 +111,58 @@ void Kicker::enable() {
 }
 
 /**
- * @brief Turns motor forward
+ * @brief Turns motor "forward" (away from the limit switch)
  * 
- * Turns the motor forward by writing the windupMotor SPECBOT_1 (D18) pin to -1
+ * Turns the motor forward by writing the triggerMotor SPECBOT_1 (D18) pin to -1
  */
 void Kicker::turnForward() {
   if (enabled) {
-    windupMotor.write(-1);
+    triggerMotor.write(1);
+    printCurrentAngle();
   }
 }
 
 /**
- * @brief Turns motor reverse
+ * @brief Turns motor "backwards" (towards the limit switch)
  * 
- * Turns the motor backwards by writing the windupMotor SPECBOT_1 (D18) pin to 1
+ * Turns the motor backwards by writing the triggerMotor SPECBOT_1 (D18) pin to 1
  */
 void Kicker::turnReverse() {
   if (enabled) {
-    windupMotor.write(1);
+    triggerMotor.write(-1);
+    printCurrentAngle();
   }
 }
 
 /**
  * @brief Stop Motor
  * 
- * Stops the motor by writing the windupMotor SPECBOT_1 (D18) pin to 0
+ * Stops the motor by writing the triggerMotor SPECBOT_1 (D18) pin to 0
  */
 void Kicker::stop() {
   if (enabled) {
-    windupMotor.write(0);
+    triggerMotor.write(0);
   }
 }
 
 /**
- * @brief Automatically Wind on Startup
+ * @brief Home/zero trigger motor
  * @author Corbin Hibler
  * 
- * This function will run when the kicker starts. It will automatically wind the kicker arm
- * to a certain level until it hits the limit switch. Then it will automatically adjust to a certain
- * degree from the zero point (where the limit switch is).
+ * This function is used to home/zero the trigger motor (for the release mechanism) on startup.
+ * First, it will move the kicker motor until it hits the limit switch.
+ * Then it will adjust to a certain degree from the zero point (where the limit switch is).
  * 
  */
-void Kicker::homeKickingArm() {
-  while(digitalRead(limitSwitchPin) == 0) {
-    windupMotor.write(0.5);
+void Kicker::homeTriggerMotor() {
+  while (digitalRead(limitSwitchPin) == 0) {
+    triggerMotor.write(-KICKER_HOMING_SPEED);
   }
   stop();
-  angleZero = getCurrentAngle();
-  adjustAngle(15);
+
+  // update angle, then back off 15 degrees.
+  triggerMotorHomeAngle = getCurrentAngle();
+  adjustAngle(15); 
 }
 
 /**
@@ -161,11 +183,11 @@ void Kicker::homeKickingArm() {
  * @param angle The angle that you want to add to the current angle of the kicker arm.
  */
 void Kicker::adjustAngle(int angle) {
-  uint16_t desiredAngle = angleZero + angle;
+  uint16_t desiredAngle = triggerMotorHomeAngle + angle;
 
   // Keep rotating until desiredAngle is reached
   while (getCurrentAngle() < desiredAngle) {
-    windupMotor.write(-0.5);
+    triggerMotor.write(KICKER_HOMING_SPEED);
   }
   stop();
 }
@@ -186,4 +208,9 @@ void Kicker::adjustAngle(int angle) {
 uint16_t Kicker::getCurrentAngle() {
   uint16_t currentAngle = currentKickerEncoderCount / KICKER_COUNTS_PER_ARM_DEGREE;
   return currentAngle;
+}
+
+void Kicker::printCurrentAngle() {
+  Serial.print(F("Current Kicker Trigger Motor Encoder Angle:"));
+  Serial.println(getCurrentAngle());
 }

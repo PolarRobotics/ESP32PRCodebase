@@ -13,6 +13,9 @@
 
 #define KICKER_ENABLE_DB_DELAY 100L
 
+// Motor Speeds
+#define KICKER_HOMING_SPEED 0.5
+
 /**
  * @brief Kicker V2 Class
  * 
@@ -25,33 +28,37 @@
 class Kicker : public Robot {
 private:
   bool enabled; // Safety feature to ensure robot does not act when it is not supposed to.
-  u_int16_t angleZero; // Angle of the limit switch.
-  uint8_t kickerPin; // Pin to control the motor of the kicker arm
-  uint8_t limitSwitchPin; // Pin to connect to the limit switch
-  static uint8_t kickerEncoderPinA; // Signal Pin for channel A of the encoder
-  static uint8_t kickerEncoderPinB; // Signal Pin for channel B of the encoder
-  static uint8_t kickerEncoderStateB; // Keeps track of the current state of channel B
-  static int32_t currentKickerEncoderCount; // Encoder count of kicker arm motor encoder
-  MotorControl windupMotor; // MotorControl instantation for the kicker arm motor
-
   Debouncer* dbEnable;
+  Debouncer* dbHome;
+
+  MotorControl triggerMotor;      // on the Kicker V2, this is the motor that releases the mechanism to fire the arm
+                                  //* negative is towards limit switch, positive is away from limit switch
+  uint16_t triggerMotorHomeAngle; // Angle of the motor when at the limit switch (zeroed/homed).
+  uint8_t triggerMotorPin;        // Pin to control the motor of the kicker arm
+  uint8_t limitSwitchPin;         // Pin to connect to the limit switch
+
+  static uint8_t kickerEncoderPinA;         // Signal Pin for channel A of the encoder
+  static uint8_t kickerEncoderPinB;         // Signal Pin for channel B of the encoder
+  static uint8_t kickerEncoderStateB;       // Keeps track of the current state of channel B
+  static int32_t currentKickerEncoderCount; // Encoder count of kicker arm motor encoder
 
 public:
   Kicker(
-    uint8_t kickerPin, // Pin to control the motor of the kicker arm
-    u_int8_t limitSwitchPin, // Pin to connect to the limit switch
+    uint8_t triggerMotorPin, // Pin to control the motor of the kicker arm
+    uint8_t limitSwitchPin, // Pin to connect to the limit switch
     uint8_t kickerEncoderPinA, // Signal Pin for channel A of the encoder
-    u_int8_t kickerEncoderPinB // Signal Pin for channel B of the encoder
+    uint8_t kickerEncoderPinB // Signal Pin for channel B of the encoder
   );
   void action() override; //! robot subclass must override action
   void enable();
   void turnForward();
   void turnReverse();
   void stop();
-  void homeKickingArm();
+  void homeTriggerMotor();
   void adjustAngle(int angle);
   static void kickerEncoderISR();
   uint16_t getCurrentAngle();
+  void printCurrentAngle();
 };
 
 #endif // KICKER_H
