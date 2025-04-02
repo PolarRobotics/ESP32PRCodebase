@@ -94,8 +94,8 @@ QuarterbackTurret::QuarterbackTurret(
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
   // initiate motor objects
-  cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
-  turretMotor.setup(turretPin, falcon); // TODO: add encoder // 2025-03-28: to what?
+  cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged // [2025-03-28]: asked rhys if should or no
+  turretMotor.setup(turretPin, falcon);
   assemblyMotor.setup(assemblyPin, small_12v);
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
@@ -693,7 +693,7 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight); 
-  int16_t targetRelativeHeading = (getCurrentRelativeHeading() + 130) % 360; // TODO [2025-03-28]: 
+  int16_t targetRelativeHeading = (getCurrentRelativeHeading() + 130) % 360; // TODO [2025-04-02]: accidental name conflict, fix/reeval usage
   calculateHeadingMag();
   targetAbsoluteHeading = headingDeg + 180;
   targetAbsoluteHeading %= 360;
@@ -748,7 +748,6 @@ void QuarterbackTurret::testRoutine() {
   this->runningMacro = false;
 }
 
-// TODO [2025-03-28]: refactor this big time
 void QuarterbackTurret::zeroTurret() {
   this->runningMacro = true;
 
@@ -960,16 +959,14 @@ void QuarterbackTurret::zeroTurret() {
   this->runningMacro = false;
 }
 
-// TODO [2025-03-28]: revise this?
 void QuarterbackTurret::reset() {
   this->enabled = true;
   this->runningMacro = true;
-  moveCradle(back, true); // force
-  aimAssembly(straight);
+  moveCradle(back, true); // force and block until done (currently 750 ms, see QB_CRADLE_TRAVEL_DELAY)
+  aimAssembly(straight, true); // force and block until done (currently 200 ms, see QB_ASSEMBLY_TILT_DELAY)
   // loadFromCenter();
-  zeroTurret(); // temp: just zero
+  zeroTurret(); //* note: sets runningMacro to false, so don't need to
   this->initialized = true;
-  this->runningMacro = false;
 }
 #pragma endregion
 
