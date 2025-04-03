@@ -47,16 +47,16 @@ enum FlywheelSpeed {
   slow_inwards,        // for intaking the ball (from the center)
   stopped,             // zero
   slow_outwards,       // for handoff maneuver to a running back directly behind the QB
-  stack_pass_outwards, // for handoff maneuver to a *second* running back stacked *behind* a running back directly behind the QB
+  // stack_pass_outwards, // for handoff maneuver to a *second* running back stacked *behind* a running back directly behind the QB
   lvl1_outwards,       // for 6' pass for combine
   lvl2_outwards,       // for 12' pass for combine
   lvl3_outwards,       // for 18' pass for combine
   maximum              // 100% power
 };
-#define QB_TURRET_NUM_SPEEDS 8
-// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.15, 0.225, 0.35, 0.45, 1.0}; // with top prongs
-const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.15, 0.215, 0.31, 0.3875, 1.0}; // without top prongs
-// TODO: test/tune stack_pass_outwards speed 
+#define QB_TURRET_NUM_SPEEDS 7
+#define QB_MIN_FW_SPD 0.1 // minimum flywheel speed, lower than this and it will not work
+// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.225, 0.35, 0.45, 1.0}; // with top prongs
+const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-QB_MIN_FW_SPD, 0, QB_MIN_FW_SPD, 0.215, 0.31, 0.3875, 1.0}; // without top prongs
 
 //================================//
 //  Debounce and Delay Constants  //
