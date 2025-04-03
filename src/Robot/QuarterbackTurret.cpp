@@ -693,7 +693,7 @@ void QuarterbackTurret::loadFromCenter() {
 void QuarterbackTurret::handoff() {
   this->runningMacro = true;
   aimAssembly(straight); 
-  int16_t targetRelativeHeading = (getCurrentRelativeHeading() + 130) % 360; // TODO [2025-04-02]: accidental name conflict, fix/reeval usage
+  int16_t targetRelativeHeading = (getCurrentRelativeHeading() + 160) % 360; // TODO [2025-04-02]: accidental name conflict, fix/reeval usage
   calculateHeadingMag();
   targetAbsoluteHeading = headingDeg + 180;
   targetAbsoluteHeading %= 360;
@@ -714,8 +714,10 @@ void QuarterbackTurret::handoff() {
     cradleActuator.write(1.0);
     delay(2000);
   } else {
-    targetRelativeHeading += 10;
-    targetRelativeHeading %= 360;
+    // Serial.print(F("targ rel hd"));
+    // Serial.println(targetRelativeHeading);
+    // targetRelativeHeading += 10;
+    // targetRelativeHeading %= 360;
     moveTurretAndWait(targetRelativeHeading);
     cradleActuator.write(1.0);
     setFlywheelSpeedStage(slow_outwards);
