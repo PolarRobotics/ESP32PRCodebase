@@ -65,6 +65,8 @@ const char* macTest2 = "bc:c7:46:04"; // length 11
 const char* RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
 const char* _1_21_Controller = "14:3a:9a:86:02:ee"; // length 17 "14:3a:9a:86:02:ee"
 const char* NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
+// another new controller (currently unlabeled): 14:3a:9a:e5:0e:6a
+// TODO: convert this to an array (or multiple since there are diff. length strings)
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -233,14 +235,16 @@ void activatePairing(bool doRePair, int discoverTime) {
         Serial.print(F(" | "));
         Serial.println(device->getRSSI());
 
+        // do not use addrCharPtr, re-call `addr.toString().c_str()` each time
+        // if you don't, it won't work with the newer controllers
         if (
-          addressIsController(addrCharPtr) || 
+          addressIsController(addr.toString().c_str()) || 
           (strcmp(device->getName().c_str(), "Wireless Controller") == 0) ||
           (strcmp(device->getName().c_str(), "DualSense Wireless Controller") == 0)
         ) {
           Serial.print(F("Connecting to PS5 Controller @ "));
-          Serial.println(addrCharPtr);
-          ps5.begin(addrCharPtr);
+          Serial.println(addr.toString().c_str());
+          ps5.begin(addr.toString().c_str());
           while (!ps5.isConnected()) {
             toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
