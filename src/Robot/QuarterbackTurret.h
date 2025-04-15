@@ -15,6 +15,7 @@
 #include <Robot/MotorControl.h>
 #include <ps5Controller.h>        // ESP PS5 library, access using global instance `ps5`
 #include <Utilities/Debouncer.h>
+#include <Utilities/PID.h>
 #include <Utilities/APS.h>        // Absolute Positioning System
 #include <Adafruit_LIS3MDL.h>     // Magnetometer
 #include <HardwareSerial.h>       // For ESP-to-ESP UART
@@ -77,6 +78,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-QB_MIN_FW_SPD, 0, QB_MIN_FW
 //        Speed Constants         //
 //================================//
 #define QB_PID_MIN_PWM_VALUE 0.1    // Small PWM signals fail to make the motor turn leading to error in PID calculations.
+#define QB_PID_MAX_PWM_VALUE 0.4     
 #define QB_ZERO_TURRET_SPEED 0.125  // speed to use while zeroing/homing the turret
 #define QB_DEFAULT_TURRET_SPEED 0.3 // default turret speed (percentage, positive/magnitude only) [0.0, 1.0]
 #define QB_HOME_MAG_SPEED 0.1       // turret speed to use while homing magnetometer
@@ -172,6 +174,25 @@ class QuarterbackTurret : public Robot {
     float stickTurret;
     float stickFlywheel;
 
+    //================================//
+    //    Control Input Debouncers    //
+    //================================//
+    Debouncer* dbShare;
+    Debouncer* dbOptions;
+    Debouncer* dbSquare;
+    Debouncer* dbDpadUp;
+    Debouncer* dbDpadDown;
+    Debouncer* dbDpadLeft;
+    Debouncer* dbDpadRight;
+
+    //===============================//
+    //    Macro Button Debouncers    //
+    //===============================//
+    //* used to set a delay that a button must be held in order to trigger a macro
+    Debouncer* dbCircle;
+    Debouncer* dbTriangle;
+    Debouncer* dbCross;
+
     //==============================//
     //     Autonomous Targeting     //
     //==============================//
@@ -260,35 +281,44 @@ class QuarterbackTurret : public Robot {
     
     //========================================//
     //   Absolute (World Relative) Headings   //
-    //========================================//
-    // currentAbsoluteHeading         
-    // targetAbsoluteHeading          
-    // turretLaserState               
+    //========================================//              
     int16_t currentAbsoluteHeading;   // default = 0
                                       // TODO: is unused, merge with headingRad/headingDeg
     int16_t targetAbsoluteHeading;    // default = 0
-    uint8_t turretLaserState;         // triggered or not 
-                                      // TODO: seems to be unused, remove?
 
-    //================================//
-    //    Control Input Debouncers    //
-    //================================//
-    Debouncer* dbShare;
-    Debouncer* dbOptions;
-    Debouncer* dbSquare;
-    Debouncer* dbDpadUp;
-    Debouncer* dbDpadDown;
-    Debouncer* dbDpadLeft;
-    Debouncer* dbDpadRight;
+    //=======================//
+    //    PID Controllers    //
+    //=======================//
+    // PID* velocityPID;
+    PID* absHeadingPID;
+    PID* relHeadingPID;
 
-    //===============================//
-    //    Macro Button Debouncers    //
-    //===============================//
-    //* used to set a delay that a button must be held in order to trigger a macro
-    Debouncer* dbCircle;
-    Debouncer* dbTriangle;
-    Debouncer* dbCross;
-    Debouncer* dbTurretInterpolator; // TODO: seems to be unused, remove?
+    // float velocity; // output of velocityPID
+
+    void updatePIDs(bool stabilizing = false); // calls loops on PIDs as appropriate
+
+#pragma region APS
+    //===================================//
+    //|                                 |//
+    //|   Absolute Positioning System   |//
+    //|                                 |//
+    //===================================//
+
+    bool useAbsolutePositioning = false; // set 'false' to disable the APS and its functions
+    
+    APS* aps;
+
+    int16_t currentAbsHeadingDeg;
+    int16_t targetAbsHeadingDeg;
+
+    int16_t currentRelHeadingDeg;
+    int16_t targetRelHeadingDeg;
+
+    void updateHeading();
+
+
+#pragma endregion
+
 
 #pragma region Magnetometer
     //==========================//
@@ -297,7 +327,7 @@ class QuarterbackTurret : public Robot {
     //|                        |//
     //==========================//
     Adafruit_LIS3MDL lis3mdl;           // magnetometer object
-    bool useAbsolutePositioning = false;        // set 'false' to disable the magnetometer and its functions
+    
     bool holdTurretStillEnabled = true; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
 
     //============================//
@@ -479,6 +509,7 @@ class QuarterbackTurret : public Robot {
     // setFlywheelSpeed               Sets the speed of the flywheels using stick inputs
     // setFlywheelSpeedStage          Set the speed as one of the defined enums
     // adjustFlywheelSpeedStage       Move to the next level up or down in the list of speeds
+    // setTargetHeadingDeg            Sets the target heading (relative or absolute depending on this->useAbsolutePositioning)
     void setTurretSpeed(float absoluteSpeed); 
     // TODO [2025-03-28]: probably refactor "relativeToRobot = true" to be inverse ("absolute = false")
     // TODO               or alternatively maybe detect automatically whether it should be used (?)
@@ -490,6 +521,7 @@ class QuarterbackTurret : public Robot {
     void setFlywheelSpeed(float absoluteSpeed); 
     void setFlywheelSpeedStage(FlywheelSpeed stage); 
     void adjustFlywheelSpeedStage(SpeedStatus speed);
+    void setTargetHeadingDeg(int16_t heading); 
 
     //===================================//
     //  Quarterback Automatic Targeting  //

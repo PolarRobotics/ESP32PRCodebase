@@ -82,7 +82,6 @@ QuarterbackTurret::QuarterbackTurret(
 
   // turret laser setup
   this->turretLaserPin = turretLaserPin;
-  this->turretLaserState = 0;
   pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
 
   // encoder setup
@@ -113,10 +112,31 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
   this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
-  // TODO [2025-03-28]: consider removing
-  // this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY); 
+  // PIDs
+  // ! TODO: the mins for these may need to be negative
+  this->absHeadingPID = new PID(
+    /* k_p */ 0.005,
+    /* k_i */ 0.0012, 
+    /* k_d */ 0.0, 
+    /* error_thresh */ QB_TURRET_PID_THRESHOLD,
+    /* output_min */ -QB_PID_MAX_PWM_VALUE, 
+    /* output_max */ QB_PID_MAX_PWM_VALUE
+  );
 
-  magnetometerSetup();
+  this->relHeadingPID = new PID( // these gains have not been tested for relative but should be fine
+    /* k_p */ 0.005,
+    /* k_i */ 0.0012, 
+    /* k_d */ 0.0, 
+    /* error_thresh */ QB_TURRET_PID_THRESHOLD,
+    /* output_min */ -QB_PID_MAX_PWM_VALUE, 
+    /* output_max */ QB_PID_MAX_PWM_VALUE
+  );
+
+  // APS
+  this->aps = new APS();
+  this->aps->initialize();
+
+  // magnetometerSetup(); // TODO [2025-04-14]: rm
 
   // UART
   if (QB_UART_ENABLED && uartPinRX != 0 && uartPinTX != 0) {
@@ -321,6 +341,49 @@ void QuarterbackTurret::action() {
   printDebug();
 }
 #pragma endregion
+
+/**
+ * @brief Updates the PID controllers for the turret heading.
+ * 
+ * @param stabilizing default false. set to true to limit the turret speed based on if it should only be auto-stabilizing.
+ *                    essentially if the robot is not actively receiving control input we don't want it to move too fast
+ */
+void QuarterbackTurret::updatePIDs(bool stabilizing) {
+  // update heading state
+  updateHeading();
+
+  // determine whether to limit speed if the base is moving
+  #define limitSpeed (uartSetupSuccessful && (this->motor1Value > 25 || this->motor2Value > 25)) // use a #define to avoid using memory
+  float maxSpeed = limitSpeed ? QB_REDUCED_STAB_SPEED : (stabilizing ? QB_DEFAULT_STAB_SPEED : QB_PID_MAX_PWM_VALUE);
+  // if limitSpeed is true then max speed is ^^ | else if stabilizing then max speed is ^^ | else max speed is ^^
+
+  float speed = 0.0;
+  if (useAbsolutePositioning) {
+    this->absHeadingPID->setMeasuredValue(currentAbsHeadingDeg);
+    speed = this->absHeadingPID->PIDLoop(targetAbsHeadingDeg);
+  } else {
+    this->relHeadingPID->setMeasuredValue(currentRelHeadingDeg);
+    speed = this->relHeadingPID->PIDLoop(targetRelHeadingDeg);
+  }
+
+  // deadband for min speed required to physically move turret (round to 0 or min speed)
+  if (abs(speed) < QB_PID_MIN_PWM_VALUE) {
+    if (abs(speed) > 0.5 * QB_PID_MIN_PWM_VALUE) {
+      speed = QB_PID_MIN_PWM_VALUE;
+    } else {
+      speed = 0.0;
+    }
+  }
+  setTurretSpeed(speed);
+}
+
+void QuarterbackTurret::updateHeading() {
+  if (useAbsolutePositioning) {
+    this->currentAbsHeadingDeg = this->aps->getHeading();
+  } else { // relative
+    this->currentRelHeadingDeg = getCurrentRelativeHeading();
+  }
+}
 
 // note that because the direction is flipped to be more intuitive for the driver,
 // the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
