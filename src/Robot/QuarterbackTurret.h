@@ -295,7 +295,7 @@ class QuarterbackTurret : public Robot {
 
     // float velocity; // output of velocityPID
 
-    void updatePIDs(bool stabilizing = false); // calls loops on PIDs as appropriate
+    void updatePIDsAndGo(bool stabilizing = false); // calls loops on PIDs as appropriate
 
 #pragma region APS
     //===================================//

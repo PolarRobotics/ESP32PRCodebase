@@ -269,9 +269,12 @@ void QuarterbackTurret::action() {
             }
           }
 
+          this->targetAbsHeadingDeg = this->targetRelativeHeading; // TODO [2025-04-16]: make sure this will work
+
           // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentRelativeHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
+          // turretPIDSpeed = turretPIDController((float)getCurrentRelativeHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+          // setTurretSpeed(turretPIDSpeed);
+          this->updatePIDsAndGo();
 
           // Serial.print(F("combine mode -- ctec = "));
           // Serial.print(currentTurretEncoderCount);
@@ -283,19 +286,21 @@ void QuarterbackTurret::action() {
         if (fabs(stickTurret) > STICK_DEADZONE) {
           // // Use absolute positioning and position-based control iff. magnetometer functionality is enabled
           //* Use absolute positioning if enabled (and hold turret still)
-          if (useAbsolutePositioning && holdTurretStillEnabled) {
+          if (useAbsolutePositioning /*&& holdTurretStillEnabled*/) {
             // only change position every 4 loops
             if (manualHeadingIncrementCount == 0) {
               targetAbsoluteHeading += (1 * copysign(1, stickTurret));
               targetAbsoluteHeading %= 360;
+              targetAbsHeadingDeg = targetAbsoluteHeading; // TODO [2025-04-16]: rm targetAbsoluteHeading later
             } else {
               manualHeadingIncrementCount++;
               manualHeadingIncrementCount %= 4;
             }
             //Serial.print(F("--target abs heading: "));
             //Serial.println(targetAbsoluteHeading);
-            calculateHeadingMag();
-            holdTurretStill();
+            // calculateHeadingMag();
+            // holdTurretStill();
+            this->updatePIDsAndGo();
           } 
           //* Use relative positioning and speed-based control
           else {
@@ -304,12 +309,14 @@ void QuarterbackTurret::action() {
         } else {
           //* If turret is not being controlled, hold turret still if absolute positioning is enabled
           if (useAbsolutePositioning && holdTurretStillEnabled) {
-            calculateHeadingMag();
-            holdTurretStill();
+            // calculateHeadingMag();
+            // holdTurretStill();
+            this->updatePIDsAndGo(true);
           } else {
             setTurretSpeed(0);
+            updateTurretMotionStatus();
           }
-          updateTurretMotionStatus();          
+          // updateTurretMotionStatus();          
         }
 
         // updateTurretMotionStatus();
@@ -343,12 +350,12 @@ void QuarterbackTurret::action() {
 #pragma endregion
 
 /**
- * @brief Updates the PID controllers for the turret heading.
+ * @brief Updates the PID controllers for the turret heading, then move the 
  * 
  * @param stabilizing default false. set to true to limit the turret speed based on if it should only be auto-stabilizing.
  *                    essentially if the robot is not actively receiving control input we don't want it to move too fast
  */
-void QuarterbackTurret::updatePIDs(bool stabilizing) {
+void QuarterbackTurret::updatePIDsAndGo(bool stabilizing) {
   // update heading state
   updateHeading();
 
@@ -368,7 +375,8 @@ void QuarterbackTurret::updatePIDs(bool stabilizing) {
 
   // deadband for min speed required to physically move turret (round to 0 or min speed)
   if (abs(speed) < QB_PID_MIN_PWM_VALUE) {
-    if (abs(speed) > 0.5 * QB_PID_MIN_PWM_VALUE) {
+    // if less than min val, round up if > 0.5x min val, round down otherwise
+    if (abs(speed) >= 0.5 * QB_PID_MIN_PWM_VALUE) {
       speed = QB_PID_MIN_PWM_VALUE;
     } else {
       speed = 0.0;
