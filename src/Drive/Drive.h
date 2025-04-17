@@ -7,6 +7,8 @@
 
 #include "Drive/DriveTypes.h"
 
+#include <ps5Controller.h>
+
 // Gyro Includes
 #include <Adafruit_MPU6050.h>
 #include <Wire.h>
@@ -14,6 +16,7 @@
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
 #endif // !NUM_MOTORS
+//#include <Utilities/Debouncer.h>
 
 // RAMP DEFINES
 // rate of change of power with respect to time when accelerating %power/10th of sec
@@ -106,6 +109,8 @@ class Drive {
     // unsigned long prev_integral_time;
     void calcTurning(float stickTrn, float fwdLinPwr);
 
+
+
   protected:
     MotorControl M1, M2;
     float stickForwardRev, stickTurn;
@@ -131,7 +136,7 @@ class Drive {
     Drive(BotType botType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2, bool hasGyro = false);
     void setupMotors(uint8_t lpin, uint8_t rpin);
     void setMotorType(MotorType motorType);
-    void setStickPwr(int8_t leftY, int8_t rightX);
+    void setStickPwr();
     float getForwardPower();
     float getTurnPower();
     void setSpeedScalar(Speed bns);

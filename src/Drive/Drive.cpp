@@ -142,11 +142,14 @@ void Drive::setMotorType(MotorType motorType) {
  * @param leftY the forward backward value from the left stick an unsigned 8-bit float (0 to 255)
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
 */
-void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
+void Drive::setStickPwr() {
     // left stick all the way forward is 0, backward is 255
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / 127.5f);
-    stickTurn = (rightX / 127.5f);
+    stickForwardRev = (ps5.LStickY() / 127.5f);
+    stickTurn = (ps5.RStickX() / 127.5f);
+
+    //  stickFlywheel = (ps5.LStickY() / 127.5f);
+    // stickTurret = (ps5.RStickX() / 127.5f);  
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -164,6 +167,9 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
       stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
     else if (stickTurn < 0)
       stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+
+
+    
 
 }
 
