@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <Wire.h>
 
 #define MAX_NUM_MOTORS 16
 
@@ -20,7 +21,6 @@
 #define PWM_PERIOD 0.0025   // 2500 us
 #define PWM_FREQ 1/PWM_PERIOD
 
-
 typedef struct servo{
   uint8_t pin;
 }servo_t;
@@ -30,18 +30,19 @@ static uint8_t MotorCount = 0;
 
 class PWM_Module{
 private:
-    Adafruit_PWMServoDriver pwm_test_module;
     uint8_t motorIndex;     // Index of the Motor
     int8_t min;             
     int8_t max;             // maximum PWM value, set based on motor driver (sabertooth is MIN_PWM_US)
     uint32_t tempTimeon;
     uint16_t power2Duty(float power);
+    static Adafruit_PWMServoDriver* pwm_test_module; // Singleton instance
 public:
     PWM_Module();
     uint8_t attach(int pin, int min, int max);
     void write(float power);
     void displayPinInfo();
     void writelow();
+    static Adafruit_PWMServoDriver* getPWMInstance(); // Method to get the instance
 };
 
 // extern Adafruit_PWMServoDriver PWM_Module::pwm_test_module; // Declare as extern
