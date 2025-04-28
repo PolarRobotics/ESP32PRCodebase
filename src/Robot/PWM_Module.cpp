@@ -43,7 +43,7 @@ void PWM_Module::write(float pwr) {
 uint16_t PWM_Module::power2Duty(float power) {
   // this can be written in compiler code, but we are trying to save on flash memory
   this->tempTimeon = (power + 1) * 500 + 1000;
-  return tempTimeon / PWM_PERIOD * PWM_MAXDUTY;
+  return tempTimeon / (PWM_PERIOD * 1000) * (PWM_MAXDUTY / 1000);
 }
 
 void PWM_Module::writelow() {
