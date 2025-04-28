@@ -20,8 +20,10 @@ PWM_Module::PWM_Module() {
   if(MotorCount == 0){
     getPWMInstance(); // initialize the PWM module
   }
-  if(MotorCount < MAX_NUM_MOTORS)
-    this->motorIndex = MotorCount++; // assign a servo index to this instance
+  if(MotorCount < MAX_NUM_MOTORS){
+    this->motorIndex = MotorCount; // assign a servo index to this instance
+    MotorCount++;
+  }
   else
     this->motorIndex = 255;
 }
