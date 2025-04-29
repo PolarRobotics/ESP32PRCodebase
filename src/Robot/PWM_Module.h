@@ -18,8 +18,8 @@
 #define PWM_MAXDUTY (1 << PWM_RES) - 1
 // a Period of 2500us for the sabertooth, gives the st enough time to react to inputs, 
 // can make this value closer to 2000us if we have issues with the ST not updating fast enough
-#define PWM_PERIOD 0.0025   // 2500 us
-#define PWM_FREQ 1/PWM_PERIOD
+#define PWM_PERIOD 0.002   // 2500 us
+#define PWM_FREQ 1/0.0022   // 
 
 typedef struct servo{
   uint8_t pin;

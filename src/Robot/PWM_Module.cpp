@@ -12,6 +12,7 @@ Adafruit_PWMServoDriver* PWM_Module::getPWMInstance() {
     pwm_test_module = new Adafruit_PWMServoDriver(PWM_ADDRESS);
     pwm_test_module->begin();
     pwm_test_module->setPWMFreq(PWM_FREQ); // Set frequency
+    pwm_test_module->setOscillatorFrequency(27000000);
   }
   return pwm_test_module;
 }
@@ -33,7 +34,7 @@ uint8_t PWM_Module::attach(int pin, int min = MIN_PWM_US, int max = MAX_PWM_US) 
     motors[this->motorIndex].pin = pin; // assign this servo a pin
     this->min = min; 
     this->max = max;
-    pwm_test_module->setPWM(this->motorIndex, 0, 0); // No need to set channel
+    pwm_test_module->setPWM(this->motorIndex, 0, power2Duty(0)); // No need to set channel
   }
   return this->motorIndex;
 }
@@ -45,7 +46,7 @@ void PWM_Module::write(float pwr) {
 uint16_t PWM_Module::power2Duty(float power) {
   // this can be written in compiler code, but we are trying to save on flash memory
   this->tempTimeon = (power + 1) * 500 + 1000;
-  return tempTimeon / (PWM_PERIOD * 1000) * (PWM_MAXDUTY / 1000);
+  return (tempTimeon / (PWM_PERIOD* 1000000)) * PWM_MAXDUTY;
 }
 
 void PWM_Module::writelow() {

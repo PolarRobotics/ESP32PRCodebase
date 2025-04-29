@@ -33,11 +33,13 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // for max range. You'll have to tweak them as necessary to match the servos you
 // have!
 #define SERVOMIN  1000 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  2000 // This is the 'maximum' pulse length count (out of 4096)
+#define SERVOMAX  3095 // This is the 'maximum' pulse length count (out of 4096)
 #define USMIN  4000 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  8000 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define PWM_PERIOD 0.0025   // 2500 us
 #define SERVO_FREQ 1/PWM_PERIOD
+#define PWM_RES 12 
+#define PWM_MAXDUTY (1 << PWM_RES) - 1
 
 // our servo # counter
 uint8_t servonum = 1;
@@ -84,18 +86,42 @@ void setServoPulse(uint8_t n, double pulse) {
   pwm.setPWM(n, 0, pulse);
 }
 
+uint16_t power2Duty(float power) {
+  // this can be written in compiler code, but we are trying to save on flash memory
+  float tempTimeon = (power + 1) * 500 + 1000;
+  return tempTimeon / (PWM_PERIOD * 1000000) * (PWM_MAXDUTY);
+}
+
 void loop() {
   // Drive each servo one at a time using setPWM()
-  Serial.println(servonum);
-  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
+  // Serial.println(servonum);
+  // for (uint16_t pulselen = SERVOMIN; pulselen < 2048; pulselen++) {
+  //   pwm.setPWM(servonum, 0, pulselen);
+  //   Serial.print("Pulse Length: ");
+  //   Serial.println(pulselen);
+  // }
+  // delay(500);
+  // for (uint16_t pulselen = 2048; pulselen > SERVOMIN; pulselen--) {
+  //   pwm.setPWM(servonum, 0, pulselen);
+  //   Serial.print("Pulse Length: ");
+  //   Serial.println(pulselen);
+  // }
 
-  delay(500);
-  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
 
-  delay(500);
+  // for(float i = -1; i < 1; i+=0.05){
+  //   Serial.print("i: ");
+  //   Serial.print(i);
+  //   Serial.print("  p2d: ");
+  //   Serial.println(power2Duty(i));
+  //   pwm.setPWM(1,0,power2Duty(i));
+  //   delay(100);
+  // }
+  // for(float i = 1; i > -1; i-=0.05){
+  //   pwm.setPWM(1,0,power2Duty(i));
+  //   delay(100);
+  // }
+
+  power2Duty(0.0f);
+  // delay(500);
 
 }
