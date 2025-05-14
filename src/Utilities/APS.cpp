@@ -3,7 +3,7 @@
 /**
  * This is the main initialize method that causes delays in the runtime.
  * Note: Blocking - must be called before using :)
- * 
+ *
  * @author Corbin Hibler
  * @date 2025-03-31
  */
@@ -17,7 +17,7 @@ void APS::initialize() {
  * Common I2C setup for communication with BNO055's SCL and SDA pins
  * Will be used regardless of BNO055 configuration, that can be changed
  * in the method BNOInit().
- * 
+ *
  * @author Corbin Hibler
  * @date 2025-03-31
  */
@@ -35,15 +35,15 @@ void APS::I2CSetup() {
   i2c_set_timeout((i2c_port_t)I2C_PORT_NUMBER,
                   (I2C_APB_CLK_FREQ / Config.master.clk_speed) * 1024);
 
-  // vTaskDelay puts the current method into blocked 
+  // vTaskDelay puts the current method into blocked
   // mode, runs other things in the meantime
-  vTaskDelay(750 / portTICK_PERIOD_MS); 
+  vTaskDelay(750 / portTICK_PERIOD_MS);
 };
 
 /**
  * Initialization of the BNO055 object
  * Important to keep this private, while APS is kept public
- * 
+ *
  * @author Corbin Hibler
  * @date 2025-03-31
  */
@@ -63,19 +63,19 @@ void APS::BNOInit() {
   /* Gyroscope is not accessible during compass mode. Compass mode
    is all we really need, and allows for true north and absolute orientation.
    If a future robot requires the gyroscope, please create an overloaded method
-   of this method. 
+   of this method.
   */
 }
 
 /**
  * Returns the compass heading from the Euler angle vector.
- * The Euler angle returned is on the alpha rotation plane, 
+ * The Euler angle returned is on the alpha rotation plane,
  * or the X, Y plane in Cartesian.
- * 
+ *
  * For some reason in the library this is called "x" which is
- * not very specific to Euler angles or the Cartesian plane, 
- * but it's not too important to worry about.
- * 
+ * not very specific to Euler angles, but it's not too
+ * important to worry about.
+ *
  * @author Corbin Hibler
  * @date 2025-03-31
  */
