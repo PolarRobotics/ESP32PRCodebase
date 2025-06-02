@@ -21,7 +21,7 @@ void setup() {
   #ifndef BOT_INDEX
     #define BOT_INDEX 0  // Default to 0 if not defined
   #endif
-  uint8_t index = BOT_INDEX;
+  uint8_t index = 15;
 
   //* CUSTOM BOT CONFIGURATION
   //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
