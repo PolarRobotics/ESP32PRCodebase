@@ -222,11 +222,23 @@ void QuarterbackTurret::action() {
             if (this->combinePosition == combineStraight) {
               this->combinePosition = combineLeft;
               // moveTurretAndWait(-45);
-              targetRelativeHeading = -45;
+              targetRelativeHeading = -43;
+              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * 1.5, true);
+              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+                // Run until turret reaches target position
+              }
+              setTurretSpeed(0,true);
             } else if (this->combinePosition == combineRight) {
               this->combinePosition = combineStraight;
               // moveTurretAndWait(0);
               targetRelativeHeading = 0;
+              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * -1.5, true);
+              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+                // Run until turret reaches target position
+              }
+              setTurretSpeed(0,true);
             }
           } 
           //* D-Pad Right: Move right one position
@@ -234,17 +246,29 @@ void QuarterbackTurret::action() {
             if (this->combinePosition == combineStraight) {
               this->combinePosition = combineRight;
               // moveTurretAndWait(45);
-              targetRelativeHeading = 45;
+              targetRelativeHeading = 43;
+              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
+              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+                // Run until turret reaches target position
+              }
+              setTurretSpeed(0,true);
             } else if (this->combinePosition == combineLeft) {
               this->combinePosition = combineStraight;
               // moveTurretAndWait(0);
               targetRelativeHeading = 0;
+              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
+              while ((currentTurretEncoderCount < targetTurretEncoderCount || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+                // Run until turret reaches target position
+              }
+              setTurretSpeed(0,true);
             }
           }
 
           // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
+          // turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+          // setTurretSpeed(turretPIDSpeed);
 
           // if (utmsCtr <= UTMS_CTR_MAX) {
           //   utmsCtr = 0;
@@ -880,7 +904,8 @@ void QuarterbackTurret::zeroTurret() {
 
   Serial.println(F("motor stopped, now moving in opposite direction"));
 
-  setTurretSpeed(-QB_HOME_PCT);
+  // Set turret speed to be slow in the opposite direction during the correction to reduce error
+  setTurretSpeed(-0.09); // This value seems to zero the turret the best
 
   // moving with a positive power increases the current encoder count, and vice versa
   // since we are moving with a negative power, the encoder count will be decreasing
