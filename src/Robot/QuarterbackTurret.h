@@ -361,6 +361,7 @@ class QuarterbackTurret : public Robot {
     int prevErrorVals[PID_ERROR_AVG_ARRAY_LENGTH] = { 0, 0, 0, 0, 0 };
     int prevErrorIndex = 0;
     bool firstAverage = true;
+    bool firstCombine;
     long previousTime = 0;
     float ePrevious = 0;
     float eIntegral = 0;
@@ -506,6 +507,8 @@ class QuarterbackTurret : public Robot {
     // handoff                    Hands the ball to the runningback
     void loadFromCenter();
     void handoff();
+    void combineMoveRight();
+    void combineMoveLeft();
     
     
     //==========================================//

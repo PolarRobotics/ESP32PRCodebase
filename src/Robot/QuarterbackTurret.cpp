@@ -179,6 +179,7 @@ void QuarterbackTurret::action() {
       if (dbShare->debounceAndPressed(ps5.Share())) {
         if (mode != combine) {
           switchMode(combine);
+          firstCombine = true;
           this->combinePosition = combineStraight;
           targetRelativeHeading = 0;
           zeroTurret();
@@ -216,59 +217,24 @@ void QuarterbackTurret::action() {
           // Overrides turret control
           // Allows switching between 3 different angles (left, straight, right)
           // Flywheel control is available as normal (set powers with override via stick)
+          if(firstCombine){
+            firstCombine = false;
+            combineMoveRight();
+            aimAssembly(angled);
+          }
 
           //* D-Pad Left: Move left one position
           if (dbDpadLeft->debounceAndPressed(ps5.Left())) {
-            if (this->combinePosition == combineStraight) {
-              this->combinePosition = combineLeft;
-              // moveTurretAndWait(-45);
-              targetRelativeHeading = -43;
-              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
-              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * 1.5, true);
-              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
-                // Run until turret reaches target position
-              }
-              setTurretSpeed(0,true);
-            } else if (this->combinePosition == combineRight) {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
-              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * -1.5, true);
-              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
-                // Run until turret reaches target position
-              }
-              setTurretSpeed(0,true);
-            }
+            combineMoveLeft();
           } 
           //* D-Pad Right: Move right one position
           else if (dbDpadRight->debounceAndPressed(ps5.Right())) {
-            if (this->combinePosition == combineStraight) {
-              this->combinePosition = combineRight;
-              // moveTurretAndWait(45);
-              targetRelativeHeading = 43;
-              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
-              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
-              while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
-                // Run until turret reaches target position
-              }
-              setTurretSpeed(0,true);
-            } else if (this->combinePosition == combineLeft) {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-              targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
-              setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
-              while ((currentTurretEncoderCount < targetTurretEncoderCount || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
-                // Run until turret reaches target position
-              }
-              setTurretSpeed(0,true);
-            }
+            combineMoveRight();
           }
 
           // Run the PID loop
-          // turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
-          // setTurretSpeed(turretPIDSpeed);
+          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+          setTurretSpeed(turretPIDSpeed);
 
           // if (utmsCtr <= UTMS_CTR_MAX) {
           //   utmsCtr = 0;
@@ -766,6 +732,54 @@ void QuarterbackTurret::handoff() {
   delay(2000);
   cradleActuator.write(0);
   this->runningMacro = false;
+}
+
+void QuarterbackTurret::combineMoveRight(){
+    if (this->combinePosition == combineStraight) {
+      this->combinePosition = combineRight;
+      // moveTurretAndWait(45);
+      targetRelativeHeading = 40;
+      targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+      setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
+      while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+        // Run until turret reaches target position
+      }
+      setTurretSpeed(0,true);
+    } else if (this->combinePosition == combineLeft) {
+      this->combinePosition = combineStraight;
+      // moveTurretAndWait(0);
+      targetRelativeHeading = 0;
+      targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+      setTurretSpeed(QB_HOME_MAG * copysign(1, -targetRelativeHeading), true);
+      while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+        // Run until turret reaches target position
+      }
+      setTurretSpeed(0,true);
+    }
+}
+
+void QuarterbackTurret::combineMoveLeft(){
+    if (this->combinePosition == combineStraight) {
+      this->combinePosition = combineLeft;
+      // moveTurretAndWait(-45);
+      targetRelativeHeading = -40;
+      targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+      setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * 1.5, true);
+      while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+        // Run until turret reaches target position
+      }
+      setTurretSpeed(0,true);
+    } else if (this->combinePosition == combineRight) {
+      this->combinePosition = combineStraight;
+      // moveTurretAndWait(0);
+      targetRelativeHeading = 0;
+      targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+      setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading) * -1.5, true);
+      while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+        // Run until turret reaches target position
+      }
+      setTurretSpeed(0,true);
+    }
 }
 
 void QuarterbackTurret::testRoutine() {
@@ -1361,7 +1375,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
     // Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e * .01;
+    eIntegral = eIntegral + e * .04;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
