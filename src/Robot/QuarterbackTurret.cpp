@@ -216,7 +216,10 @@ void QuarterbackTurret::action() {
           //* Combine "Macro" Mode
           // Overrides turret control
           // Allows switching between 3 different angles (left, straight, right)
-          // Flywheel control is available as normal (set powers with override via stick)
+          // Flywheel control is available (set powers with override via stick)
+          // Flywheel set speeds are specific for combine.
+          
+          // Set turret to start position (right) and angle the assembly, ready to be loaded.
           if(firstCombine){
             firstCombine = false;
             combineMoveRight();
@@ -647,9 +650,16 @@ void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed) {
 }
 
 void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage) {
-  targetFlywheelStage = stage;
-  setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
-  currentFlywheelStage = targetFlywheelStage;
+  // If in combine, use different preset flywheel speeds, which are set for combine distances
+  if(mode == combine){
+    targetFlywheelStage = stage;
+    setFlywheelSpeed(combineSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
+    currentFlywheelStage = targetFlywheelStage;
+  } else{
+    targetFlywheelStage = stage;
+    setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
+    currentFlywheelStage = targetFlywheelStage;
+  }
 }
 
 void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed) {
@@ -734,6 +744,11 @@ void QuarterbackTurret::handoff() {
   this->runningMacro = false;
 }
 
+/**
+ * @brief Moves turret to combine right position
+ * @author Kaiden Colish
+ * @date 2025-06-04
+*/
 void QuarterbackTurret::combineMoveRight(){
     if (this->combinePosition == combineStraight) {
       this->combinePosition = combineRight;
@@ -758,6 +773,11 @@ void QuarterbackTurret::combineMoveRight(){
     }
 }
 
+/**
+ * @brief Moves turret to combine left position
+ * @author Kaiden Colish
+ * @date 2025-06-04
+*/
 void QuarterbackTurret::combineMoveLeft(){
     if (this->combinePosition == combineStraight) {
       this->combinePosition = combineLeft;

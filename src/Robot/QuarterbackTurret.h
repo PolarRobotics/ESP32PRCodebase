@@ -46,9 +46,11 @@ enum FlywheelSpeed {
   slow_inwards, stopped, slow_outwards, lvl1_outwards, lvl2_outwards, lvl3_outwards, maximum
 };
 #define QB_TURRET_NUM_SPEEDS 7
+#define QB_TURRET_NUM_COMBINE_SPEEDS 5
 // const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.225, 0.35, 0.45, 1.0}; // with top prongs
-// Preset flywheel speed values. FOR COMBINE: 0.215 -> 6ft, 0.35 -> 12ft, 0.45 -> 18ft
-const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.35, 0.45, 1.0}; // without top prongs 
+// Preset flywheel speed values.
+const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}; // without top prongs 
+const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35, 0.45};      // combine speed values
 
 //================================//
 //  Debounce and Delay Constants  //
