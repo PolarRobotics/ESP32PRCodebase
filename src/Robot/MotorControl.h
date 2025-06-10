@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <PolarRobotics.h>
 // #include <MotorInterface.h>
-#include <SerialPWM.h>
+#include <Robot/SerialPWM.h>
 
 
 // Enum for Increasing or Decreasing Flywheel Speed
