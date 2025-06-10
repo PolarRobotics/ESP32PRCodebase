@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <PolarRobotics.h>
 // #include <MotorInterface.h>
-#include <MotorInterface.h>
+#include <SerialPWM.h>
 
 
 // Enum for Increasing or Decreasing Flywheel Speed
@@ -17,7 +17,7 @@ private:
   float gear_ratio;     // the input / output gear ratio
 
   // Servo:
-  MotorInterface Motor;
+  SerialPWM Motor;
 
   // for ramp
   float requestedRPM;     
