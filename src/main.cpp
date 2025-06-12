@@ -30,6 +30,12 @@
 #include <Drive/Drive.h>
 #include <Drive/DriveMecanum.h>
 
+#define SDA 21
+#define SCL 22
+#define ADDRESS 0x41
+#define I2C_FREQ 400000
+#define DATA_SIZE 4
+
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
@@ -50,6 +56,8 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
+
+void parseData(int x);
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -62,8 +70,8 @@ void onDisconnect();
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-  Wire.begin(21, 22, 400000);
-  Wire.setTimeOut(30);
+  Wire.begin(0x41, 21, 22, 400000);
+  Wire.onReceive(parseData);
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
@@ -278,5 +286,23 @@ void onDisconnect() {
       drive->emergencyStop();
     } else {
       ((QuarterbackTurret*) robot)->emergencyStop();
+    }
+}
+
+void parseData(int x){
+    while(Wire.available()){
+        int16_t combinedData = 0;
+        uint8_t data[DATA_SIZE] = {0,0};
+        for(int i = 0; i < DATA_SIZE; i++){
+            data[i] = Wire.read();
+        }
+        for(int i = 0; i < DATA_SIZE; i++){
+            Serial.printf("%x" ,data[i]);
+            Serial.print("  ");
+        }
+        combinedData = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3]);
+        // ledcWrite(0, combinedData);
+        Serial.print("RPM: ");
+        Serial.println(combinedData);
     }
 }

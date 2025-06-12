@@ -471,7 +471,7 @@ void Drive::update() {
     trackingMotorPower[0] = requestedMotorPower[0];
     trackingMotorPower[1] = requestedMotorPower[1];
 
-    getMotorSpeed();
+    // getMotorSpeed();
 }
 
 int Drive::getMotorWifiValue(int motorRequested) {
