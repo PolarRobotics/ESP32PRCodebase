@@ -33,7 +33,7 @@
 #define SDA 21
 #define SCL 22
 #define ADDRESS 0x41
-#define I2C_FREQ 400000
+#define I2C_FREQ 100000
 #define DATA_SIZE 4
 
 // Primary Parent Component Pointers
@@ -70,7 +70,7 @@ void parseData(int x);
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-  Wire.begin(0x41, 21, 22, 400000);
+  Wire.begin(ADDRESS, SDA, SCL, I2C_FREQ);
   Wire.onReceive(parseData);
 
   pinMode(LED_BUILTIN, OUTPUT);

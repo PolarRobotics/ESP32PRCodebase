@@ -25,5 +25,5 @@ void QuarterbackBase::updateWriteMotorValues() {
     UARTMessage = UARTMessage + "~";
     Uart_Base.print(UARTMessage);
     //Serial.print("Sent Message To ESP: ");
-    Serial.println(UARTMessage);
+    // Serial.println(UARTMessage);
 }
