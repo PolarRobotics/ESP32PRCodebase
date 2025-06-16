@@ -30,11 +30,7 @@
 #include <Drive/Drive.h>
 #include <Drive/DriveMecanum.h>
 
-#define SDA 21
-#define SCL 22
-#define ADDRESS 0x41
-#define I2C_FREQ 100000
-#define DATA_SIZE 4
+
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
@@ -56,8 +52,17 @@ ConfigManager config;
 void onConnection();
 void onDisconnect();
 
+#define NUM_CHARS 100
 
-void parseData(int x);
+void recvWithStartEndMarkers();
+void parseData();
+
+char receivedChars[NUM_CHARS];
+char tempChars[NUM_CHARS];
+bool newData = false;
+int PWM;
+int count;
+void parseData();
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -70,8 +75,8 @@ void parseData(int x);
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-  Wire.begin(ADDRESS, SDA, SCL, I2C_FREQ);
-  Wire.onReceive(parseData);
+  Serial2.begin(115200);
+  Serial2.setPins(16,-1,-1,-1);
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
@@ -237,7 +242,15 @@ void loop() {
     }
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
-
+    if(newData == true){
+        strcpy(tempChars,receivedChars);
+        parseData();
+        Serial.print("Count: ");
+        Serial.println(count);
+        Serial.print("Speed: ");
+        Serial.println(PWM);
+        newData = false;
+    }
     // DEBUGGING:  
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
@@ -289,20 +302,50 @@ void onDisconnect() {
     }
 }
 
-void parseData(int x){
-    while(Wire.available()){
-        int16_t combinedData = 0;
-        uint8_t data[DATA_SIZE] = {0,0};
-        for(int i = 0; i < DATA_SIZE; i++){
-            data[i] = Wire.read();
+void parseData() {      // split the data into its parts
+    char * strtokIndx; // this is used by strtok() as an index
+    // Serial.println("test");
+    strtokIndx = strtok(tempChars,",");
+    if(strtokIndx != NULL){
+        count = atoi(strtokIndx); 
+    }
+
+    strtokIndx = strtok(NULL,",");
+    if(strtokIndx != NULL){
+        PWM = atoi(strtokIndx);
+    }
+
+}
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+    
+    while (Serial2.available() > 0 && newData == false) {
+        // Serial.println("Data Received");
+        rc = Serial2.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= NUM_CHARS) {
+                    ndx = NUM_CHARS - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
         }
-        for(int i = 0; i < DATA_SIZE; i++){
-            Serial.printf("%x" ,data[i]);
-            Serial.print("  ");
+        
+        else if (rc == startMarker) {
+            recvInProgress = true;
         }
-        combinedData = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3]);
-        // ledcWrite(0, combinedData);
-        Serial.print("RPM: ");
-        Serial.println(combinedData);
     }
 }
