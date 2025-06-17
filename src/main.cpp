@@ -25,6 +25,7 @@
 #include <Robot/Quarterback.h>
 #include <Robot/QuarterbackBase.h>
 #include <Robot/QuarterbackTurret.h>
+#include <Robot/Encoder.h>
 
 // Drive Includes
 #include <Drive/Drive.h>
@@ -47,6 +48,9 @@ drive_param_t driveParams;
 // Config
 ConfigManager config;
 
+// Encoder
+Encoder* encoder;
+
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
 void onConnection();
@@ -60,8 +64,10 @@ void parseData();
 char receivedChars[NUM_CHARS];
 char tempChars[NUM_CHARS];
 bool newData = false;
-int PWM;
+int RPM;
 int count;
+int RPM2;
+int count2;
 void parseData();
 /*
    ____    _____   _____   _   _   ____
@@ -75,8 +81,10 @@ void parseData();
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-  Serial2.begin(115200);
-  Serial2.setPins(16,-1,-1,-1);
+  // Serial2.begin(115200);
+  // Serial2.setPins(16,-1,-1,-1);
+
+  encoder = new Encoder(115200,16,-1,2);
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
@@ -242,15 +250,30 @@ void loop() {
     }
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
-    if(newData == true){
-        strcpy(tempChars,receivedChars);
-        parseData();
-        Serial.print("Count: ");
-        Serial.println(count);
-        Serial.print("Speed: ");
-        Serial.println(PWM);
-        newData = false;
-    }
+    // recvWithStartEndMarkers();
+    // if(newData == true){
+    //     strcpy(tempChars,receivedChars);
+    //     parseData();
+    //     Serial.printf("Count 1: %10d\tCount 2: %10d\t", count, count2);
+    //     Serial.printf("Speed 1: %10d\tSpeed 2: %10d\n", RPM, RPM2);
+    //     newData = false;
+    // }
+    // else{
+    //   Serial.println("No Data");
+    // }
+
+    // Read encoder data
+    encoder->readData();
+    // Print encoder data to serial monitor
+    Serial.printf("Enc1 Counts: %d\t", encoder->getCounts(0));
+    Serial.printf("Enc1 Speed: %d\t", encoder->getSpeed(0));
+    Serial.printf("Enc2 Counts: %d\t", encoder->getCounts(1));
+    Serial.printf("Enc2 Speed: %d\n", encoder->getSpeed(1));
+
+    double circumference = 2*PI*1.925/12; // 1.925 inches is the diameter of the wheel, converted to feet
+    double distance = circumference * encoder->getCounts(0) / 4000; // 4000 counts per revolution for the encoder
+    Serial.printf("Distance traveled: %d feet\n", distance);
+  
     // DEBUGGING:  
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
@@ -312,8 +335,17 @@ void parseData() {      // split the data into its parts
 
     strtokIndx = strtok(NULL,",");
     if(strtokIndx != NULL){
-        PWM = atoi(strtokIndx);
+        RPM = atoi(strtokIndx);
     }
+    strtokIndx = strtok(NULL,",");
+    if(strtokIndx != NULL){
+        count2 = atoi(strtokIndx);
+    }
+    strtokIndx = strtok(NULL,",");
+    if(strtokIndx != NULL){
+        RPM2 = atoi(strtokIndx);
+    }
+
 
 }
 
