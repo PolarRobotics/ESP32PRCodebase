@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include <Sabertooth.h> // Sabertooth library for motor control, access using global instance `sabertooth`
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
@@ -63,6 +64,9 @@ void onDisconnect();
 void setup() {
   Serial.begin(115200);
 
+  Sabertooth::begin(); // Initialize Sabertooth for motor control
+  Sabertooth::setBaudRate(9600); // Set the baud rate for Sabertooth communication
+  
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
 
