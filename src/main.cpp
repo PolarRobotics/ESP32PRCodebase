@@ -56,19 +56,6 @@ Encoder* encoder;
 void onConnection();
 void onDisconnect();
 
-#define NUM_CHARS 100
-
-void recvWithStartEndMarkers();
-void parseData();
-
-char receivedChars[NUM_CHARS];
-char tempChars[NUM_CHARS];
-bool newData = false;
-int RPM;
-int count;
-int RPM2;
-int count2;
-void parseData();
 /*
    ____    _____   _____   _   _   ____
   / ___|  | ____| |_   _| | | | | |  _ \
@@ -81,8 +68,6 @@ void parseData();
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-  // Serial2.begin(115200);
-  // Serial2.setPins(16,-1,-1,-1);
 
   encoder = new Encoder(115200,16,-1,2);
 
@@ -250,29 +235,16 @@ void loop() {
     }
     //! Performs all special robot actions depending on the instantiated Robot subclass
     robot->action();
-    // recvWithStartEndMarkers();
-    // if(newData == true){
-    //     strcpy(tempChars,receivedChars);
-    //     parseData();
-    //     Serial.printf("Count 1: %10d\tCount 2: %10d\t", count, count2);
-    //     Serial.printf("Speed 1: %10d\tSpeed 2: %10d\n", RPM, RPM2);
-    //     newData = false;
-    // }
-    // else{
-    //   Serial.println("No Data");
-    // }
 
     // Read encoder data
     encoder->readData();
     // Print encoder data to serial monitor
     Serial.printf("Enc1 Counts: %d\t", encoder->getCounts(0));
-    Serial.printf("Enc1 Speed: %d\t", encoder->getSpeed(0));
+    Serial.printf("Enc1 Speed: %d\t", encoder->getRPM(0));
+    Serial.printf("Enc1 Distance: %f feet\t", encoder->calcDistance(0));
     Serial.printf("Enc2 Counts: %d\t", encoder->getCounts(1));
-    Serial.printf("Enc2 Speed: %d\n", encoder->getSpeed(1));
-
-    double circumference = 2*PI*1.925/12; // 1.925 inches is the diameter of the wheel, converted to feet
-    double distance = circumference * encoder->getCounts(0) / 4000; // 4000 counts per revolution for the encoder
-    Serial.printf("Distance traveled: %d feet\n", distance);
+    Serial.printf("Enc2 Speed: %d\n", encoder->getRPM(1));
+    Serial.printf("Enc2 Distance: %f feet\n", encoder->calcDistance(1));
   
     // DEBUGGING:  
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
@@ -322,62 +294,5 @@ void onDisconnect() {
       drive->emergencyStop();
     } else {
       ((QuarterbackTurret*) robot)->emergencyStop();
-    }
-}
-
-void parseData() {      // split the data into its parts
-    char * strtokIndx; // this is used by strtok() as an index
-    // Serial.println("test");
-    strtokIndx = strtok(tempChars,",");
-    if(strtokIndx != NULL){
-        count = atoi(strtokIndx); 
-    }
-
-    strtokIndx = strtok(NULL,",");
-    if(strtokIndx != NULL){
-        RPM = atoi(strtokIndx);
-    }
-    strtokIndx = strtok(NULL,",");
-    if(strtokIndx != NULL){
-        count2 = atoi(strtokIndx);
-    }
-    strtokIndx = strtok(NULL,",");
-    if(strtokIndx != NULL){
-        RPM2 = atoi(strtokIndx);
-    }
-
-
-}
-
-void recvWithStartEndMarkers() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char startMarker = '<';
-    char endMarker = '>';
-    char rc;
-    
-    while (Serial2.available() > 0 && newData == false) {
-        // Serial.println("Data Received");
-        rc = Serial2.read();
-
-        if (recvInProgress == true) {
-            if (rc != endMarker) {
-                receivedChars[ndx] = rc;
-                ndx++;
-                if (ndx >= NUM_CHARS) {
-                    ndx = NUM_CHARS - 1;
-                }
-            }
-            else {
-                receivedChars[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newData = true;
-            }
-        }
-        
-        else if (rc == startMarker) {
-            recvInProgress = true;
-        }
     }
 }

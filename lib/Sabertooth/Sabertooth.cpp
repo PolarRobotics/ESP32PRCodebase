@@ -88,12 +88,12 @@ void Sabertooth::stop() const
 
 void Sabertooth::setMinVoltage(byte value) const
 {
-  command(2, (byte)min(value, 120));
+  command(2, (byte)min((int)value, 120));
 }
 
 void Sabertooth::setMaxVoltage(byte value) const
 {
-  command(3, (byte)min(value, 127));
+  command(3, (byte)min((int)value, 127));
 }
 
 void Sabertooth::setBaudRate(long baudRate) const
@@ -128,7 +128,7 @@ void Sabertooth::setBaudRate(long baudRate) const
 
 void Sabertooth::setDeadband(byte value) const
 {
-  command(17, (byte)min(value, 127));
+  command(17, (byte)min((int)value, 127));
 }
 
 void Sabertooth::setRamping(byte value) const
