@@ -6,6 +6,7 @@
 #include <Robot/Robot.h>
 #include <Robot/MotorControl.h>
 #include <Drive/Drive.h>
+#include <Robot/Encoder.h>
 
 // Wifi Connectivity Pin
 #define WIFI_PIN 18
@@ -25,6 +26,7 @@ class QuarterbackBase : public Robot {
   private: 
 
     Drive* drive;
+    Encoder* encoder; // Pointer to the encoder for the base
 
     /* VARIABLES FOR WIFI CONNECTIVITY
         - motor1Value motor2Value:    The current drive motor values

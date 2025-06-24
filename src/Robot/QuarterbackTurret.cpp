@@ -201,7 +201,7 @@ void QuarterbackTurret::action() {
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
         // TODO: Implement auto mode
-        // do something based on current value of 'targetReceiver'
+        readAngle();
       }
       //* Manual Controls
       else {
@@ -1425,3 +1425,51 @@ void QuarterbackTurret::updateReadMotorValues() {
   // Serial.println();
 }
 #pragma endregion
+
+void QuarterbackTurret::readAngle(){
+  static boolean recvInProgress = false;
+  static byte ndx = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char rc;
+  
+  while (Uart_Turret.available() > 0 && newData == false) {
+      // Serial.println("Data Received");
+      rc = Uart_Turret.read();
+
+      if (recvInProgress == true) {
+          if (rc != endMarker) {
+              receivedChars[ndx] = rc;
+              ndx++;
+              if (ndx >= NUM_CHARS) {
+                  ndx = NUM_CHARS - 1;
+              }
+          }
+          else {
+              receivedChars[ndx] = '\0'; // terminate the string
+              recvInProgress = false;
+              ndx = 0;
+              newData = true;
+          }
+      }
+      
+      else if (rc == startMarker) {
+          recvInProgress = true;
+      }
+  }
+
+  if(newData == true){
+    strcpy(tempChars,receivedChars);
+    char * strtokIndx; // this is used by strtok() as an index
+    
+    strtokIndx = strtok(tempChars,",");
+    if(strtokIndx != NULL){
+        targetRelativeHeading = atoi(strtokIndx);
+    }
+    turretPIDController(headingDeg, targetRelativeHeading, kp, kd, ki, .125); // Move the turret to the target relative heading
+    Serial.print("Target Relative Heading: ");
+    Serial.println(targetRelativeHeading);
+    newData = false;
+  }
+
+}

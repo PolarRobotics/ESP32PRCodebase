@@ -5,17 +5,23 @@ HardwareSerial Uart_Base(2);     // UART2
 
 QuarterbackBase::QuarterbackBase(Drive* drive) {
     this->drive = drive;
+    // Initialize Encoder object here, so it only gets created if the robot is the Quarterback Base
+    this->encoder = new Encoder(115200, 2); // Initialize encoder with 2 encoders
 
     // Setup digital WiFi pin
     pinMode(WIFI_PIN, OUTPUT);
 
     //Setup UART Pins
-    Uart_Base.begin(115200, SERIAL_8N1, RX2, TX2);
+    // Uart_Base.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 
 void QuarterbackBase::action() {
 // Send data to wifi ESP
-  updateWriteMotorValues();
+  encoder->readData(); // Read encoder data
+  encoder->updateTurret(); // Update the position based on encoder data
+  
+
+  // updateWriteMotorValues();
 }
 
 void QuarterbackBase::updateWriteMotorValues() {

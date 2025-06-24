@@ -25,7 +25,7 @@
 #include <Robot/Quarterback.h>
 #include <Robot/QuarterbackBase.h>
 #include <Robot/QuarterbackTurret.h>
-#include <Robot/Encoder.h>
+// #include <Robot/Encoder.h>
 
 // Drive Includes
 #include <Drive/Drive.h>
@@ -49,7 +49,7 @@ drive_param_t driveParams;
 ConfigManager config;
 
 // Encoder
-Encoder* encoder;
+// Encoder* encoder;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -69,7 +69,7 @@ void onDisconnect();
 void setup() {
   Serial.begin(115200);
 
-  encoder = new Encoder(115200,16,-1,2);
+  // encoder = new Encoder(115200, 2);
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
@@ -237,14 +237,14 @@ void loop() {
     robot->action();
 
     // Read encoder data
-    encoder->readData();
-    // Print encoder data to serial monitor
-    Serial.printf("Enc1 Counts: %d\t", encoder->getCounts(0));
-    Serial.printf("Enc1 Speed: %d\t", encoder->getRPM(0));
-    Serial.printf("Enc1 Distance: %f feet\t", encoder->calcDistance(0));
-    Serial.printf("Enc2 Counts: %d\t", encoder->getCounts(1));
-    Serial.printf("Enc2 Speed: %d\n", encoder->getRPM(1));
-    Serial.printf("Enc2 Distance: %f feet\n", encoder->calcDistance(1));
+    // encoder->readData();
+    // // Print encoder data to serial monitor
+    // Serial.printf("Enc1 Counts: %d\t", encoder->getCounts(0));
+    // Serial.printf("Enc1 Speed: %d\t", encoder->getRPM(0));
+    // Serial.printf("Enc1 Distance: %f feet\t", encoder->calcDistance(0));
+    // Serial.printf("Enc2 Counts: %d\t", encoder->getCounts(1));
+    // Serial.printf("Enc2 Speed: %d\n", encoder->getRPM(1));
+    // Serial.printf("Enc2 Distance: %f feet\n", encoder->calcDistance(1));
   
     // DEBUGGING:  
     // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage

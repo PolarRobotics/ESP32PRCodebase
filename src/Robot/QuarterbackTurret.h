@@ -132,6 +132,8 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0
 #define RX2 16 // reciever pin
 #define TX2 17 // transmitter pin
 
+#define NUM_CHARS 100
+
 /**
  * @brief Quarterback Turret Subclass Header
  * @authors Maxwell Phillips, George Rak
@@ -401,6 +403,9 @@ class QuarterbackTurret : public Robot {
     //     Private UART Communication     //
     //====================================//
     String recievedMessage = "";
+    bool newData = false; // set to true when new data is received from the turret ESP
+    char receivedChars[NUM_CHARS];
+    char tempChars[NUM_CHARS];
 
     //=============================//
     //   Misc. Private Functions   //
@@ -531,6 +536,7 @@ class QuarterbackTurret : public Robot {
     int motor1Value = 0;
     int motor2Value = 0;
     void updateReadMotorValues();
+    void readAngle();
 
 #pragma endregion
 };  
