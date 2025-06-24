@@ -15,7 +15,6 @@ class Encoder{
         double currentPos[2] = {0,0}; // Current position of the robot
         double targetPos[2] = {0,6}; // Position of target
         double currentHeading = 0; // Current heading of the robot in radians
-        double prevHeading = 0;
         const int RADIUS = 1.925; // Radius of the wheel in inches
         const double WHEEL_BASE = 9.5/12; // Distance between the wheels in feet
         double circumference = 2*PI*RADIUS/12; // Circumference of the wheel in feet
@@ -23,10 +22,7 @@ class Encoder{
         double omega; // Angular velocity in radians per second
         double turningRadius; // Turning radius in feet
         double d1, d2; // Distances traveled by the wheels in feet
-        double prevDistance[2] = {0,0};
         double deltaTheta = 0; // Change in heading in radians
-        double currTheta = 0;
-        double prevTheta = 0;
         bool newData = false;
         char receivedChars[NUM_CHARS];
         char tempChars[NUM_CHARS];

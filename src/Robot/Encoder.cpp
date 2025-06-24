@@ -109,8 +109,7 @@ double* Encoder::getTargetPos(){
 
 double Encoder::calcDistance(int encNum){
     // Calculate the distance traveled by the wheel based on the encoder counts
-    int dist = data[encNum].counts / 4000 * circumference; // 4000 counts per revolution for the encoder
-    return dist;
+    return data[encNum].counts * circumference / 4000; // Distance in feet
 }
 
 double Encoder::calcVelocity(int encNum){
@@ -138,19 +137,18 @@ double Encoder::calcHeading(){
     // Calculate the new heading based on the wheel distances
     d1 = calcDistance(0);
     d2 = calcDistance(1);
-    deltaTheta = (d2 - d1) / WHEEL_BASE;
+    deltaTheta = (d2 - d1) / (WHEEL_BASE/2);
     return deltaTheta;
 }
 
 void Encoder::updatePosition(){
     double hc = calcHeading();
-    double d = (d1 + d2) / 2; // Average distance traveled by both wheels
-    prevHeading = currentHeading; // Store the previous heading
-    double x = d * cos(currentHeading + headingChange()/2); // Change in x position
-    double y = d * sin(currentHeading + headingChange()/2); // Change in y position
-    currentPos[0] += x; // Update x position
-    currentPos[1] += y; // Update y position
-    currentHeading += headingChange(); // Change in heading
+    double d = (d1 + d2); // Average distance traveled by both wheels
+    double x = d * cos(hc); // Change in x position
+    double y = d * sin(hc); // Change in y position
+    currentPos[0] = x; // Update x position
+    currentPos[1] = y; // Update y position
+    currentHeading = hc; // Change in heading
 }
 
 void Encoder::updateTurret(){
@@ -159,7 +157,7 @@ void Encoder::updateTurret(){
     double dy = targetPos[1] - currentPos[1]; // Change in y position
     double distance = sqrt(dx*dx + dy*dy); // Distance to target
     double angle = atan2(dy, dx); // Angle to target
-    double turretAngle = angle - (currentHeading*2.25); // Angle of turret relative to robot
+    double turretAngle = angle - (currentHeading); // Angle of turret relative to robot
     // Normalize turret angle to [0, 2*PI)
     while (turretAngle < 0) {
         turretAngle += 2 * PI;
