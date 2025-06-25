@@ -151,8 +151,45 @@ void Encoder::updatePosition(){
     currentHeading = hc; // Change in heading
 }
 
+void Encoder::updatePositionICC(){
+    if((abs(data[0].counts - prevCounts[0])) < 100 && (abs(data[1].counts - prevCounts[1])) < 100){
+        // If large encoder change, reuse previous distance values
+        d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
+        d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
+
+    }
+    prevCounts[0] = data[0].counts; // Update previous counts for left wheel
+    prevCounts[1] = data[1].counts; // Update previous counts for right wheel
+
+    deltaTheta = (d1 - d2) / WHEEL_BASE; // Change in heading in radians
+    if(deltaTheta > PI/2 || deltaTheta < -PI/2){
+        return;
+    }
+    else if(abs(deltaTheta) < 0.0001){
+        double d = (d1 + d2) / 2; // Average distance traveled by both wheels
+        currentPos[0] += d * cos(currentHeading); // Update x position
+        currentPos[1] += d * sin(currentHeading); // Update y position
+    }
+    else{
+        double turningRadius = WHEEL_BASE / 2 * (d2 + d1) / (d2 - d1); // Turning radius in feet
+        double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
+        double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
+        currentPos[0] = cos(deltaTheta) * (currentPos[0] - ICCx) - sin(deltaTheta) * (currentPos[0] - ICCx) + ICCx; // Update x position
+        currentPos[1] = sin(deltaTheta) * (currentPos[1] - ICCy) + cos(deltaTheta) * (currentPos[1] - ICCy) + ICCy; // Update y position
+        currentHeading += deltaTheta; // Update heading
+        // Normalize heading to [0, 2*PI)
+        while (currentHeading < 0) {
+            currentHeading += 2 * PI;
+        }
+        while (currentHeading >= 2 * PI) {
+            currentHeading -= 2 * PI;
+        }
+    }
+}
+
 void Encoder::updateTurret(){
-    updatePosition(); // Update the robot's position based on encoder data
+    // updatePosition(); // Update the robot's position based on encoder data
+    updatePositionICC(); // Update the robot's position using the Instantaneous Center of Curvature method
     double dx = targetPos[0] - currentPos[0]; // Change in x position
     double dy = targetPos[1] - currentPos[1]; // Change in y position
     double distance = sqrt(dx*dx + dy*dy); // Distance to target
@@ -165,7 +202,7 @@ void Encoder::updateTurret(){
     while (turretAngle >= 2 * PI) {
         turretAngle -= 2 * PI;
     }
-    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading Change: %f\tEnc Counts: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], deltaTheta,getCounts(0),getCounts(1)); // Print turret angle in degrees
+    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),deltaTheta); // Print turret angle in degrees
     sendData((int)(turretAngle * 180 / PI)); // Send turret angle in degrees
 }
     
