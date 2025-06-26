@@ -42,7 +42,7 @@ class Encoder{
         double calcTurningRadius();
         double calcHeading();
         void updatePosition();
-        void updatePositionICC();
+        bool updatePositionICC();
         int getCounts(int encNum);
         int getRPM(int encNum);
         double* getCurrentPos();

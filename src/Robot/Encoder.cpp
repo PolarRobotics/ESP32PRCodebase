@@ -151,16 +151,16 @@ void Encoder::updatePosition(){
     currentHeading = hc; // Change in heading
 }
 
-void Encoder::updatePositionICC(){
+bool Encoder::updatePositionICC(){
     // if((abs(data[0].counts - prevCounts[0])) < 100 && (abs(data[1].counts - prevCounts[1])) < 100){
         // If counts have not changed significantly, update position
 
     // Encoder data error handling
     if((prevCounts[0] != 0 || prevCounts[1] != 0) && (data[0].counts == 0 || data[1].counts == 0)){
-        return; // Return if encoder value drops to zero due to uart error
+        return false; // Return if encoder value drops to zero due to uart error
     }
     if((abs(prevCounts[0]) >= abs(10*data[0].counts)) || (abs(prevCounts[1]) >= abs(10*data[1].counts))){
-        return; // Return if encoder value is too large compared to previous counts, due to a uart error
+        return false; // Return if encoder value is too large compared to previous counts, due to a uart error
     }
     d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
     d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
@@ -192,11 +192,14 @@ void Encoder::updatePositionICC(){
             currentHeading -= 2 * PI;
         }
     }
+    return true; // Return true if position was updated successfully
 }
 
 void Encoder::updateTurret(){
     // updatePosition(); // Update the robot's position based on encoder data
-    updatePositionICC(); // Update the robot's position using the Instantaneous Center of Curvature method
+    if(!updatePositionICC()){
+        return; // If position update failed, return early
+    }
     double dx = targetPos[0] - currentPos[0]; // Change in x position
     double dy = targetPos[1] - currentPos[1]; // Change in y position
     double distance = sqrt(dx*dx + dy*dy); // Distance to target
