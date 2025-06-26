@@ -152,20 +152,27 @@ void Encoder::updatePosition(){
 }
 
 void Encoder::updatePositionICC(){
-    if((abs(data[0].counts - prevCounts[0])) < 100 && (abs(data[1].counts - prevCounts[1])) < 100){
-        // If large encoder change, reuse previous distance values
-        d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
-        d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
+    // if((abs(data[0].counts - prevCounts[0])) < 100 && (abs(data[1].counts - prevCounts[1])) < 100){
+        // If counts have not changed significantly, update position
 
+    // Encoder data error handling
+    if((prevCounts[0] != 0 || prevCounts[1] != 0) && (data[0].counts == 0 || data[1].counts == 0)){
+        return; // Return if encoder value drops to zero due to uart error
     }
+    if((abs(prevCounts[0]) >= abs(10*data[0].counts)) || (abs(prevCounts[1]) >= abs(10*data[1].counts))){
+        return; // Return if encoder value is too large compared to previous counts, due to a uart error
+    }
+    d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
+    d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
+    
     prevCounts[0] = data[0].counts; // Update previous counts for left wheel
     prevCounts[1] = data[1].counts; // Update previous counts for right wheel
 
     deltaTheta = (d1 - d2) / WHEEL_BASE; // Change in heading in radians
-    if(deltaTheta > PI/2 || deltaTheta < -PI/2){
-        return;
-    }
-    else if(abs(deltaTheta) < 0.0001){
+    // if(deltaTheta > PI/2 || deltaTheta < -PI/2){
+    //     return;
+    // }
+    if(abs(deltaTheta) < 0.0001){
         double d = (d1 + d2) / 2; // Average distance traveled by both wheels
         currentPos[0] += d * cos(currentHeading); // Update x position
         currentPos[1] += d * sin(currentHeading); // Update y position
@@ -202,7 +209,7 @@ void Encoder::updateTurret(){
     while (turretAngle >= 2 * PI) {
         turretAngle -= 2 * PI;
     }
-    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),deltaTheta); // Print turret angle in degrees
+    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\tEncoder data: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),deltaTheta,data[0].counts,data[1].counts); // Print turret angle in degrees
     sendData((int)(turretAngle * 180 / PI)); // Send turret angle in degrees
 }
     
