@@ -22,12 +22,16 @@ class Encoder{
         double omega; // Angular velocity in radians per second
         double turningRadius; // Turning radius in feet
         double d1, d2; // Distances traveled by the wheels in feet
+        double v1, v2; // Speeds of the wheels in feet per second
         int prevCounts[2] = {0,0}; // Previous counts of the encoders
         double deltaTheta = 0; // Change in heading in radians
         bool newData = false;
         char receivedChars[NUM_CHARS];
         char tempChars[NUM_CHARS];
         char sendingData[NUM_CHARS];
+        double currTime = 0; // Current time in ms
+        double prevTime = 0; // Previous time in ms
+        double deltaTime = 0; // Time difference in ms
         HardwareSerial encSerial = Serial2;
 
     public:

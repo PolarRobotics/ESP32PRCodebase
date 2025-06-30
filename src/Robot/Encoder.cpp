@@ -119,8 +119,6 @@ double Encoder::calcVelocity(int encNum){
 
 double Encoder::calcOmega(){
     // Calculate the angular velocity of the robot based on the wheel speeds
-    double v1 = calcVelocity(0);
-    double v2 = calcVelocity(1);
     omega = (v2 - v1) / WHEEL_BASE;
     return omega;
 }
@@ -152,38 +150,42 @@ void Encoder::updatePosition(){
 }
 
 bool Encoder::updatePositionICC(){
-    // if((abs(data[0].counts - prevCounts[0])) < 100 && (abs(data[1].counts - prevCounts[1])) < 100){
-        // If counts have not changed significantly, update position
-
+    deltaTime = (currTime - prevTime) / 1000; // Calculate time difference in seconds
+    
+    
     // Encoder data error handling
     if((prevCounts[0] != 0 || prevCounts[1] != 0) && (data[0].counts == 0 || data[1].counts == 0)){
         return false; // Return if encoder value drops to zero due to uart error
     }
-    if((abs(prevCounts[0]) >= abs(10*data[0].counts)) || (abs(prevCounts[1]) >= abs(10*data[1].counts))){
-        return false; // Return if encoder value is too large compared to previous counts, due to a uart error
+    if(abs(data[0].counts - prevCounts[0]) > 2000 || abs(data[1].counts - prevCounts[1]) > 2000){
+        Serial.println("Error");
+        return false;
     }
     d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
     d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
-    
+
     prevCounts[0] = data[0].counts; // Update previous counts for left wheel
     prevCounts[1] = data[1].counts; // Update previous counts for right wheel
-
-    deltaTheta = (d1 - d2) / WHEEL_BASE; // Change in heading in radians
-    // if(deltaTheta > PI/2 || deltaTheta < -PI/2){
-    //     return;
-    // }
-    if(abs(deltaTheta) < 0.0001){
-        double d = (d1 + d2) / 2; // Average distance traveled by both wheels
-        currentPos[0] += d * cos(currentHeading); // Update x position
-        currentPos[1] += d * sin(currentHeading); // Update y position
+    
+    // Velocity method for updating position
+    v1 = d1/deltaTime; // Speed of left wheel in feet per second
+    v2 = d2/deltaTime; // Speed of right wheel in feet per second
+    if(v1 == 0 && v2 == 0){
+        return false; // If both wheels are stationary, do not update position
+    }
+    double v = (v1 + v2) / 2; // Average speed of the robot in feet per second
+    double omega = calcOmega(); // Angular velocity in radians per second
+    if(abs(omega) < 0.001){
+        currentPos[0] += v * cos(currentHeading) * deltaTime; // Update x position
+        currentPos[1] += v * sin(currentHeading) * deltaTime; // Update y position
     }
     else{
-        double turningRadius = WHEEL_BASE / 2 * (d2 + d1) / (d2 - d1); // Turning radius in feet
+        double turningRadius = v/omega;
         double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
         double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
-        currentPos[0] = cos(deltaTheta) * (currentPos[0] - ICCx) - sin(deltaTheta) * (currentPos[0] - ICCx) + ICCx; // Update x position
-        currentPos[1] = sin(deltaTheta) * (currentPos[1] - ICCy) + cos(deltaTheta) * (currentPos[1] - ICCy) + ICCy; // Update y position
-        currentHeading += deltaTheta; // Update heading
+        currentPos[0] = cos(omega * deltaTime) * (currentPos[0] - ICCx) - sin(omega * deltaTime) * (currentPos[0] - ICCx) + ICCx; // Update x position
+        currentPos[1] = sin(omega * deltaTime) * (currentPos[1] - ICCy) + cos(omega * deltaTime) * (currentPos[1] - ICCy) + ICCy;
+        currentHeading += omega * deltaTime; // Update heading
         // Normalize heading to [0, 2*PI)
         while (currentHeading < 0) {
             currentHeading += 2 * PI;
@@ -192,10 +194,38 @@ bool Encoder::updatePositionICC(){
             currentHeading -= 2 * PI;
         }
     }
+    // Uncomment to use distance method for updating position
+    
+
+    // deltaTheta = (d1 - d2) / WHEEL_BASE; // Change in heading in radians
+    // // if(deltaTheta > PI/2 || deltaTheta < -PI/2){
+    // //     return;
+    // // }
+    // if(abs(deltaTheta) < 0.001){
+    //     double d = (d1 + d2) / 2; // Average distance traveled by both wheels
+    //     currentPos[0] += d * cos(currentHeading); // Update x position
+    //     currentPos[1] += d * sin(currentHeading); // Update y position
+    // }
+    // else{
+    //     double turningRadius = (WHEEL_BASE / 2) * (d2 + d1) / (d2 - d1); // Turning radius in feet
+    //     double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
+    //     double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
+    //     currentPos[0] = cos(deltaTheta) * (currentPos[0] - ICCx) - sin(deltaTheta) * (currentPos[0] - ICCx) + ICCx; // Update x position
+    //     currentPos[1] = sin(deltaTheta) * (currentPos[1] - ICCy) + cos(deltaTheta) * (currentPos[1] - ICCy) + ICCy; // Update y position
+    //     currentHeading += deltaTheta; // Update heading
+    //     // Normalize heading to [0, 2*PI)
+    //     while (currentHeading < 0) {
+    //         currentHeading += 2 * PI;
+    //     }
+    //     while (currentHeading >= 2 * PI) {
+    //         currentHeading -= 2 * PI;
+    //     }
+    // }
     return true; // Return true if position was updated successfully
 }
 
 void Encoder::updateTurret(){
+    currTime = millis(); // Get current time in ms
     // updatePosition(); // Update the robot's position based on encoder data
     if(!updatePositionICC()){
         return; // If position update failed, return early
@@ -212,7 +242,8 @@ void Encoder::updateTurret(){
     while (turretAngle >= 2 * PI) {
         turretAngle -= 2 * PI;
     }
-    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\tEncoder data: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),deltaTheta,data[0].counts,data[1].counts); // Print turret angle in degrees
+    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\tEncoder data: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),omega*deltaTime,data[0].counts,data[1].counts); // Print turret angle in degrees
     sendData((int)(turretAngle * 180 / PI)); // Send turret angle in degrees
+    prevTime = currTime; // Update previous time
 }
     
