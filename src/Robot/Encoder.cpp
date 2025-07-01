@@ -139,15 +139,18 @@ double Encoder::calcHeading(){
     return deltaTheta;
 }
 
+// Refactored as of 7/1/25 based on https://medium.com/@nahmed3536/wheel-odometry-model-for-differential-drive-robotics-91b85a012299 
 void Encoder::updatePosition(){
-    double hc = calcHeading();
-    double d = (d1 + d2); // Average distance traveled by both wheels
-    double x = d * cos(hc); // Change in x position
-    double y = d * sin(hc); // Change in y position
-    currentPos[0] = x; // Update x position
-    currentPos[1] = y; // Update y position
-    currentHeading = hc; // Change in heading
+    d1 = data[0].counts * circumference / 4000; // Distance traveled by left wheel in feet
+    d2 = data[1].counts * circumference / 4000; // Distance traveled by right wheel in feet
+    double d = (d1 + d2) / 2;
+    deltaTheta = (d2 - d1) / WHEEL_BASE; // Change in heading in radians
+    currentPos[0] = currentPos[0] + d*cos(prevTheta + deltaTheta/2);
+    currentPos[1] = currentPos[1] + d*sin(prevTheta + deltaTheta/2); // Update y position
+    prevTheta = deltaTheta;
+    currentHeading += deltaTheta;
 }
+
 
 bool Encoder::updatePositionICC(){
     deltaTime = (currTime - prevTime) / 1000; // Calculate time difference in seconds
@@ -180,11 +183,16 @@ bool Encoder::updatePositionICC(){
         currentPos[1] += v * sin(currentHeading) * deltaTime; // Update y position
     }
     else{
-        double turningRadius = v/omega;
+        double turningRadius = (v1+v2) / (2 * omega); // Turning radius in feet
         double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
         double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
         currentPos[0] = cos(omega * deltaTime) * (currentPos[0] - ICCx) - sin(omega * deltaTime) * (currentPos[0] - ICCx) + ICCx; // Update x position
         currentPos[1] = sin(omega * deltaTime) * (currentPos[1] - ICCy) + cos(omega * deltaTime) * (currentPos[1] - ICCy) + ICCy;
+        currentHeading += omega * deltaTime; // Update heading
+
+        // Refactor done on 7/1/25 based on https://www.usna.edu/Users/cs/crabbe/SI475/current/mob-kin/mobkin.pdf 
+        currentPos[0] = turningRadius*cos(currentHeading)*sin(omega * deltaTime) + turningRadius*sin(currentHeading)*cos(omega * deltaTime) + currentPos[0] - turningRadius*sin(currentHeading); // Update x position
+        currentPos[1] = turningRadius*sin(currentHeading)*sin(omega * deltaTime) - turningRadius*cos(currentHeading)*cos(omega * deltaTime) + currentPos[1] + turningRadius*cos(currentHeading); // Update y position
         currentHeading += omega * deltaTime; // Update heading
         // Normalize heading to [0, 2*PI)
         while (currentHeading < 0) {

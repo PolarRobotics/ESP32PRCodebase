@@ -25,6 +25,7 @@ class Encoder{
         double v1, v2; // Speeds of the wheels in feet per second
         int prevCounts[2] = {0,0}; // Previous counts of the encoders
         double deltaTheta = 0; // Change in heading in radians
+        double prevTheta = 0;
         bool newData = false;
         char receivedChars[NUM_CHARS];
         char tempChars[NUM_CHARS];
