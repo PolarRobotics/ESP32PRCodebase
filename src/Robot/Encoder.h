@@ -15,14 +15,14 @@ class Encoder{
         double currentPos[2] = {0,0}; // Current position of the robot
         double targetPos[2] = {0,6}; // Position of target
         double currentHeading = 0; // Current heading of the robot in radians
-        const double RADIUS = 1.925; // Radius of the wheel in inches
-        const double WHEEL_BASE = 9.5/12; // Distance between the wheels in feet
+        const double RADIUS = 1.625; // Radius of the wheel in inches
+        const double WHEEL_BASE = 8.75/12; // Distance between the wheels in feet
         double circumference = 2*PI*RADIUS/12; // Circumference of the wheel in feet
         double velocity; // Speed in feet per second
         double omega; // Angular velocity in radians per second
         double turningRadius; // Turning radius in feet
-        double d1, d2; // Distances traveled by the wheels in feet
-        double v1, v2; // Speeds of the wheels in feet per second
+        double dr, dl; // Distances traveled by the wheels in feet
+        double vr, vl; // Speeds of the wheels in feet per second
         int prevCounts[2] = {0,0}; // Previous counts of the encoders
         double deltaTheta = 0; // Change in heading in radians
         double prevTheta = 0;

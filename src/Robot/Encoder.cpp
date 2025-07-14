@@ -119,7 +119,7 @@ double Encoder::calcVelocity(int encNum){
 
 double Encoder::calcOmega(){
     // Calculate the angular velocity of the robot based on the wheel speeds
-    omega = (v2 - v1) / WHEEL_BASE;
+    omega = (vr - vl) / WHEEL_BASE;
     return omega;
 }
 
@@ -133,22 +133,35 @@ double Encoder::calcTurningRadius(){
 
 double Encoder::calcHeading(){
     // Calculate the new heading based on the wheel distances
-    d1 = calcDistance(0);
-    d2 = calcDistance(1);
-    deltaTheta = (d2 - d1) / (WHEEL_BASE/2);
+    dr = calcDistance(0);
+    dl = calcDistance(1);
+    deltaTheta = (dr - dl) / (WHEEL_BASE/2);
     return deltaTheta;
 }
 
 // Refactored as of 7/1/25 based on https://medium.com/@nahmed3536/wheel-odometry-model-for-differential-drive-robotics-91b85a012299 
 void Encoder::updatePosition(){
-    d1 = data[0].counts * circumference / 4000; // Distance traveled by left wheel in feet
-    d2 = data[1].counts * circumference / 4000; // Distance traveled by right wheel in feet
-    double d = (d1 + d2) / 2;
-    deltaTheta = (d2 - d1) / WHEEL_BASE; // Change in heading in radians
+    if(data[0].counts - prevCounts[0] == 0 && data[1].counts - prevCounts[1] == 0){
+        return; // If no change in encoder counts, do not update position
+    }
+    dr = (double)(data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
+    dl = (double)(data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
+
+    prevCounts[0] = data[0].counts; // Update previous counts for left wheel
+    prevCounts[1] = data[1].counts; // Update previous counts for right wheel
+
+    double d = (dr + dl) / 2;
+    deltaTheta = (dr - dl) / WHEEL_BASE; // Change in heading in radians
     currentPos[0] = currentPos[0] + d*cos(prevTheta + deltaTheta/2);
     currentPos[1] = currentPos[1] + d*sin(prevTheta + deltaTheta/2); // Update y position
     prevTheta = deltaTheta;
     currentHeading += deltaTheta;
+    while (currentHeading < 0) {
+        currentHeading += 2 * PI;
+    }
+    while (currentHeading >= 2 * PI) {
+        currentHeading -= 2 * PI;
+    }
 }
 
 
@@ -164,31 +177,31 @@ bool Encoder::updatePositionICC(){
         Serial.println("Error");
         return false;
     }
-    d1 = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
-    d2 = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
+    dr = (data[0].counts-prevCounts[0]) * circumference / 4000; // Distance traveled by left wheel in feet
+    dl = (data[1].counts-prevCounts[1]) * circumference / 4000; // Distance traveled by right wheel in feet
 
     prevCounts[0] = data[0].counts; // Update previous counts for left wheel
     prevCounts[1] = data[1].counts; // Update previous counts for right wheel
     
     // Velocity method for updating position
-    v1 = d1/deltaTime; // Speed of left wheel in feet per second
-    v2 = d2/deltaTime; // Speed of right wheel in feet per second
-    if(v1 == 0 && v2 == 0){
+    vr = dr/deltaTime; // Speed of left wheel in feet per second
+    vl = dl/deltaTime; // Speed of right wheel in feet per second
+    if(vr == 0 && vl == 0){
         return false; // If both wheels are stationary, do not update position
     }
-    double v = (v1 + v2) / 2; // Average speed of the robot in feet per second
+    double v = (vr + vl) / 2; // Average speed of the robot in feet per second
     double omega = calcOmega(); // Angular velocity in radians per second
     if(abs(omega) < 0.001){
         currentPos[0] += v * cos(currentHeading) * deltaTime; // Update x position
         currentPos[1] += v * sin(currentHeading) * deltaTime; // Update y position
     }
     else{
-        double turningRadius = (v1+v2) / (2 * omega); // Turning radius in feet
-        double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
-        double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
-        currentPos[0] = cos(omega * deltaTime) * (currentPos[0] - ICCx) - sin(omega * deltaTime) * (currentPos[0] - ICCx) + ICCx; // Update x position
-        currentPos[1] = sin(omega * deltaTime) * (currentPos[1] - ICCy) + cos(omega * deltaTime) * (currentPos[1] - ICCy) + ICCy;
-        currentHeading += omega * deltaTime; // Update heading
+        double turningRadius = (vr+vl) / (2 * omega); // Turning radius in feet
+        // double ICCx = currentPos[0] - turningRadius * sin((PI/2) - currentHeading); // x coordinate of the Instantaneous Center of Curvature
+        // double ICCy = currentPos[1] + turningRadius * cos((PI/2) - currentHeading); // y coordinate of the Instantaneous Center of Curvature
+        // currentPos[0] = cos(omega * deltaTime) * (currentPos[0] - ICCx) - sin(omega * deltaTime) * (currentPos[0] - ICCx) + ICCx; // Update x position
+        // currentPos[1] = sin(omega * deltaTime) * (currentPos[1] - ICCy) + cos(omega * deltaTime) * (currentPos[1] - ICCy) + ICCy;
+        // currentHeading += omega * deltaTime; // Update heading
 
         // Refactor done on 7/1/25 based on https://www.usna.edu/Users/cs/crabbe/SI475/current/mob-kin/mobkin.pdf 
         currentPos[0] = turningRadius*cos(currentHeading)*sin(omega * deltaTime) + turningRadius*sin(currentHeading)*cos(omega * deltaTime) + currentPos[0] - turningRadius*sin(currentHeading); // Update x position
@@ -234,10 +247,10 @@ bool Encoder::updatePositionICC(){
 
 void Encoder::updateTurret(){
     currTime = millis(); // Get current time in ms
-    // updatePosition(); // Update the robot's position based on encoder data
-    if(!updatePositionICC()){
-        return; // If position update failed, return early
-    }
+    updatePosition(); // Update the robot's position based on encoder data
+    // if(!updatePositionICC()){
+    //     return; // If position update failed, return early
+    // }
     double dx = targetPos[0] - currentPos[0]; // Change in x position
     double dy = targetPos[1] - currentPos[1]; // Change in y position
     double distance = sqrt(dx*dx + dy*dy); // Distance to target
@@ -250,7 +263,7 @@ void Encoder::updateTurret(){
     while (turretAngle >= 2 * PI) {
         turretAngle -= 2 * PI;
     }
-    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\tEncoder data: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),omega*deltaTime,data[0].counts,data[1].counts); // Print turret angle in degrees
+    Serial.printf("Turret Angle: %3d degrees\tCurrent Pos: x=%8f, y=%8f\tHeading: %d\tDelta Theta: %f\tCounts: 1=%d 2=%d\n", (int)(turretAngle * 180 / PI), currentPos[0], currentPos[1], (int)(currentHeading * 180 / PI),omega*deltaTime,(data[0].counts),(data[1].counts)); // Print turret angle in degrees
     sendData((int)(turretAngle * 180 / PI)); // Send turret angle in degrees
     prevTime = currTime; // Update previous time
 }
