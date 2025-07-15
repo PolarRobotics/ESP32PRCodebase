@@ -178,9 +178,13 @@ class QuarterbackTurret : public Robot {
     //==============================//
     // mode: manual or autonomous (or combine)
     // target: reciever1 or reciever2
+    // position: [x,y] coordinates of the qb
+    // targetPosition: [x,y] coordinates of the target
     TurretMode mode;
     TargetReceiver target;
     CombinePosition combinePosition;
+    double position[2] = {0,0};
+    double targetPosition[2] = {6,6};
 
     //==============================//
     //  Setup and Status Variables  //
@@ -418,6 +422,7 @@ class QuarterbackTurret : public Robot {
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
+    int angleToTarget(int16_t currentHeading);
 #pragma endregion
 
 #pragma region Public

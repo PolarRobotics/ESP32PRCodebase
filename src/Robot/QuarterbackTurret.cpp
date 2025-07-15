@@ -201,7 +201,26 @@ void QuarterbackTurret::action() {
       }
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
+        float i;
+        long currentTime = millis();
         // TODO: Implement auto mode
+        for(i = 6; i >= -6; i -= 0.1){
+          targetPosition[0] = i;
+          targetRelativeHeading = angleToTarget(getCurrentHeading());
+          turretPIDSpeed = turretPIDController(getCurrentHeading(), targetRelativeHeading, kp, kd, ki, .3);
+          setTurretSpeed(turretPIDSpeed);
+        }
+        for(; i <= 6; i += 0.1){
+          targetPosition[0] = i;
+          targetRelativeHeading = angleToTarget(getCurrentHeading());
+          turretPIDSpeed = turretPIDController(getCurrentHeading(), targetRelativeHeading, kp, kd, ki, .3);
+          setTurretSpeed(turretPIDSpeed);
+          
+          if(targetPosition[0] == 6.0){
+            long endTime = millis();
+            Serial.println("Time to move to original position: " + String(endTime - currentTime) + " ms");
+          }
+        }
         // do something based on current value of 'targetReceiver'
       }
       //* Manual Controls
@@ -693,6 +712,15 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
   switchMode(automatic);
   this->target = target;
   // todo: not sure if this needs more functionality?
+}
+
+int QuarterbackTurret::angleToTarget(int16_t currentHeading){
+  double xDiff = targetPosition[0] - position[0];
+  double yDiff = targetPosition[1] - position[1];
+
+  double angleToTarget = atan2(yDiff, xDiff) * 180 / PI; // Convert radians to degrees
+  angleToTarget = NormalizeAngle(angleToTarget); // Normalize to [0, 360)
+  return angleToTarget;
 }
 #pragma endregion
 
