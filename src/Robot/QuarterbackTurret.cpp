@@ -201,26 +201,55 @@ void QuarterbackTurret::action() {
       }
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
-        float i;
+        if(dbOptions->debounceAndPressed(ps5.Options())){
+          switchMode();
+          return;
+        }
         long currentTime = millis();
+        targetPosition[0] = x;
+        currentRelativeHeading = NormalizeAngle(getCurrentHeading());
+        targetRelativeHeading = angleToTarget(currentRelativeHeading);
+        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, kd, ki, .3);
+        setTurretSpeed(turretPIDSpeed);
+        if(x >= 6.0 && changeInPos == 1){
+          changeInPos = -1;
+        }
+        if(x <= -6.0 && changeInPos == -1){
+          changeInPos = 1;
+        }
+        
+        x += changeInPos * 0.05; // increment x by 0.001 in the direction of changeInPos
         // TODO: Implement auto mode
-        for(i = 6; i >= -6; i -= 0.1){
-          targetPosition[0] = i;
-          targetRelativeHeading = angleToTarget(getCurrentHeading());
-          turretPIDSpeed = turretPIDController(getCurrentHeading(), targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
-        }
-        for(; i <= 6; i += 0.1){
-          targetPosition[0] = i;
-          targetRelativeHeading = angleToTarget(getCurrentHeading());
-          turretPIDSpeed = turretPIDController(getCurrentHeading(), targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
+        // while(!testForDisableOrStop() && x >= -6.0){
+        //   if(dbOptions->debounceAndPressed(ps5.Options())){
+        //     switchMode();
+        //     return;
+        //   }
+        //   targetPosition[0] = x;
+        //   currentRelativeHeading = getCurrentHeading();
+        //   targetRelativeHeading = angleToTarget(currentRelativeHeading);
+        //   turretPIDSpeed = turretPIDController(currentRelativeHeading, targetRelativeHeading, kp, kd, ki, .3);
+        //   setTurretSpeed(turretPIDSpeed);
+        //   x -= 0.001;
+        // }
+        // while(!testForDisableOrStop() && x <= 6.0){
+        //   if(dbOptions->debounceAndPressed(ps5.Options())){
+        //     switchMode();
+        //     return;
+        //   }
+        //   targetPosition[0] = x;
+        //   currentRelativeHeading = getCurrentHeading();
+        //   targetRelativeHeading = angleToTarget(currentRelativeHeading);
+        //   turretPIDSpeed = turretPIDController(currentRelativeHeading, targetRelativeHeading, kp, kd, ki, .3);
           
-          if(targetPosition[0] == 6.0){
-            long endTime = millis();
-            Serial.println("Time to move to original position: " + String(endTime - currentTime) + " ms");
-          }
-        }
+        //   setTurretSpeed(turretPIDSpeed);
+          
+        //   if(targetPosition[0] == 0.0){
+        //     long endTime = millis();
+        //     Serial.println("Time to move to original position: " + String(endTime - currentTime) + " ms");
+        //   }
+        //   x += 0.001;
+        // }
         // do something based on current value of 'targetReceiver'
       }
       //* Manual Controls
@@ -715,11 +744,9 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 }
 
 int QuarterbackTurret::angleToTarget(int16_t currentHeading){
-  double xDiff = targetPosition[0] - position[0];
-  double yDiff = targetPosition[1] - position[1];
-
-  double angleToTarget = atan2(yDiff, xDiff) * 180 / PI; // Convert radians to degrees
-  angleToTarget = NormalizeAngle(angleToTarget); // Normalize to [0, 360)
+  double angleToTarget = atan2(targetPosition[1], targetPosition[0]) * 180 / PI; // Convert radians to degrees
+  angleToTarget -= 90; // Set the angle to be relative to positive Y direction
+  angleToTarget = NormalizeAngle(angleToTarget*-1); // Normalize to [0, 360)
   return angleToTarget;
 }
 #pragma endregion
@@ -1423,7 +1450,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
     // Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e * .04;
+    eIntegral = eIntegral + e * .01;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
@@ -1441,6 +1468,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       eDerivative = 0;
       eIntegral = 0;
       ePrevious = 0;
+      firstAverage = true;
     }
 
     Serial.print("DeltaT: "); Serial.print(deltaT);
@@ -1448,7 +1476,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     Serial.print("\tP: "); Serial.print((kp * e), 4);
     Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
     Serial.print("\tD:\t"); Serial.print((kd * eDerivative) , 4);
-    Serial.print("\tPWM Value: "); Serial.print(u , 4);
+    Serial.print("\tPWM Value: "); Serial.print(-u , 4);
     Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
     Serial.print("\tTarget [deg]: "); Serial.print(target);
     Serial.println();
@@ -1456,7 +1484,9 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     // Update variables for next iteration
     previousTime = currentTime;
     ePrevious = e;
-
+    if(u > 0){
+      u *= 1.1;
+    }
     // Constrain the values that are sent to the motor while keeping sign
     u = copysign(constrain(abs(u), 0, 1), u); // TODO: maybe not necessary?
     if (e == 0) { u = 0.0; }

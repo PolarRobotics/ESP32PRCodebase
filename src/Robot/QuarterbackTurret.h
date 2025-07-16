@@ -119,14 +119,14 @@ const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35,
 // QB_TURRET_PID_BAD_DELTA_T    Maximum time before we need to zero things out
 // QB_NORTH_OFFSET              Added to deal with the problems of zeroing the turret but then holding a set angle afterwards
 //                                  TODO: maybe unnecessary now?
-#define QB_TURRET_PID_THRESHOLD 3
+#define QB_TURRET_PID_THRESHOLD 1
 #define QB_TURRET_PID_MIN_DELTA_T 5
 #define QB_TURRET_PID_MAX_DELTA_T 25
 #define QB_TURRET_PID_BAD_DELTA_T 250
 #define QB_NORTH_OFFSET 0
 
 // Enable or Disable Auto Mode for testing
-#define QB_AUTO_ENABLED false
+#define QB_AUTO_ENABLED true
 
 //===============================//
 //    UART Communication Pins    //
@@ -185,6 +185,8 @@ class QuarterbackTurret : public Robot {
     CombinePosition combinePosition;
     double position[2] = {0,0};
     double targetPosition[2] = {6,6};
+    float x;
+    int changeInPos = 1; // used to change the x position in auto mode
 
     //==============================//
     //  Setup and Status Variables  //
