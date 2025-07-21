@@ -201,15 +201,23 @@ void QuarterbackTurret::action() {
       }
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
-        if(dbOptions->debounceAndPressed(ps5.Options())){
-          switchMode();
-          return;
-        }
         long currentTime = millis();
         targetPosition[0] = x;
-        currentRelativeHeading = NormalizeAngle(getCurrentHeading());
-        targetRelativeHeading = angleToTarget(currentRelativeHeading);
-        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, kd, ki, .3);
+        currentRelativeHeading = getCurrentHeading();
+        targetRelativeHeading = angleToTarget();
+        // targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+        // setTurretSpeed(0.09 * copysign(1, -CalculateRotation(currentRelativeHeading, targetRelativeHeading)), true);
+        // // while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+        // //   // Run until turret reaches target position
+        // // }
+        // // setTurretSpeed(0,true);
+        Serial.println("currentHeading: " + String(currentRelativeHeading) + "\ttargetHeading: " + String(targetRelativeHeading) + "\ttargetEncoderCount: " + String(targetTurretEncoderCount) + "\tcurrentEncoderCount: " + String(currentTurretEncoderCount));
+        // if(currentTurretEncoderCount > targetTurretEncoderCount - QB_TURRET_THRESHOLD && currentTurretEncoderCount < targetTurretEncoderCount + QB_TURRET_THRESHOLD){
+        //   // if the turret is within the threshold, stop it
+        //   Serial.println("-------------Turret is within threshold, stopping--------------");
+        //   setTurretSpeed(0, true);
+        // }
+        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .1);
         setTurretSpeed(turretPIDSpeed);
         if(x >= 6.0 && changeInPos == 1){
           changeInPos = -1;
@@ -218,38 +226,8 @@ void QuarterbackTurret::action() {
           changeInPos = 1;
         }
         
-        x += changeInPos * 0.05; // increment x by 0.001 in the direction of changeInPos
+        x += changeInPos * 0.03; // increment x by 0.001 in the direction of changeInPos
         // TODO: Implement auto mode
-        // while(!testForDisableOrStop() && x >= -6.0){
-        //   if(dbOptions->debounceAndPressed(ps5.Options())){
-        //     switchMode();
-        //     return;
-        //   }
-        //   targetPosition[0] = x;
-        //   currentRelativeHeading = getCurrentHeading();
-        //   targetRelativeHeading = angleToTarget(currentRelativeHeading);
-        //   turretPIDSpeed = turretPIDController(currentRelativeHeading, targetRelativeHeading, kp, kd, ki, .3);
-        //   setTurretSpeed(turretPIDSpeed);
-        //   x -= 0.001;
-        // }
-        // while(!testForDisableOrStop() && x <= 6.0){
-        //   if(dbOptions->debounceAndPressed(ps5.Options())){
-        //     switchMode();
-        //     return;
-        //   }
-        //   targetPosition[0] = x;
-        //   currentRelativeHeading = getCurrentHeading();
-        //   targetRelativeHeading = angleToTarget(currentRelativeHeading);
-        //   turretPIDSpeed = turretPIDController(currentRelativeHeading, targetRelativeHeading, kp, kd, ki, .3);
-          
-        //   setTurretSpeed(turretPIDSpeed);
-          
-        //   if(targetPosition[0] == 0.0){
-        //     long endTime = millis();
-        //     Serial.println("Time to move to original position: " + String(endTime - currentTime) + " ms");
-        //   }
-        //   x += 0.001;
-        // }
         // do something based on current value of 'targetReceiver'
       }
       //* Manual Controls
@@ -283,9 +261,11 @@ void QuarterbackTurret::action() {
             combineMoveRight();
           }
 
-          // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
+          // Run the PID loop if the turret is at least 3 degrees off from the target angle
+          if(abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >= 2){
+            turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+            setTurretSpeed(turretPIDSpeed);
+          }
 
           // if (utmsCtr <= UTMS_CTR_MAX) {
           //   utmsCtr = 0;
@@ -327,7 +307,7 @@ void QuarterbackTurret::action() {
           } else {
             setTurretSpeed(0);
           }
-          updateTurretMotionStatus();          
+          // updateTurretMotionStatus();          
         }
 
         // updateTurretMotionStatus();
@@ -353,7 +333,10 @@ void QuarterbackTurret::action() {
   }
 
   updateReadMotorValues();
-
+  calculateHeadingMag();
+  lis3mdl.read();
+  headingDeg = atan2(lis3mdl.y, lis3mdl.x) * 180 / PI; // Convert radians to degrees
+  Serial.println("Current Heading: " + String(headingDeg));
   printDebug();
 }
 #pragma endregion
@@ -743,11 +726,24 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
   // todo: not sure if this needs more functionality?
 }
 
-int QuarterbackTurret::angleToTarget(int16_t currentHeading){
+/* @brief Calculates the target position based on the location of the target receiver
+ * @author Kaiden Colish
+ * @date 2025-07-21
+*/
+int QuarterbackTurret::angleToTarget(){
   double angleToTarget = atan2(targetPosition[1], targetPosition[0]) * 180 / PI; // Convert radians to degrees
   angleToTarget -= 90; // Set the angle to be relative to positive Y direction
-  angleToTarget = NormalizeAngle(angleToTarget*-1); // Normalize to [0, 360)
   return angleToTarget;
+}
+
+void QuarterbackTurret::moveToTarget(int targetHeading){
+  targetRelativeHeading = targetHeading;
+  targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
+  setTurretSpeed(QB_HOME_MAG * copysign(1, targetRelativeHeading), true);
+  while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
+    // Run until turret reaches target position
+  }
+  setTurretSpeed(0,true);
 }
 #pragma endregion
 
@@ -1067,8 +1063,10 @@ void QuarterbackTurret::zeroTurret() {
 
   // stop turret and tare everything
   setTurretSpeed(0);
+  delay(150); // wait for a short time to ensure the turret has stopped
   currentRelativeHeading = 0;
   currentTurretEncoderCount = 0;
+  targetTurretEncoderCount = 0;
   Serial.println(F("zeroed"));
 
   //Now that the encoder is zeroed we can just zero the magnetometer
@@ -1433,11 +1431,9 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     prevErrorIndex %= PID_ERROR_AVG_ARRAY_LENGTH;
 
     // For the first one populate the average so it does not freak out
-    if (firstAverage) {
-      for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
-        prevErrorVals[i] = e;
-      }
-      firstAverage = false;
+    
+    for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
+      prevErrorVals[i] = e;
     }
 
     // Taking the avergage for error
@@ -1468,7 +1464,6 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       eDerivative = 0;
       eIntegral = 0;
       ePrevious = 0;
-      firstAverage = true;
     }
 
     Serial.print("DeltaT: "); Serial.print(deltaT);

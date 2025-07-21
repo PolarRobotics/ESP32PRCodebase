@@ -70,7 +70,7 @@ const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35,
 //================================//
 //        Speed Constants         //
 //================================//
-#define QB_MIN_PWM_VALUE 0.1
+#define QB_MIN_PWM_VALUE 0.08
 #define QB_HOME_PCT 0.125
 #define QB_HANDOFF  0.3
 #define QB_HOME_MAG 0.1
@@ -311,8 +311,8 @@ class QuarterbackTurret : public Robot {
     //|                        |//
     //==========================//
     Adafruit_LIS3MDL lis3mdl;           // magnetometer object
-    bool useMagnetometer = false;        // set 'false' to disable the magnetometer and its functions
-    bool holdTurretStillEnabled = true; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
+    bool useMagnetometer = true;        // set 'false' to disable the magnetometer and its functions
+    bool holdTurretStillEnabled = false; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
 
     //============================//
     //  Magnetometer Calibration  //
@@ -424,7 +424,7 @@ class QuarterbackTurret : public Robot {
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
-    int angleToTarget(int16_t currentHeading);
+    int angleToTarget();
 #pragma endregion
 
 #pragma region Public
@@ -508,6 +508,7 @@ class QuarterbackTurret : public Robot {
     void switchMode(TurretMode mode); 
     void switchMode(); 
     void switchTarget(TargetReceiver target); 
+    void moveToTarget(int targetHeading);
 
     //==================================//
     //   Quarterback Strategic Macros   //
