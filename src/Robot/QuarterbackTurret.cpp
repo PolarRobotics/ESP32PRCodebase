@@ -207,8 +207,7 @@ void QuarterbackTurret::action() {
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
         long currentTime = millis();
-        targetPosition[0] = 0;
-        targetPosition[1] = x;
+        targetPosition[0] = x;
         currentRelativeHeading = getCurrentHeading();
         targetRelativeHeading = angleToTarget();
         // targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
@@ -223,17 +222,17 @@ void QuarterbackTurret::action() {
         //   Serial.println("-------------Turret is within threshold, stopping--------------");
         //   setTurretSpeed(0, true);
         // }
-        // turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .1);
-        // setTurretSpeed(turretPIDSpeed);
+        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .2);
+        setTurretSpeed(turretPIDSpeed);
         Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed());
-        if(x >= 20.0 && changeInPos == 1){
+        if(x >= 6.0 && changeInPos == 1){
           changeInPos = -1;
         }
-        if(x <= 0.0 && changeInPos == -1){
+        if(x <= -6.0 && changeInPos == -1){
           changeInPos = 1;
         }
         
-        x += changeInPos * 0.03;
+        x += changeInPos * 0.15;
         // TODO: Implement auto mode
         // do something based on current value of 'targetReceiver'
       }
@@ -737,7 +736,7 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 int QuarterbackTurret::angleToTarget(){
   double angleToTarget = atan2(targetPosition[1], targetPosition[0]) * 180 / PI; // Convert radians to degrees
   angleToTarget -= 90; // Set the angle to be relative to positive Y direction
-  return angleToTarget;
+  return -angleToTarget;
 }
 
 float QuarterbackTurret::distanceToTarget(){
