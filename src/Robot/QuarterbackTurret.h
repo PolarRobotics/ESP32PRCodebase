@@ -51,7 +51,7 @@ enum FlywheelSpeed {
 // Preset flywheel speed values.
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}; // without top prongs 
 const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35, 0.45};      // combine speed values
-
+//                                                                , 6ft  , 12ft, 18ft  (Measured from center of QB to center of receiver)
 //================================//
 //  Debounce and Delay Constants  //
 //================================//
@@ -163,7 +163,7 @@ class QuarterbackTurret : public Robot {
     //==============================//
     static uint8_t turretEncoderPinA;
     static uint8_t turretEncoderPinB;
-    uint8_t turretLaserPin;
+    static uint8_t turretLaserPin;
 
     //===============================//
     //        Joystick Inputs        //
@@ -311,7 +311,7 @@ class QuarterbackTurret : public Robot {
     //|                        |//
     //==========================//
     Adafruit_LIS3MDL lis3mdl;           // magnetometer object
-    bool useMagnetometer = true;        // set 'false' to disable the magnetometer and its functions
+    bool useMagnetometer = false;        // set 'false' to disable the magnetometer and its functions
     bool holdTurretStillEnabled = false; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
 
     //============================//
@@ -425,6 +425,7 @@ class QuarterbackTurret : public Robot {
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
     int angleToTarget();
+    float distanceToTarget();
 #pragma endregion
 
 #pragma region Public
@@ -497,6 +498,7 @@ class QuarterbackTurret : public Robot {
     void aimAssembly(AssemblyAngle angle, bool force = false); 
     void moveCradle(CradleState state, bool force = false); 
     void setFlywheelSpeed(float absoluteSpeed); 
+    float setAutoFlywheelSpeed(float distance = 0);
     void setFlywheelSpeedStage(FlywheelSpeed stage); 
     void adjustFlywheelSpeedStage(SpeedStatus speed);
 

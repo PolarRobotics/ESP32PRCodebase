@@ -7,6 +7,7 @@ HardwareSerial Uart_Turret(2);     // UART2
 uint8_t QuarterbackTurret::turretEncoderPinA;
 uint8_t QuarterbackTurret::turretEncoderPinB;
 uint8_t QuarterbackTurret::turretEncoderStateB;
+uint8_t QuarterbackTurret::turretLaserPin;
 int32_t QuarterbackTurret::currentTurretEncoderCount;
 
 void QuarterbackTurret::turretEncoderISR() {
@@ -16,6 +17,10 @@ void QuarterbackTurret::turretEncoderISR() {
     currentTurretEncoderCount--;
   } else if (turretEncoderStateB == 0) {
     currentTurretEncoderCount++;
+  }
+
+  if(digitalRead(turretLaserPin) == HIGH){
+    currentTurretEncoderCount = 0; // reset the encoder count when the laser is triggered
   }
 }
 
@@ -78,7 +83,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->stickTurret = 0;
 
   // turret laser setup
-  this->turretLaserPin = turretLaserPin;
+  QuarterbackTurret::turretLaserPin = turretLaserPin;
   this->turretLaserState = 0;
   pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
 
@@ -202,7 +207,8 @@ void QuarterbackTurret::action() {
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
         long currentTime = millis();
-        targetPosition[0] = x;
+        targetPosition[0] = 0;
+        targetPosition[1] = x;
         currentRelativeHeading = getCurrentHeading();
         targetRelativeHeading = angleToTarget();
         // targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
@@ -211,22 +217,23 @@ void QuarterbackTurret::action() {
         // //   // Run until turret reaches target position
         // // }
         // // setTurretSpeed(0,true);
-        Serial.println("currentHeading: " + String(currentRelativeHeading) + "\ttargetHeading: " + String(targetRelativeHeading) + "\ttargetEncoderCount: " + String(targetTurretEncoderCount) + "\tcurrentEncoderCount: " + String(currentTurretEncoderCount));
+        // Serial.println("currentHeading: " + String(currentRelativeHeading) + "\ttargetHeading: " + String(targetRelativeHeading) + "\ttargetEncoderCount: " + String(targetTurretEncoderCount) + "\tcurrentEncoderCount: " + String(currentTurretEncoderCount));
         // if(currentTurretEncoderCount > targetTurretEncoderCount - QB_TURRET_THRESHOLD && currentTurretEncoderCount < targetTurretEncoderCount + QB_TURRET_THRESHOLD){
         //   // if the turret is within the threshold, stop it
         //   Serial.println("-------------Turret is within threshold, stopping--------------");
         //   setTurretSpeed(0, true);
         // }
-        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .1);
-        setTurretSpeed(turretPIDSpeed);
-        if(x >= 6.0 && changeInPos == 1){
+        // turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .1);
+        // setTurretSpeed(turretPIDSpeed);
+        Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed());
+        if(x >= 20.0 && changeInPos == 1){
           changeInPos = -1;
         }
-        if(x <= -6.0 && changeInPos == -1){
+        if(x <= 0.0 && changeInPos == -1){
           changeInPos = 1;
         }
         
-        x += changeInPos * 0.03; // increment x by 0.001 in the direction of changeInPos
+        x += changeInPos * 0.03;
         // TODO: Implement auto mode
         // do something based on current value of 'targetReceiver'
       }
@@ -310,12 +317,13 @@ void QuarterbackTurret::action() {
           // updateTurretMotionStatus();          
         }
 
-        // updateTurretMotionStatus();
+        updateTurretMotionStatus();
 
         //* Left Stick Y: Flywheel Override
         if (fabs(stickFlywheel) > STICK_DEADZONE) {
           setFlywheelSpeed(stickFlywheel);
-        } else {
+        } 
+        else {
           //* D-Pad Up: Increase flywheel speed by one stage
           if (dbDpadUp->debounceAndPressed(ps5.Up())) {
             adjustFlywheelSpeedStage(INCREASE);
@@ -333,10 +341,6 @@ void QuarterbackTurret::action() {
   }
 
   updateReadMotorValues();
-  calculateHeadingMag();
-  lis3mdl.read();
-  headingDeg = atan2(lis3mdl.y, lis3mdl.x) * 180 / PI; // Convert radians to degrees
-  Serial.println("Current Heading: " + String(headingDeg));
   printDebug();
 }
 #pragma endregion
@@ -665,7 +669,7 @@ void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed) {
   // update the motors so they are spinning at the new speed
   if (enabled) {
     // if current speed is not the passed speed, change the motor speed. this is only to avoid unnecessary writes
-    if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE) {
+    if (fabs(currentFlywheelSpeed - absoluteSpeed) > 0.01) {
       // constrain to the first and last values of the flywheel speed array.
       // the first value should be the slow intake speed -- the flywheels should NEVER spin more quickly *inwards* than this.
       // the last value should be the maximum speed (ordinarily 1, but we may change this).
@@ -726,7 +730,7 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
   // todo: not sure if this needs more functionality?
 }
 
-/* @brief Calculates the target position based on the location of the target receiver
+/* @brief Calculates the target angle based on the location of the target receiver relative to the center of the QB
  * @author Kaiden Colish
  * @date 2025-07-21
 */
@@ -734,6 +738,11 @@ int QuarterbackTurret::angleToTarget(){
   double angleToTarget = atan2(targetPosition[1], targetPosition[0]) * 180 / PI; // Convert radians to degrees
   angleToTarget -= 90; // Set the angle to be relative to positive Y direction
   return angleToTarget;
+}
+
+float QuarterbackTurret::distanceToTarget(){
+  float distance = sqrt(pow(targetPosition[0], 2) + pow(targetPosition[1], 2));
+  return distance;
 }
 
 void QuarterbackTurret::moveToTarget(int targetHeading){
@@ -744,6 +753,27 @@ void QuarterbackTurret::moveToTarget(int targetHeading){
     // Run until turret reaches target position
   }
   setTurretSpeed(0,true);
+}
+
+/*
+  * @brief Sets the flywheel speed based on the distance (in feet) to the target. Will calculate the distance if it is not provided.
+  * @param distance The distance to the target in feet
+  * @return The calculated flywheel speed
+  * @author Kaiden Colish
+  * @date 2025-07-30
+*/
+float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
+  float dist = distance;
+  if (dist < 0.01) {
+    dist = distanceToTarget();
+  }
+  if(dist < 1){
+    setFlywheelSpeed(0);
+    return 0;
+  }
+  float speed = 0.0486 + (0.0307 * dist) - (0.000469 * pow(dist, 2)); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing 
+  setFlywheelSpeed(speed);
+  return speed; // Return the speed for debugging purposes (may not be needed)
 }
 #pragma endregion
 
