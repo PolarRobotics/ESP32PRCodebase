@@ -44,6 +44,9 @@
 #define ENC2_CHA 36 // VP
 #define ENC2_CHB 39 // VN
 
+// Laser pin definition
+#define LASER_PIN 25
+
 // pin for ws2812 LEDs to indicate positions 
 #define LED_PIN 4   
 // receiver, tackled, etc...
