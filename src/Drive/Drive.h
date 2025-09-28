@@ -53,7 +53,8 @@ constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
   {0.70f,  0.60f,  0.30f}, // index 2: Pancake Ampflow Motor
   {0.80f,  0.60f,  0.40f}, // index 3: Mecanum Motor (Torquenado)
   {0.60f,  0.40f,  0.15f}, // index 4: Falcon500 motors
-  {0.15f,  0.10f,  0.05f}  // index 5: Small 12v motors (old robots)
+  {0.60f,  0.40f,  0.15f}, // index 5: NEO Vortex motors
+  {0.15f,  0.10f,  0.05f}  // index 6: Small 12v motors (old robots)
 };
 
 class Drive {

@@ -180,7 +180,7 @@ void loop() {
         // ps5.setLed(0, 255, 0);   // set LED red
       } else if (ps5.L1()) {
         drive->setSpeedScalar(Drive::SLOW);
-      } else if (ps5.R2() && driveParams.motor_type == falcon) {
+      } else if (ps5.R2() && (driveParams.motor_type == falcon || driveParams.motor_type == neo_vortex)) {
         // used to calibrate the max pwm signal for the falcon 500 motors
         drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
       } else {

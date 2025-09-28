@@ -7,6 +7,7 @@ motorTypeStrings[NUM_MOTOR_TYPES] = {
   { pancake_ampflow,  "pancake_ampflow" },
   { mecanum,          "mecanum"         },
   { falcon,           "falcon"          },
+  { neo_vortex,       "neo-vortex"      },
   { small_12v,        "small_12v"       }
 };
 
