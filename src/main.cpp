@@ -128,7 +128,7 @@ void setup() {
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(PWM0_PIN, PWM1_PIN);
   }
 
   // drive->printSetup();
@@ -229,7 +229,7 @@ void loop() {
     robot->action();
 
     // DEBUGGING:  
-    // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+    drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
     // lights.printDebugInfo();
 

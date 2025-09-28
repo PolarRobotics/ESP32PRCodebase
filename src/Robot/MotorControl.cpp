@@ -46,8 +46,6 @@ MotorControl::MotorControl() {
   lastRampTime = millis();
 }
 
-
-
 /**
  * @brief setup the given pin to the next free channel, returns channel number or 255 if failure
  * @author Rhys Davies
@@ -64,7 +62,7 @@ uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
-  this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
+  this->max_rpm = uint16_t(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
 
   // call the logic to attach the motor pin and setup, return 255 on an error
   return Motor.attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
