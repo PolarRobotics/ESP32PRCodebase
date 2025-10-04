@@ -3,8 +3,10 @@
 #include <Arduino.h>
 #include <PolarRobotics.h>
 // #include <MotorInterface.h>
-#include <MotorInterface.h>
+#include <USBSabertooth.h>
 
+extern USBSabertoothSerial C;
+extern USBSabertooth ST;
 
 // Enum for Increasing or Decreasing Flywheel Speed
 enum SpeedStatus {
@@ -17,7 +19,7 @@ private:
   float gear_ratio;     // the input / output gear ratio
 
   // Servo:
-  MotorInterface Motor;
+  // MotorInterface Motor;
 
   // for ramp
   float requestedRPM;     
@@ -43,11 +45,12 @@ private:
 
 public:
   int max_rpm;          // the motor max rpm * the gear ratio 
+  int mot_idx;
   MotorControl();
   uint8_t setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
 
   //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
-  void write(float pct);
+  void write(int pwr); // write power in range -2047 to 2047
 
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);

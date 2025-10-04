@@ -35,26 +35,27 @@
 // Motor Percent Defines
 #define FALCON_CALIBRATION_FACTOR 1.0f
 // the minimum power that can be written to the motor, prevents stalling
-#define MOTOR_ZERO_OFFST 0.05f
+#define MOTOR_ZERO_OFFST 103 // originally 0.05 for PWM: multiply by 2047 gives 102.35, round up to 103
 
 // BSN defines for the small 12v motors
-#define SMALL_12V_BOOST_PCT          0.15f
-#define SMALL_12V_NORMAL_PCT         0.1f // 0.5
-#define SMALL_12V_SLOW_PCT           0.05f
+// #define SMALL_12V_BOOST_PCT          0.15f
+// #define SMALL_12V_NORMAL_PCT         0.1f // 0.5
+// #define SMALL_12V_SLOW_PCT           0.05f
 
 #define BRAKE_BUTTON_PCT 0
 
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType to be used effectively
-constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
+constexpr int SABERTOOTH_MAX_POWER = 2047; // Max power value accepted via USBSabertooth Packetized Serial Protocol
+constexpr int MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
 // Boost   Normal  Slow
-  {0.70f,  0.60f,  0.30f}, // index 0: Big Ampflow Motor
-  {0.85f,  0.70f,  0.40f}, // index 1: Small Ampflow Motor
-  {0.70f,  0.60f,  0.30f}, // index 2: Pancake Ampflow Motor
-  {0.80f,  0.60f,  0.40f}, // index 3: Mecanum Motor (Torquenado)
-  {0.60f,  0.40f,  0.15f}, // index 4: Falcon500 motors
-  {0.60f,  0.40f,  0.15f}, // index 5: NEO Vortex motors
-  {0.15f,  0.10f,  0.05f}  // index 6: Small 12v motors (old robots)
+  {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 0: Big Ampflow Motor
+  {int(0.85f * SABERTOOTH_MAX_POWER), int(0.70f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 1: Small Ampflow Motor
+  {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 2: Pancake Ampflow Motor
+  {int(0.80f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 3: Mecanum Motor (Torquenado)
+  {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 4: Falcon500 motors
+  {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 5: NEO Vortex motors
+  {int(0.15f * SABERTOOTH_MAX_POWER), int(0.10f * SABERTOOTH_MAX_POWER), int(0.05f * SABERTOOTH_MAX_POWER)}  // index 6: Small 12v motors (old robots)
 };
 
 class Drive {
@@ -64,7 +65,7 @@ class Drive {
     float gearRatio;
     bool hasEncoders;
 
-    float speedScalar;
+    int speedScalar;
     float wheelBase;
     int omega;
     int omega_L, omega_R;
@@ -82,7 +83,7 @@ class Drive {
     // MotorControl* M1;
     // MotorControl* M2;
     MotorControl M1, M2;
-    float stickForwardRev, stickTurn;
+    int stickForwardRev, stickTurn;
     float lastTurnPwr;
     float turnPower;
 

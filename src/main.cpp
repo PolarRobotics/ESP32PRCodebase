@@ -30,6 +30,9 @@
 #include <Drive/Drive.h>
 #include <Drive/DriveMecanum.h>
 
+// Sabertooth USB Serial Library
+#include <USBSabertooth.h>
+
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
@@ -82,32 +85,32 @@ void setup() {
     case kicker:
       robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
       drive = new Drive(kicker, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
       break;
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
       drive = new Drive(quarterback_old, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
       break;
     case mecanum_center:
       robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new DriveMecanum();
-      ((DriveMecanum*) drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+      ((DriveMecanum*) drive)->setupMotors(M1_IDX, M2_IDX, M3_PIN, M4_PIN);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new Drive(center, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
       break;
     case runningback:
       robot = new Lineman();
       drive = new Drive(runningback, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_PIN, // left flywheel
-        M2_PIN, // right flywheel
+        M1_IDX, // left flywheel
+        M2_IDX, // right flywheel
         M3_PIN, // cradle
         M4_PIN, // turret
         SPECBOT_PIN1, // assembly motor
@@ -120,7 +123,7 @@ void setup() {
       break;
     case quarterback_base:
       drive = new Drive(quarterback_base, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
       robot = new QuarterbackBase(drive);
       break;
     case receiver:
@@ -128,7 +131,7 @@ void setup() {
     default: // Assume lineman
       robot = new Lineman();
       drive = new Drive(lineman, driveParams);
-      drive->setupMotors(M1_PIN, M2_PIN);
+      drive->setupMotors(M1_IDX, M2_IDX);
   }
 
   // drive->printSetup();
@@ -145,6 +148,7 @@ void setup() {
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
+  SabertoothTXPinSerial.begin(115200); // 9600 is the default baud rate for Sabertooth Packet Serial.
 }
 
 /*

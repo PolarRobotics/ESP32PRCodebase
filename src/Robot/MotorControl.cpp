@@ -1,3 +1,8 @@
+#include <USBSabertooth.h>
+#include "MotorControl.h"
+
+USBSabertoothSerial C;
+USBSabertooth ST(C, 128);
 #include <Arduino.h>
 
 #include "MotorControl.h"
@@ -57,25 +62,28 @@ MotorControl::MotorControl() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
   this->has_encoder = has_encoder;
   this->motor_type = type;
   this->gear_ratio = gearRatio;
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
+  this->mot_idx = mot_idx;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
-
-  // call the logic to attach the motor pin and setup, return 255 on an error
-  return Motor.attach(mot_pin, MIN_PWM_US, MAX_PWM_US);
 }
 
 /**
- * @brief write, wrapper function for MotorInterface, to be removed in future
- * !TODO: remove in future
-*/
-void MotorControl::write(float pct) {
-  Motor.write(pct);
+ * @brief Write requested power to sabertooth
+ * @author Quentin Osterhage
+ * Updated 10-04-2025
+ * 
+ * @param pwr the power value to write to the sabertooth in range -2047 to 2047
+ * 
+ * @return void 
+ */
+void MotorControl::write(int pwr) {
+  ST.motor(this->mot_idx, pwr);
 }
 
 int MotorControl::Percent2RPM(float pct)

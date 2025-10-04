@@ -27,8 +27,8 @@
  *  - add mechanium driving code, for the new center, needed next semester (Spring 2023)
  *
  * Default configuration:
- * @param leftmotorpin the arduino pin needed for the left motor, needed for servo
- * @param rightmotorpin the arduino pin needed for the right motor, needed for servo
+ * @param leftmotoridx the arduino pin needed for the left motor, needed for servo
+ * @param rightmotoridx the arduino pin needed for the right motor, needed for servo
 */
 
 Drive::Drive() {
@@ -90,14 +90,13 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
 
 }
 
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx) {
+    //this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
     // this->M1 = new MotorControl(motorType, false, this->gearRatio);
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
-
-    // M1->setup(lpin), M2->setup(rpin);
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    // M1->setup(lidx), M2->setup(ridx);
+    M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
+    M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
 }
 
 /**
@@ -106,13 +105,13 @@ void Drive::setupMotors(uint8_t lpin, uint8_t rpin) {
  * 
  * 
 */
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
+    //this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
     // this->M1 = new MotorControl(motorType, true, this->gearRatio);
     // this->M2 = new MotorControl(motorType, true, this->gearRatio);
     
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+    M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
 }
 
 void Drive::setMotorType(MotorType motorType) {
@@ -121,10 +120,10 @@ void Drive::setMotorType(MotorType motorType) {
 
 
 /**
- * setStickPwr takes the stick values passed in and normalizes them to values between -1 and 1
+ * setStickPwr takes the stick values passed in and normalizes them to values between -2047 and 2047
  * and sets this value to the private variables stickFwdRev and stickTurn respectively
- * @author Rhys Davies
- * Created: 9-12-2022
+ * @author Rhys Davies (Edited by Quentin Osterhage for USBSabertooth)
+ * Created: 9-12-2022 (Edited 10-04-2025)
  *
  * @param leftY the forward backward value from the left stick an unsigned 8-bit float (0 to 255)
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
@@ -132,8 +131,10 @@ void Drive::setMotorType(MotorType motorType) {
 void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // left stick all the way forward is 0, backward is 255
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / 127.5f);
-    stickTurn = (rightX / 127.5f);
+    stickForwardRev = (leftY);
+    stickForwardRev = stickForwardRev << 4;
+    stickTurn = (rightX);
+    stickTurn = stickTurn << 4;
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -183,7 +184,7 @@ void Drive::setSpeedScalar(Speed bns) {
  * @brief setSpeedValue overrides the default predefined values from MOTORTYPE_BNS_ARRAY
 */
 void Drive::setSpeedValue(float speed_pct) {
-    this->speedScalar = constrain(speed_pct, -1, 1);
+    this->speedScalar = (speed_pct * SABERTOOTH_MAX_POWER);
 }
 
 float Drive::getSpeedScalar() {

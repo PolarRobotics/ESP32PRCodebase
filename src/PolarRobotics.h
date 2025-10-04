@@ -27,8 +27,8 @@
 //  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   |  2 wheels  |  4 wheels  |
 // ____|______|__|___|____________|____________|
-#define M1_PIN 32 // | leftMotor  | leftFront  |
-#define M2_PIN 33 // | rightMotor | rightFront |
+#define M1_IDX 1 // | leftMotor  | leftFront  |
+#define M2_IDX 2 // | rightMotor | rightFront |
 #define M3_PIN 26 // |    N/A     | leftRear   |
 #define M4_PIN 27 // |    N/A     | rightRear  |
 
