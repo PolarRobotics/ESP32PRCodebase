@@ -30,6 +30,10 @@
 #include <Drive/Drive.h>
 #include <Drive/DriveMecanum.h>
 
+// RTOS Includes
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
 Drive* drive = nullptr; // subclassed if needed
@@ -49,6 +53,16 @@ ConfigManager config;
 // Implementations located at the bottom of this file
 void onConnection();
 void onDisconnect();
+
+void loop1();
+
+TaskHandle_t LoopTaskHandle = NULL;
+void LoopTask(void * parameter) {
+  for(;;) {
+    loop1();
+  }
+  vTaskDelay(1);
+}
 
 /*
    ____    _____   _____   _   _   ____
@@ -145,6 +159,7 @@ void setup() {
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
+  xTaskCreatePinnedToCore(LoopTask, "LoopTask", 10000, NULL, 1, NULL, 1);
 }
 
 /*
@@ -157,7 +172,7 @@ void setup() {
 */
 
 // runs continuously after setup(). controls driving and any special robot functionality during a game
-void loop() {
+void loop1() {
   if (ps5.isConnected()) {
     // Serial.print(F("\r\nConnected"));
     // ps5.setLed(255, 0, 0);   // set LED red
@@ -233,7 +248,7 @@ void loop() {
     // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
     // lights.printDebugInfo();
 
-    delay(5); // necessary for lights to be happy
+    // delay(5); // necessary for lights to be happy
       
   } else { // no response from PS5 controller within last 300 ms, so stop
     if (robotType != quarterback_turret) {
@@ -244,6 +259,10 @@ void loop() {
       ((QuarterbackTurret*) robot)->emergencyStop();
     }
   }
+}
+
+void loop(){
+  
 }
 
 /**
