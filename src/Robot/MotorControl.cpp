@@ -64,14 +64,21 @@ MotorControl::MotorControl() {
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
 uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+  this->mot_idx = mot_idx;
+
+  int debugidx = 0;
+  if(mot_idx == 1) debugidx = 5;
+  else if (mot_idx == 2) debugidx = 8;
+  Serial.print("0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n");
+
   this->has_encoder = has_encoder;
   this->motor_type = type;
   this->gear_ratio = gearRatio;
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
-  this->mot_idx = mot_idx;
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
+  Serial.print("0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n");
 }
 
 /**
