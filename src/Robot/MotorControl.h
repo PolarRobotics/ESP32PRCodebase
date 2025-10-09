@@ -2,11 +2,9 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-// #include <MotorInterface.h>
 #include <USBSabertooth.h>
-
-extern USBSabertoothSerial C;
-extern USBSabertooth ST;
+#include <Utilities/sabertoothinst.h>
+// #include <MotorInterface.h>
 
 // Enum for Increasing or Decreasing Flywheel Speed
 enum SpeedStatus {

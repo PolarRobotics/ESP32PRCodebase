@@ -1,11 +1,12 @@
 #include <USBSabertooth.h>
 #include "MotorControl.h"
-
-USBSabertoothSerial C;
-USBSabertooth ST(C, 128);
 #include <Arduino.h>
-
 #include "MotorControl.h"
+#include <Utilities/sabertoothinst.h>
+
+HardwareSerial HWSerial(2);
+USBSabertoothSerial STSerial(HWSerial);
+USBSabertooth ST(STSerial, 128);
 
 // void ext_read_encoder0() {
 //   GlobalClassPointer[0]->readEncoder();

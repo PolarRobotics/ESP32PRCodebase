@@ -31,7 +31,7 @@
 #include <Drive/DriveMecanum.h>
 
 // Sabertooth USB Serial Library
-#include <USBSabertooth.h>
+#include <Utilities/sabertoothinst.h>
 
 // Primary Parent Component Pointers
 Robot* robot = nullptr; // subclassed if needed
@@ -61,11 +61,11 @@ void onDisconnect();
   |____/  |_____|   |_|    \___/  |_|
 
 */
+bool sabertoothReady = false;
 
 // runs once at the start of the program
 void setup() {
   Serial.begin(115200);
-
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
 
@@ -148,7 +148,7 @@ void setup() {
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-  SabertoothTXPinSerial.begin(115200); // 9600 is the default baud rate for Sabertooth Packet Serial.
+  HWSerial.begin(115200, SERIAL_8N1, 16, 17); // 9600 baudrate default for USBSabertooth
 }
 
 /*
