@@ -69,7 +69,8 @@ uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float
   int debugidx = 0;
   if(mot_idx == 1) debugidx = 5;
   else if (mot_idx == 2) debugidx = 8;
-  Serial.print("0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n");
+  String debugMsg = "0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n";
+  Serial.print(debugMsg.c_str());
 
   this->has_encoder = has_encoder;
   this->motor_type = type;
@@ -78,7 +79,8 @@ uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
-  Serial.print("0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n");
+  String debugMsg2 = "0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n";
+  Serial.print(debugMsg2.c_str());
 }
 
 /**

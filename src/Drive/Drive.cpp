@@ -87,7 +87,8 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
     domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
     
   }
-  Serial.print("02: Drive Class Instantiated\n");
+    String debugMsg = "02: Drive Class Instantiated\n";
+    Serial.print(debugMsg.c_str());
 
 }
 
@@ -96,11 +97,14 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx) {
     // this->M1 = new MotorControl(motorType, false, this->gearRatio);
     // this->M2 = new MotorControl(motorType, false, this->gearRatio);
     // M1->setup(lidx), M2->setup(ridx);
-    Serial.print("04: Calling M1 and M2 setup\n");
+    String debugMsg1 = "04: Calling M1 and M2 setup\n";
+    Serial.print(debugMsg1.c_str());
     M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
-    Serial.print("07: Exit M1 Setup\n");
+    String debugMsg2 = "07: Exit M1 Setup\n";
+    Serial.print(debugMsg2.c_str());
     M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
-    Serial.print("10: Exit M2 Setup\n");
+    String debugMsg3 = "10: Exit M2 Setup\n";
+    Serial.print(debugMsg3.c_str());
 
 }
 

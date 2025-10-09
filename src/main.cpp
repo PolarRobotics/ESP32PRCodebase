@@ -130,9 +130,11 @@ void setup() {
     case lineman:
     default: // Assume lineman
       robot = new Lineman();
-      Serial.print("01: Instantiating Drive Class\n");
+      String debugMsg = "01: Instantiating Drive Class\n";
+      Serial.print(debugMsg.c_str());
       drive = new Drive(lineman, driveParams);
-      Serial.print("03: Call setupMotors\n");
+      String debugMsg2 = "03: Call setupMotors\n";
+      Serial.print(debugMsg2.c_str());
       drive->setupMotors(M1_IDX, M2_IDX);
   }
 
