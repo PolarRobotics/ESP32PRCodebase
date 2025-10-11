@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @brief Polar Robotics Main Header File
  * 
@@ -12,6 +14,9 @@
 #include <Utilities/BotTypes.h>
 #include <Utilities/MotorTypes.h>
 #include <Utilities/DriveParameters.h>
+#include <USBSabertooth.h>
+#include <HardwareSerial.h>
+
 
 // #define PR_CODEBASE_VERSION "2.4.5 @ production"
 
@@ -57,5 +62,10 @@ enum BOT_STATE {
   DEFENSE,
   TACKLED
 };
+
+// USBSabertooth class objects
+extern HardwareSerial HWSerial;
+extern USBSabertoothSerial STSerial;
+extern USBSabertooth ST;
 
 #endif // POLAR_ROBOTICS_H

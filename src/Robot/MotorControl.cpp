@@ -1,8 +1,6 @@
-#include <USBSabertooth.h>
 #include "MotorControl.h"
 #include <Arduino.h>
 #include "MotorControl.h"
-#include <Utilities/sabertoothinst.h>
 
 HardwareSerial HWSerial(2);
 USBSabertoothSerial STSerial(HWSerial);
@@ -63,7 +61,7 @@ MotorControl::MotorControl() {
  * 
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
   this->mot_idx = mot_idx;
 
   int debugidx = 0;
