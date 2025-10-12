@@ -140,10 +140,8 @@ void Drive::setMotorType(MotorType motorType) {
 void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
     // left stick all the way forward is 0, backward is 255
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
-    stickForwardRev = (leftY);
-    stickForwardRev = stickForwardRev << 4;
-    stickTurn = (rightX);
-    stickTurn = stickTurn << 4;
+    stickForwardRev = (leftY / 127.5f);
+    stickTurn = (rightX / 127.5f);
 
     // stick deadzones
     // set to zero (no input) if within the set deadzone
@@ -441,7 +439,7 @@ void Drive::update() {
     else { // CASE FOR ANY OTHER ROBOT
         // Generate turning motion
         generateMotionValues();
-        //printDebugInfo();
+        printDebugInfo();
 
         // calculate the value to set to the motors to based on the acceleration rate
         requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);

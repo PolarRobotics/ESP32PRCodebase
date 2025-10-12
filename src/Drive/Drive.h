@@ -83,7 +83,7 @@ class Drive {
     // MotorControl* M1;
     // MotorControl* M2;
     MotorControl M1, M2;
-    int stickForwardRev, stickTurn;
+    float stickForwardRev, stickTurn;
     float lastTurnPwr;
     float turnPower;
 
