@@ -453,8 +453,8 @@ void Drive::update() {
         lastRampPower[1] = requestedMotorPowerSerial[1];
         
         // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPowerSerial[0]);
-        M2.write(requestedMotorPowerSerial[1]);
+        M1.write(requestedMotorPowerSerial[1]);
+        M2.write(requestedMotorPowerSerial[0]);
     }
     
     trackingMotorPower[0] = requestedMotorPowerSerial[0];
