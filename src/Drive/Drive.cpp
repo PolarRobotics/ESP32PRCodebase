@@ -159,7 +159,6 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX) {
       stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
     else if (stickTurn < 0)
       stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
-
 }
 
 float Drive::getForwardPower() {
@@ -439,23 +438,27 @@ void Drive::update() {
     else { // CASE FOR ANY OTHER ROBOT
         // Generate turning motion
         generateMotionValues();
-        printDebugInfo();
+        //printDebugInfo();
 
         // calculate the value to set to the motors to based on the acceleration rate
         requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
         requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
 
+        // Convert Motor Power to int for USBSabertooth (-2048 to 2047)
+        requestedMotorPowerSerial[0] = (int)(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = (int)(requestedMotorPower[1] * 2047.0f);
+
         // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
+        lastRampPower[0] = requestedMotorPowerSerial[0];
+        lastRampPower[1] = requestedMotorPowerSerial[1];
         
         // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPower[0]);
-        M2.write(requestedMotorPower[1]);
+        M1.write(requestedMotorPowerSerial[0]);
+        M2.write(requestedMotorPowerSerial[1]);
     }
     
-    trackingMotorPower[0] = requestedMotorPower[0];
-    trackingMotorPower[1] = requestedMotorPower[1];
+    trackingMotorPower[0] = requestedMotorPowerSerial[0];
+    trackingMotorPower[1] = requestedMotorPowerSerial[1];
 }
 
 int Drive::getMotorWifiValue(int motorRequested) {

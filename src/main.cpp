@@ -135,7 +135,7 @@ void setup() {
       drive->setupMotors(M1_IDX, M2_IDX);
   }
 
-  // drive->printSetup();
+  drive->printSetup();
 
   // Set up and initialize lights for pairing process
   lights.setupLEDS();

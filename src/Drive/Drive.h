@@ -47,15 +47,15 @@
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType to be used effectively
 constexpr int SABERTOOTH_MAX_POWER = 2047; // Max power value accepted via USBSabertooth Packetized Serial Protocol
-constexpr int MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
+constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
 // Boost   Normal  Slow
-  {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 0: Big Ampflow Motor
-  {int(0.85f * SABERTOOTH_MAX_POWER), int(0.70f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 1: Small Ampflow Motor
-  {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 2: Pancake Ampflow Motor
-  {int(0.80f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 3: Mecanum Motor (Torquenado)
-  {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 4: Falcon500 motors
-  {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 5: NEO Vortex motors
-  {int(0.15f * SABERTOOTH_MAX_POWER), int(0.10f * SABERTOOTH_MAX_POWER), int(0.05f * SABERTOOTH_MAX_POWER)}  // index 6: Small 12v motors (old robots)
+  {0.70f,  0.60f,  0.30f}, // index 0: Big Ampflow Motor
+  {0.85f,  0.70f,  0.40f}, // index 1: Small Ampflow Motor
+  {0.70f,  0.60f,  0.30f}, // index 2: Pancake Ampflow Motor
+  {0.80f,  0.60f,  0.40f}, // index 3: Mecanum Motor (Torquenado)
+  {0.60f,  0.40f,  0.15f}, // index 4: Falcon500 motors
+  {0.60f,  0.40f,  0.15f}, // index 5: NEO Vortex motors
+  {0.15f,  0.10f,  0.05f}  // index 6: Small 12v motors (old robots)
 };
 
 class Drive {
@@ -65,7 +65,7 @@ class Drive {
     float gearRatio;
     bool hasEncoders;
 
-    int speedScalar;
+    float speedScalar;
     float wheelBase;
     int omega;
     int omega_L, omega_R;
@@ -88,6 +88,7 @@ class Drive {
     float turnPower;
 
     float requestedMotorPower[NUM_MOTORS];
+    int requestedMotorPowerSerial[NUM_MOTORS];
     float trackingMotorPower[NUM_MOTORS];
     float lastRampPower[NUM_MOTORS];
     float turnMotorValues[NUM_MOTORS];
