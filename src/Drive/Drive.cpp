@@ -373,9 +373,9 @@ void Drive::printDebugInfo() {
     // Serial.println(requestedPower - currentRampPower[mtr], 10);
 
     Serial.print(F("  Left Motor: "));
-    Serial.print(requestedMotorPower[0]);
+    Serial.print(requestedMotorPowerSerial[0]);
     Serial.print(F("  Right: "));
-    Serial.print(requestedMotorPower[1]);
+    Serial.print(requestedMotorPowerSerial[1]);
 
     //Serial.print(F("  scaledSensitiveTurn: "));
     //Serial.print(scaledSensitiveTurn);
@@ -453,8 +453,8 @@ void Drive::update() {
         lastRampPower[1] = requestedMotorPowerSerial[1];
         
         // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPowerSerial[1]);
-        M2.write(requestedMotorPowerSerial[0]);
+        M1.write(requestedMotorPowerSerial[0]);
+        M2.write(requestedMotorPowerSerial[1]);
     }
     
     trackingMotorPower[0] = requestedMotorPowerSerial[0];
