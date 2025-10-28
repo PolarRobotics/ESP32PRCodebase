@@ -10,7 +10,7 @@
 
 // RAMP DEFINES
 // rate of change of power with respect to time when accelerating %power/10th of sec
-#define ACCELERATION_RATE    0.003f // [RPM/ms] possibly change to RPM/s for future
+#define ACCELERATION_RATE    0.00375f // [RPM/ms] possibly change to RPM/s for future
 #define RB_ACCELERATION_RATE 0.0015f //default: 0.00375f, Runningback old: 0.03f, 0.015f
 
 // rate of deceleration/braking
