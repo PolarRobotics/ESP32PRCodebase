@@ -44,8 +44,6 @@
 #error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
 #endif
 
-#define yeet return
-
 #define PREF_KEY "bt-mac" // preferences namespace, limited to 15 characters
 Preferences prefs;
 
@@ -64,7 +62,7 @@ const char* macTest = "bc:c7:46:03"; // length 11
 const char* macTest2 = "bc:c7:46:04"; // length 11
 const char* macTest3 = "14:3a:9a";
 const char* RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
-const char* _1_21_Controller = "14:3a:9a:86:02:ee"; // length 17 "14:3a:9a:86:02:ee"
+const char* macTest3 = "14:3a:9a"; // length 8 "14:3a:9a"
 const char* NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
 // another new controller (currently unlabeled): 14:3a:9a:e5:0e:6a
 // TODO: convert this to an array (or multiple since there are diff. length strings)
@@ -81,7 +79,7 @@ bool addressIsController(const char* addrCharPtr) {
     return true;
   else if (strncmp(addrCharPtr, RhysController, 11) == 0)
     return true;
-  else if (strncmp(addrCharPtr, _1_21_Controller, 17) == 0)
+  else if (strncmp(addrCharPtr, macTest3, 8) == 0)
     return true;
   else if (strncmp(addrCharPtr, NewCamoController, 17) == 0)
     return true;
@@ -174,7 +172,7 @@ void activatePairing(bool doRePair, int discoverTime) {
       // return if we get a connection at this point
       if (ps5.isConnected()) {
         Serial.println(F("PS5 Controller Connected!"));
-        yeet;
+        return;
       } // otherwise look for devices to pair with
     } 
   }
