@@ -187,6 +187,16 @@ class QuarterbackTurret : public Robot {
     double targetPosition[2] = {6,6};
     float x;
     int changeInPos = 1; // used to change the x position in auto mode
+    
+    // Generate Struct for Receivers
+    struct Receiver{
+      double position[2];
+      double distance;
+      double angle;
+    };
+    #define NUM_RECEIVERS 4
+    Receiver receivers[NUM_RECEIVERS];
+    int currReceiver;
 
     //==============================//
     //  Setup and Status Variables  //
@@ -424,8 +434,8 @@ class QuarterbackTurret : public Robot {
     int16_t findNearestHeading(int16_t targetHeading);
     int NormalizeAngle(int angle);
     int CalculateRotation(float currentAngle, float targetAngle);
-    int angleToTarget();
-    float distanceToTarget();
+    int angleToTarget(Receiver receiver);
+    float distanceToTarget(Receiver receiver);
 #pragma endregion
 
 #pragma region Public
@@ -452,6 +462,8 @@ class QuarterbackTurret : public Robot {
     );
 
     bool magnetometerCalibrated = false;
+
+
 
     //===================================//
     //   Quarterback General Functions   //
@@ -511,6 +523,7 @@ class QuarterbackTurret : public Robot {
     void switchMode(); 
     void switchTarget(TargetReceiver target); 
     void moveToTarget(int targetHeading);
+    void readTargetingInfo();
 
     //==================================//
     //   Quarterback Strategic Macros   //

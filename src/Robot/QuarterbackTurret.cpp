@@ -196,32 +196,28 @@ void QuarterbackTurret::action() {
       else if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options())) {
         switchMode();
       }
-      //* Left Button (L1): Switch Target to Receiver 1
+      //* Left Button (L1): Switch Target to Next Receiver
       else if (QB_AUTO_ENABLED && ps5.L1()) {
-        switchTarget(receiver_1);
+        // switchTarget(receiver_1);
+        currReceiver--;
+        if (currReceiver < 0) {
+          currReceiver = 0;
+        }
       }
-      //* Right Button (R1): Switch Target to Receiver 2
+      //* Right Button (R1): Switch Target to Previous Receiver
       else if (QB_AUTO_ENABLED && ps5.R1()) {
-        switchTarget(receiver_2);
+        // switchTarget(receiver_2);
+        currReceiver++;
+        if(currReceiver > NUM_RECEIVERS - 1){
+          currReceiver = NUM_RECEIVERS - 1;
+        }
       }
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
         long currentTime = millis();
-        targetPosition[0] = x;
+        // targetPosition[0] = x;
         currentRelativeHeading = getCurrentHeading();
-        targetRelativeHeading = angleToTarget();
-        // targetTurretEncoderCount = (int) round((double) targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
-        // setTurretSpeed(0.09 * copysign(1, -CalculateRotation(currentRelativeHeading, targetRelativeHeading)), true);
-        // // while ((currentTurretEncoderCount < targetTurretEncoderCount - QB_TURRET_THRESHOLD || currentTurretEncoderCount > targetTurretEncoderCount + QB_TURRET_THRESHOLD) && !testForDisableOrStop()){
-        // //   // Run until turret reaches target position
-        // // }
-        // // setTurretSpeed(0,true);
-        // Serial.println("currentHeading: " + String(currentRelativeHeading) + "\ttargetHeading: " + String(targetRelativeHeading) + "\ttargetEncoderCount: " + String(targetTurretEncoderCount) + "\tcurrentEncoderCount: " + String(currentTurretEncoderCount));
-        // if(currentTurretEncoderCount > targetTurretEncoderCount - QB_TURRET_THRESHOLD && currentTurretEncoderCount < targetTurretEncoderCount + QB_TURRET_THRESHOLD){
-        //   // if the turret is within the threshold, stop it
-        //   Serial.println("-------------Turret is within threshold, stopping--------------");
-        //   setTurretSpeed(0, true);
-        // }
+        targetRelativeHeading = angleToTarget(receivers[currReceiver]);
         turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .2);
         setTurretSpeed(turretPIDSpeed);
         Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed());
@@ -729,18 +725,22 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
   // todo: not sure if this needs more functionality?
 }
 
+void QuarterbackTurret::readTargetingInfo(){
+  
+}
+
 /* @brief Calculates the target angle based on the location of the target receiver relative to the center of the QB
  * @author Kaiden Colish
  * @date 2025-07-21
 */
-int QuarterbackTurret::angleToTarget(){
-  double angleToTarget = atan2(targetPosition[1], targetPosition[0]) * 180 / PI; // Convert radians to degrees
+int QuarterbackTurret::angleToTarget(Receiver receiver){
+  double angleToTarget = atan2(receiver.position[1] - position[1], receiver.position[0] - position[0]) * 180 / PI; // Convert radians to degrees
   angleToTarget -= 90; // Set the angle to be relative to positive Y direction
   return -angleToTarget;
 }
 
-float QuarterbackTurret::distanceToTarget(){
-  float distance = sqrt(pow(targetPosition[0], 2) + pow(targetPosition[1], 2));
+float QuarterbackTurret::distanceToTarget(Receiver receiver){
+  float distance = sqrt(pow(receiver.position[0] - position[0], 2) + pow(receiver.position[1] - position[1], 2));
   return distance;
 }
 
@@ -764,7 +764,7 @@ void QuarterbackTurret::moveToTarget(int targetHeading){
 float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
   float dist = distance;
   if (dist < 0.01) {
-    dist = distanceToTarget();
+    dist = distanceToTarget(receivers[currReceiver]);
   }
   if(dist < 1){
     setFlywheelSpeed(0);
