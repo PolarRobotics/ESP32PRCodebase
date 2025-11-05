@@ -60,9 +60,8 @@ esp_spp_role_t role = ESP_SPP_ROLE_SLAVE; // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE
 // MAC Addresses to match to PS5 Controllers
 const char* macTest = "bc:c7:46:03"; // length 11
 const char* macTest2 = "bc:c7:46:04"; // length 11
-const char* macTest3 = "14:3a:9a";
+const char* macTest3 = "14:3a:9a"; // length 8 
 const char* RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
-const char* macTest3 = "14:3a:9a"; // length 8 "14:3a:9a"
 const char* NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
 // another new controller (currently unlabeled): 14:3a:9a:e5:0e:6a
 // TODO: convert this to an array (or multiple since there are diff. length strings)
@@ -75,11 +74,9 @@ bool addressIsController(const char* addrCharPtr) {
     return true;
   else if (strncmp(addrCharPtr, macTest2, 11) == 0)
     return true;
-  else if (strncmp(addrCharPtr, macTest3, 11) == 0)
+  else if (strncmp(addrCharPtr, macTest3, 8) == 0)
     return true;
   else if (strncmp(addrCharPtr, RhysController, 11) == 0)
-    return true;
-  else if (strncmp(addrCharPtr, macTest3, 8) == 0)
     return true;
   else if (strncmp(addrCharPtr, NewCamoController, 17) == 0)
     return true;
