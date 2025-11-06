@@ -109,6 +109,7 @@ const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35,
 #define QB_TURRET_HOME_STOP_FACTOR 0 // 0.5
 #define QB_TURRET_MANUAL_CONTROL_FACTOR 4 
 
+const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 //=====================================//
 //   Turret PID Controller Constants   //
 //=====================================//
@@ -135,65 +136,74 @@ const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35,
 #define RX2 16 // reciever pin
 #define TX2 17 // transmitter pin
 
+#define NUM_CHARS 1000
+
 /**
  * @brief Quarterback Turret Subclass Header
  * @authors Maxwell Phillips, George Rak
  */
 class QuarterbackTurret : public Robot {
-
-#pragma region Private
+  
+  #pragma region Private
   //============================//
   //|                          |//
   //|          PRIVATE         |//
   //|                          |//
   //============================//
   private: 
-
-    //==============================//
-    //    MotorControl Instances    //
-    //==============================//
-    MotorControl cradleActuator;
-    MotorControl turretMotor;
-    MotorControl assemblyMotor; 
-    MotorControl flywheelLeftMotor;
-    MotorControl flywheelRightMotor;
-    
-    //==============================//
-    //       Pin Declarations       //
-    //==============================//
-    static uint8_t turretEncoderPinA;
-    static uint8_t turretEncoderPinB;
-    static uint8_t turretLaserPin;
-
-    //===============================//
-    //        Joystick Inputs        //
-    //===============================//
-    // stickTurret    used to normalize stick input from [0, 255] to [-1.0, 1.0]
-    // stickFlywheel  same as above  
-    float stickTurret;
-    float stickFlywheel;
-
-    //==============================//
-    //     Autonomous Targeting     //
-    //==============================//
-    // mode: manual or autonomous (or combine)
-    // target: reciever1 or reciever2
-    // position: [x,y] coordinates of the qb
-    // targetPosition: [x,y] coordinates of the target
-    TurretMode mode;
-    TargetReceiver target;
-    CombinePosition combinePosition;
-    double position[2] = {0,0};
-    double targetPosition[2] = {6,6};
-    float x;
-    int changeInPos = 1; // used to change the x position in auto mode
-    
-    // Generate Struct for Receivers
-    struct Receiver{
+  
+  //==============================//
+  //    MotorControl Instances    //
+  //==============================//
+  MotorControl cradleActuator;
+  MotorControl turretMotor;
+  MotorControl assemblyMotor; 
+  MotorControl flywheelLeftMotor;
+  MotorControl flywheelRightMotor;
+  
+  //==============================//
+  //       Pin Declarations       //
+  //==============================//
+  static uint8_t turretEncoderPinA;
+  static uint8_t turretEncoderPinB;
+  static uint8_t turretLaserPin;
+  
+  //===============================//
+  //        Joystick Inputs        //
+  //===============================//
+  // stickTurret    used to normalize stick input from [0, 255] to [-1.0, 1.0]
+  // stickFlywheel  same as above  
+  float stickTurret;
+  float stickFlywheel;
+  
+  //==============================//
+  //     Autonomous Targeting     //
+  //==============================//
+  // mode: manual or autonomous (or combine)
+  // target: reciever1 or reciever2
+  // position: [x,y] coordinates of the qb
+  // targetPosition: [x,y] coordinates of the target
+  TurretMode mode;
+  TargetReceiver target;
+  CombinePosition combinePosition;
+  double position[2] = {0,0};
+  double targetPosition[2] = {6,6};
+  float x;
+  int changeInPos = 1; // used to change the x position in auto mode
+  
+  // Variable used for UART communication, receiving targeting data
+  char receivedChars[NUM_CHARS]; // an array to store the received data
+  char tempChars[NUM_CHARS];
+  bool newData = false;
+  String s;
+  String prev;
+  
+  // Generate Struct for Receivers
+  struct Receiver{
       double position[2];
       double distance;
       double angle;
-    };
+  };
     #define NUM_RECEIVERS 4
     Receiver receivers[NUM_RECEIVERS];
     int currReceiver;
@@ -559,7 +569,7 @@ class QuarterbackTurret : public Robot {
     //===================================//
     int motor1Value = 0;
     int motor2Value = 0;
-    void updateReadMotorValues();
+    // void updateReadMotorValues();
 
 #pragma endregion
 };  

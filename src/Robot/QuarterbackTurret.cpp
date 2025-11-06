@@ -1,7 +1,7 @@
 #include "QuarterbackTurret.h"
 
 //This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
-HardwareSerial Uart_Turret(2);     // UART2
+// HardwareSerial Uart_Turret(2);     // UART2
 
 // "define" static members to satisfy linker
 uint8_t QuarterbackTurret::turretEncoderPinA;
@@ -122,7 +122,8 @@ QuarterbackTurret::QuarterbackTurret(
 
   magnetometerSetup();
 
-  Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
+  // Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
+  Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 #pragma endregion
 
@@ -335,7 +336,7 @@ void QuarterbackTurret::action() {
     }
   }
 
-  updateReadMotorValues();
+  // updateReadMotorValues();
   printDebug();
 }
 #pragma endregion
@@ -726,7 +727,94 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 }
 
 void QuarterbackTurret::readTargetingInfo(){
+  static boolean recvInProgress = false;
+  static int ndx = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char rc;
   
+  while (Serial2.available() > 0 && newData == false) {
+      // Serial.println("Data Received");
+      rc = Serial2.read();
+
+      if (recvInProgress == true) {
+          if (rc != endMarker) {
+              receivedChars[ndx] = rc;
+              ndx++;
+              if (ndx >= NUM_CHARS) {
+                  ndx = NUM_CHARS - 1;
+              }
+          }
+          else {
+              receivedChars[ndx] = '\0'; // terminate the string
+              recvInProgress = false;
+              ndx = 0;
+              newData = true;
+          }
+      }
+      
+      else if (rc == startMarker) {
+          recvInProgress = true;
+      }
+  }
+  if(newData == true){
+    strcpy(tempChars, receivedChars);
+    char * strtokIndx; // this is used by strtok() as an index
+    // Serial.println("test");
+    strtokIndx = strtok(tempChars,":,=");
+    while(strtokIndx != NULL){
+        if(prev == "QB"){
+
+            Serial.printf("X: %.2f", atof(strtokIndx));
+            position[0] = atof(strtokIndx); // Set X position
+            strtokIndx = strtok(NULL,":,=");
+            Serial.printf("Y: %.2f", atof(strtokIndx));
+            position[1] = atof(strtokIndx); // Set Y position
+            strtokIndx = strtok(NULL,":,=");
+            Serial.printf("Z: %.2f\n", atof(strtokIndx));
+            strtokIndx = strtok(NULL,":,=");
+            prev = "";
+        }
+        else if(prev == "RCV"){
+            // Serial.printf("Receiver ID: %llx\n", strtoull(strtokIndx, nullptr, 16));
+            // Get Receiver ID and set currReceiver accordingly
+            // unsigned long long temp_id = strtoull(strtokIndx, nullptr, 16);
+            // switch (temp_id){
+            //   case RECEIVER_0_ID:
+            //     currReceiver = 0;
+            //     break;
+            //   // case RECEIVER_1_ID:
+            //   //   currReceiver = 1;
+            //   //   break;
+            //   // case RECEIVER_2_ID:
+            //   //   currReceiver = 2;
+            //   //   break;
+            //   // case RECEIVER_3_ID:
+            //   //   currReceiver = 3;
+            //   //   break;
+            //   default:
+            //     currReceiver = 0;
+            //     break;
+            // }
+            // strtokIndx = strtok(NULL,":,=");
+            Serial.printf("X: %.2f", atof(strtokIndx));
+            receivers[0].position[0] = atof(strtokIndx); // Set X position
+            strtokIndx = strtok(NULL,":,=");
+            Serial.printf("Y: %.2f", atof(strtokIndx));
+            receivers[0].position[1] = atof(strtokIndx); // Set Y position
+            strtokIndx = strtok(NULL,":,=");
+            Serial.printf("Z: %.2f\n", atof(strtokIndx));
+            strtokIndx = strtok(NULL,":,=");
+            prev = "";
+        }
+        else{
+            s = String(strtokIndx);
+            Serial.println(s);
+            strtokIndx = strtok(NULL,":,=");
+            prev = s;
+        }
+    }
+  }
 }
 
 /* @brief Calculates the target angle based on the location of the target receiver relative to the center of the QB
@@ -1533,36 +1621,39 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
  * @author George Rak
  * @date 5-14-2024
 */
-void QuarterbackTurret::updateReadMotorValues() {
-  recievedMessage = "";
-  //While there are characters available in the buffer read each one individually
-  while (Uart_Turret.available()) {
-    char character = Uart_Turret.read();
-    //Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
-    //Since they are coming so fast and there is no need to remember past values only the most recent is kept
-    if (character == '~') {
-      if (Uart_Turret.available()) {
-        recievedMessage = "";
-      }
-    } else {
-      recievedMessage += character;
-    }
-  }
-  //The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
-  if (recievedMessage!="") {
-    if (recievedMessage == "DISCONNECTED") {
-      motor1Value = 100;
-      motor2Value = 100;
-    } else {
-      //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
-      motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
-      motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
-    }
-  }
-  // Serial.print("Motor1: ");
-  // Serial.print(motor1Value);
-  // Serial.print("\tMotor2: ");
-  // Serial.print(motor2Value);
-  // Serial.println();
-}
+
+// Commented out for UART repurposing
+
+// void QuarterbackTurret::updateReadMotorValues() {
+//   recievedMessage = "";
+//   //While there are characters available in the buffer read each one individually
+//   while (Uart_Turret.available()) {
+//     char character = Uart_Turret.read();
+//     //Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
+//     //Since they are coming so fast and there is no need to remember past values only the most recent is kept
+//     if (character == '~') {
+//       if (Uart_Turret.available()) {
+//         recievedMessage = "";
+//       }
+//     } else {
+//       recievedMessage += character;
+//     }
+//   }
+//   //The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
+//   if (recievedMessage!="") {
+//     if (recievedMessage == "DISCONNECTED") {
+//       motor1Value = 100;
+//       motor2Value = 100;
+//     } else {
+//       //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
+//       motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+//       motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+//     }
+//   }
+//   // Serial.print("Motor1: ");
+//   // Serial.print(motor1Value);
+//   // Serial.print("\tMotor2: ");
+//   // Serial.print(motor2Value);
+//   // Serial.println();
+// }
 #pragma endregion
