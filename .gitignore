@@ -1,2 +1,8 @@
 .pio
 .vscode
+
+# Clangd generates these files on compilation
+# pio run -t compiledb or 
+# pio run -t build
+.cache
+compile_commands.json
