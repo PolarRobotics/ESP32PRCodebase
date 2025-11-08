@@ -335,7 +335,7 @@ void QuarterbackTurret::action() {
       }
     }
   }
-
+  readTargetingInfo();
   // updateReadMotorValues();
   printDebug();
 }
@@ -728,6 +728,7 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
 
 void QuarterbackTurret::readTargetingInfo(){
   static boolean recvInProgress = false;
+  newData = false;
   static int ndx = 0;
   char startMarker = '<';
   char endMarker = '>';
@@ -760,22 +761,28 @@ void QuarterbackTurret::readTargetingInfo(){
   if(newData == true){
     strcpy(tempChars, receivedChars);
     char * strtokIndx; // this is used by strtok() as an index
-    // Serial.println("test");
     strtokIndx = strtok(tempChars,":,=");
+
     while(strtokIndx != NULL){
         if(prev == "QB"){
-
-            Serial.printf("X: %.2f", atof(strtokIndx));
-            position[0] = atof(strtokIndx); // Set X position
+            Serial.println("Quarterback Position:");
+            double x = atof(strtokIndx);
+            Serial.printf("X: %.2f ", x);
+            position[0] = x; // Set X position
             strtokIndx = strtok(NULL,":,=");
-            Serial.printf("Y: %.2f", atof(strtokIndx));
-            position[1] = atof(strtokIndx); // Set Y position
+            double y = atof(strtokIndx);
+            Serial.printf("Y: %.2f ", y);
+            position[1] = y; // Set Y position
             strtokIndx = strtok(NULL,":,=");
-            Serial.printf("Z: %.2f\n", atof(strtokIndx));
+            double z = atof(strtokIndx);
+            Serial.printf("Z: %.2f ", z);
+            strtokIndx = strtok(NULL,":,=");
+            double q = atof(strtokIndx);
+            Serial.printf("Q: %.2f\n", q);
             strtokIndx = strtok(NULL,":,=");
             prev = "";
         }
-        else if(prev == "RCV"){
+        else if(prev == " RCV"){
             // Serial.printf("Receiver ID: %llx\n", strtoull(strtokIndx, nullptr, 16));
             // Get Receiver ID and set currReceiver accordingly
             // unsigned long long temp_id = strtoull(strtokIndx, nullptr, 16);
@@ -797,19 +804,34 @@ void QuarterbackTurret::readTargetingInfo(){
             //     break;
             // }
             // strtokIndx = strtok(NULL,":,=");
-            Serial.printf("X: %.2f", atof(strtokIndx));
-            receivers[0].position[0] = atof(strtokIndx); // Set X position
+            Serial.println("Receiver Position:");
+            if(strtokIndx != NULL){
+              double x = atof(strtokIndx);
+              Serial.printf("X: %.2f ", x);
+            }
+            // receivers[0].position[0] = x; // Set X position
             strtokIndx = strtok(NULL,":,=");
-            Serial.printf("Y: %.2f", atof(strtokIndx));
-            receivers[0].position[1] = atof(strtokIndx); // Set Y position
+            if(strtokIndx != NULL){
+              double y = atof(strtokIndx);
+              Serial.printf("Y: %.2f ", y);
+            }
+            // receivers[0].position[1] = y; // Set Y position
             strtokIndx = strtok(NULL,":,=");
-            Serial.printf("Z: %.2f\n", atof(strtokIndx));
+            if(strtokIndx != NULL){
+              double z = atof(strtokIndx);
+              Serial.printf("Z: %.2f ", z);
+            }
+            strtokIndx = strtok(NULL,":,=");
+            if(strtokIndx != NULL){
+              double q = atof(strtokIndx);
+              Serial.printf("Q: %.2f\n", q);
+            }
             strtokIndx = strtok(NULL,":,=");
             prev = "";
         }
         else{
             s = String(strtokIndx);
-            Serial.println(s);
+            // Serial.println(s);
             strtokIndx = strtok(NULL,":,=");
             prev = s;
         }
