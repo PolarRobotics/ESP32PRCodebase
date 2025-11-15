@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <PolarRobotics.h>
 #include <USBSabertooth.h>
-// #include <MotorInterface.h>
+#include <MotorInterface.h>
 
 // Enum for Increasing or Decreasing Flywheel Speed
 enum SpeedStatus {
@@ -16,7 +16,7 @@ private:
   float gear_ratio;     // the input / output gear ratio
 
   // Servo:
-  // MotorInterface Motor;
+  MotorInterface Motor;
 
   // for ramp
   float requestedRPM;     
@@ -48,7 +48,7 @@ public:
 
   //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
   void write(int pwr); // write power in range -2047 to 2047
-
+  void writePWM(float pct);
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
 

@@ -1,6 +1,7 @@
 #include "MotorControl.h"
 #include <Arduino.h>
 #include "MotorControl.h"
+#include "MotorInterface.h"
 
 HardwareSerial HWSerial(2);
 USBSabertoothSerial STSerial(HWSerial);
@@ -79,6 +80,8 @@ void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float ge
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
   String debugMsg2 = "0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n";
   Serial.print(debugMsg2.c_str());
+
+  return Motor.attach(mot_idx, MIN_PWM_US, MAX_PWM_US);
 }
 
 /**
@@ -92,6 +95,10 @@ void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float ge
  */
 void MotorControl::write(int pwr) {
   ST.motor(this->mot_idx, pwr);
+}
+
+void MotorControl::writePWM(float pct) {
+  Motor.write(pct);
 }
 
 int MotorControl::Percent2RPM(float pct)

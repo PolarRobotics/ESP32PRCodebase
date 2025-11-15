@@ -18,7 +18,7 @@ Kicker::Kicker(uint8_t kickerPin, uint8_t limitSwitchPin, uint8_t kickerEncoderP
   enabled = false;
   this->kickerPin = kickerPin;
   this->limitSwitchPin = limitSwitchPin;
-  // windupMotor.setup(kickerPin, small_12v);
+  windupMotor.setup(kickerPin, small_12v);
   this->dbEnable = new Debouncer(KICKER_ENABLE_DB_DELAY);
   
   // Encoder Setup
@@ -95,18 +95,18 @@ void Kicker::enable() {
  */
 void Kicker::turnForward() {
   if (enabled) {
-    windupMotor.write(-1);
+    windupMotor.writePWM(-1);
   }
 }
 
-/**
+/*
  * @brief Turns motor reverse
  * 
  * Turns the motor backwards by writing the windupMotor SPECBOT_1 (D18) pin to 1
  */
 void Kicker::turnReverse() {
   if (enabled) {
-    windupMotor.write(1);
+    windupMotor.writePWM(1);
   }
 }
 
@@ -117,7 +117,7 @@ void Kicker::turnReverse() {
  */
 void Kicker::stop() {
   if (enabled) {
-    windupMotor.write(0);
+    windupMotor.writePWM(0);
   }
 }
 
