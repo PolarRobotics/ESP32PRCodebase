@@ -95,7 +95,7 @@ void Kicker::enable() {
  */
 void Kicker::turnForward() {
   if (enabled) {
-    windupMotor.writePWM(-1);
+    windupMotor.writePWM(-0.30);
   }
 }
 
@@ -106,7 +106,7 @@ void Kicker::turnForward() {
  */
 void Kicker::turnReverse() {
   if (enabled) {
-    windupMotor.writePWM(1);
+    windupMotor.writePWM(0.30);
   }
 }
 
