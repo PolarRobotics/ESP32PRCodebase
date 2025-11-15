@@ -66,6 +66,22 @@ void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float ge
   this->mot_idx = mot_idx;
 
   int debugidx = 0;
+
+  this->has_encoder = has_encoder;
+  this->motor_type = type;
+  this->gear_ratio = gearRatio;
+  this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
+
+  // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
+  this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
+  String debugMsg2 = "0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n";
+  Serial.print(debugMsg2.c_str());
+}
+
+uint8_t MotorControl::setupPWM(int mot_pin, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
+  this->mot_idx = mot_pin;
+
+  int debugidx = 0;
   if(mot_idx == 1) debugidx = 5;
   else if (mot_idx == 2) debugidx = 8;
   String debugMsg = "0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n";
@@ -83,7 +99,6 @@ void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float ge
 
   return Motor.attach(mot_idx, MIN_PWM_US, MAX_PWM_US);
 }
-
 /**
  * @brief Write requested power to sabertooth
  * @author Quentin Osterhage

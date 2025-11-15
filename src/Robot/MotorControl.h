@@ -44,6 +44,7 @@ public:
   int max_rpm;          // the motor max rpm * the gear ratio 
   int mot_idx;
   MotorControl();
+  uint8_t setupPWM(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); 
   void setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
 
   //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE

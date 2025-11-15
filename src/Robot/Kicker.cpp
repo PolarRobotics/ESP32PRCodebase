@@ -18,7 +18,7 @@ Kicker::Kicker(uint8_t kickerPin, uint8_t limitSwitchPin, uint8_t kickerEncoderP
   enabled = false;
   this->kickerPin = kickerPin;
   this->limitSwitchPin = limitSwitchPin;
-  windupMotor.setup(kickerPin, small_12v);
+  windupMotor.setupPWM(kickerPin, small_12v);
   this->dbEnable = new Debouncer(KICKER_ENABLE_DB_DELAY);
   
   // Encoder Setup
