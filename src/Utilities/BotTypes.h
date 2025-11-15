@@ -103,7 +103,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
   { 0,  "i++",       lineman,            { small_ampflow,  0.6f,      12.25f,  9.00f,  36.00f }},  //* 0:  i++
   { 1,  "sqrt(-1)",  lineman,            { big_ampflow,    0.53333f,  11.25f,  9.00f,  36.00f }},  //* 1:  sqrt(-1)
   { 2,  "pi",        receiver,           { small_ampflow,  0.46667f,  11.00f,  6.00f,  36.00f }},  //* 2:  pi
-  { 3,  "rho",       lineman,            { big_ampflow,    0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
+  { 3,  "rho",       kicker,             { big_ampflow,    0.6f,      11.25f,  9.00f,  36.00f }},  //* 3:  ρ
   { 4,  "2.72",      lineman,            { big_ampflow,    0.4f,      11.25f,  9.00f,  36.00f }},  //* 4:  2.72
   { 5,  ":)",        lineman,            { big_ampflow,    1.0f,       9.75f,  9.00f,  36.00f }},  //* 5:  :)
   { 6,  ">=",        lineman,            { small_ampflow,  1.0f,      10.00f,  6.00f,  27.00f }},  //* 6:  >=
