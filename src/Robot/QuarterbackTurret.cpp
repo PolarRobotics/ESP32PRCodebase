@@ -216,20 +216,20 @@ void QuarterbackTurret::action() {
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
         long currentTime = millis();
-        // targetPosition[0] = x;
-        currentRelativeHeading = getCurrentHeading();
+        calculateHeadingMag();
+        currentRelativeHeading = headingDeg;
         targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, 0.01, ki, .2);
+        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, kd, ki, .2);
         setTurretSpeed(turretPIDSpeed);
-        Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed());
-        if(x >= 6.0 && changeInPos == 1){
-          changeInPos = -1;
-        }
-        if(x <= -6.0 && changeInPos == -1){
-          changeInPos = 1;
-        }
+        Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed(0));
+        // if(x >= 6.0 && changeInPos == 1){
+        //   changeInPos = -1;
+        // }
+        // if(x <= -6.0 && changeInPos == -1){
+        //   changeInPos = 1;
+        // }
         
-        x += changeInPos * 0.15;
+        // x += changeInPos * 0.15;
         // TODO: Implement auto mode
         // do something based on current value of 'targetReceiver'
       }
@@ -316,20 +316,22 @@ void QuarterbackTurret::action() {
         updateTurretMotionStatus();
 
         //* Left Stick Y: Flywheel Override
-        if (fabs(stickFlywheel) > STICK_DEADZONE) {
-          setFlywheelSpeed(stickFlywheel);
-        } 
-        else {
-          //* D-Pad Up: Increase flywheel speed by one stage
-          if (dbDpadUp->debounceAndPressed(ps5.Up())) {
-            adjustFlywheelSpeedStage(INCREASE);
+        if(mode != automatic){
+          if (fabs(stickFlywheel) > STICK_DEADZONE) {
+            setFlywheelSpeed(stickFlywheel);
           } 
-          //* D-Pad Down: Decrease flywheel speed by one stage
-          else if (dbDpadDown->debounceAndPressed(ps5.Down())) {
-            adjustFlywheelSpeedStage(DECREASE);
-          }
           else {
-            setFlywheelSpeedStage(currentFlywheelStage);
+            //* D-Pad Up: Increase flywheel speed by one stage
+            if (dbDpadUp->debounceAndPressed(ps5.Up())) {
+              adjustFlywheelSpeedStage(INCREASE);
+            } 
+            //* D-Pad Down: Decrease flywheel speed by one stage
+            else if (dbDpadDown->debounceAndPressed(ps5.Down())) {
+              adjustFlywheelSpeedStage(DECREASE);
+            }
+            else {
+              setFlywheelSpeedStage(currentFlywheelStage);
+            }
           }
         }
       }
@@ -337,6 +339,7 @@ void QuarterbackTurret::action() {
   }
   readTargetingInfo();
   // updateReadMotorValues();
+  delay(5);
   printDebug();
 }
 #pragma endregion
@@ -469,7 +472,8 @@ void QuarterbackTurret::turretDirectionChanged() {
 
 //* get current heading in degrees
 int16_t QuarterbackTurret::getCurrentHeading() {
-  return (int)((double) currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE) % 360;
+  int h = (int) round((double) currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE);
+  return (int16_t) NormalizeAngle(h);
 }
 
 // Function to normalize an angle to the range [0, 360)
@@ -484,27 +488,15 @@ int QuarterbackTurret::NormalizeAngle(int angle) {
 // Function to calculate the shortest rotation direction
 // Returns -1 for counterclockwise, 1 for clockwise, or 0 if no rotation needed
 int QuarterbackTurret::CalculateRotation(float currentAngle, float targetAngle) {
-    currentAngle = NormalizeAngle(currentAngle);
-    targetAngle = NormalizeAngle(targetAngle);
+    // Normalize inputs to [0,360)
+    int cur = NormalizeAngle((int)round(currentAngle));
+    int tgt = NormalizeAngle((int)round(targetAngle));
 
-    int positiveDegreeCount = currentAngle;
-    int negativeDegreeCount = currentAngle;
-    int iter = 0;
-    
-    while (NormalizeAngle(negativeDegreeCount) != targetAngle && NormalizeAngle(positiveDegreeCount) != targetAngle) {
-      positiveDegreeCount++;
-      negativeDegreeCount--;
-      iter++;
-    }
-
-    if (iter == 0) {
-      return 0;
-    }
-    else if (NormalizeAngle(negativeDegreeCount) == targetAngle) {
-      return iter;
-    } else {
-      return iter * -1;
-    }
+    int delta = tgt - cur;
+    // Normalize to [-180, 180)
+    while (delta > 180) delta -= 360;
+    while (delta <= -180) delta += 360;
+    return delta; // signed shortest rotation in degrees (positive -> rotate CW, negative -> CCW)
 }
 
 // not currently used
@@ -808,14 +800,14 @@ void QuarterbackTurret::readTargetingInfo(){
             if(strtokIndx != NULL){
               double x = atof(strtokIndx);
               Serial.printf("X: %.2f ", x);
+              receivers[0].position[0] = x; // Set X position
             }
-            // receivers[0].position[0] = x; // Set X position
             strtokIndx = strtok(NULL,":,=");
             if(strtokIndx != NULL){
               double y = atof(strtokIndx);
               Serial.printf("Y: %.2f ", y);
+              receivers[0].position[1] = y; // Set Y position
             }
-            // receivers[0].position[1] = y; // Set Y position
             strtokIndx = strtok(NULL,":,=");
             if(strtokIndx != NULL){
               double z = atof(strtokIndx);
@@ -844,9 +836,12 @@ void QuarterbackTurret::readTargetingInfo(){
  * @date 2025-07-21
 */
 int QuarterbackTurret::angleToTarget(Receiver receiver){
-  double angleToTarget = atan2(receiver.position[1] - position[1], receiver.position[0] - position[0]) * 180 / PI; // Convert radians to degrees
-  angleToTarget -= 90; // Set the angle to be relative to positive Y direction
-  return -angleToTarget;
+  // Compute bearing from QB position to receiver in degrees.
+  // atan2(y,x) returns angle relative to +X axis; convert to degrees and make it relative to +Y (robot forward).
+  double ang = atan2(receiver.position[1] - position[1], receiver.position[0] - position[0]) * 180.0 / PI;
+  ang = ang - 90.0; // now angle is relative to +Y
+  int out = NormalizeAngle((int)round(ang));
+  return out;
 }
 
 float QuarterbackTurret::distanceToTarget(Receiver receiver){

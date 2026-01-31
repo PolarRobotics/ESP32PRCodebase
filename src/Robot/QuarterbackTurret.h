@@ -331,7 +331,7 @@ class QuarterbackTurret : public Robot {
     //|                        |//
     //==========================//
     Adafruit_LIS3MDL lis3mdl;           // magnetometer object
-    bool useMagnetometer = false;        // set 'false' to disable the magnetometer and its functions
+    bool useMagnetometer = true;        // set 'false' to disable the magnetometer and its functions
     bool holdTurretStillEnabled = false; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
 
     //============================//
