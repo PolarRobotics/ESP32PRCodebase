@@ -122,6 +122,15 @@ QuarterbackTurret::QuarterbackTurret(
 
   magnetometerSetup();
 
+  // Initialize receiver positions to safe defaults to avoid garbage math
+  for (int i = 0; i < NUM_RECEIVERS; i++) {
+    receivers[i].position[0] = 1.0;   // 1 meter default X
+    receivers[i].position[1] = 3.0;   // 3 meters default Y (straight ahead)
+    receivers[i].distance = 0;
+    receivers[i].angle = 0;
+  }
+  currReceiver = 0;
+
   // Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
   Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
 }
@@ -215,23 +224,27 @@ void QuarterbackTurret::action() {
       }
       //* Auto Mode
       else if (QB_AUTO_ENABLED && mode == automatic) {
-        long currentTime = millis();
-        calculateHeadingMag();
-        currentRelativeHeading = headingDeg;
-        targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-        turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, 0.01, kd, ki, .2);
-        setTurretSpeed(turretPIDSpeed);
-        Serial.printf("Flywheel Speed: %.4f\n", setAutoFlywheelSpeed(0));
-        // if(x >= 6.0 && changeInPos == 1){
-        //   changeInPos = -1;
-        // }
-        // if(x <= -6.0 && changeInPos == -1){
-        //   changeInPos = 1;
-        // }
-        
-        // x += changeInPos * 0.15;
-        // TODO: Implement auto mode
-        // do something based on current value of 'targetReceiver'
+        // Only run if magnetometer calibrated AND we have fresh receiver data
+        if (magnetometerCalibrated && newData) {
+          // Validate receiver position (guard against zero/uninitialized data)
+          double rx = receivers[currReceiver].position[0];
+          double ry = receivers[currReceiver].position[1];
+          
+          if (fabs(rx) > 0.01 || fabs(ry) > 0.01) {
+            calculateHeadingMag();
+            currentRelativeHeading = headingDeg;
+            targetRelativeHeading = angleToTarget(receivers[currReceiver]);
+            
+            turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, ki, kd, .15);
+            setTurretSpeed(turretPIDSpeed);
+            setAutoFlywheelSpeed(0);
+          } else {
+            setTurretSpeed(0);
+          }
+          newData = false;  // Consume the data packet
+        } else {
+          setTurretSpeed(0);
+        }
       }
       //* Manual Controls
       else {
@@ -727,105 +740,66 @@ void QuarterbackTurret::readTargetingInfo(){
   char rc;
   
   while (Serial2.available() > 0 && newData == false) {
-      // Serial.println("Data Received");
       rc = Serial2.read();
 
       if (recvInProgress == true) {
           if (rc != endMarker) {
               receivedChars[ndx] = rc;
               ndx++;
-              if (ndx >= NUM_CHARS) {
-                  ndx = NUM_CHARS - 1;
+              if (ndx >= NUM_CHARS - 1) {
+                  ndx = NUM_CHARS - 1;  // Prevent buffer overrun
               }
           }
           else {
-              receivedChars[ndx] = '\0'; // terminate the string
+              receivedChars[ndx] = '\0';  // Null-terminate
               recvInProgress = false;
               ndx = 0;
               newData = true;
           }
       }
-      
       else if (rc == startMarker) {
           recvInProgress = true;
+          ndx = 0;  // Reset index when new message starts
       }
   }
+  
   if(newData == true){
     strcpy(tempChars, receivedChars);
-    char * strtokIndx; // this is used by strtok() as an index
+    char * strtokIndx;
     strtokIndx = strtok(tempChars,":,=");
 
     while(strtokIndx != NULL){
         if(prev == "QB"){
-            Serial.println("Quarterback Position:");
             double x = atof(strtokIndx);
-            Serial.printf("X: %.2f ", x);
-            position[0] = x; // Set X position
+            position[0] = x;
             strtokIndx = strtok(NULL,":,=");
-            double y = atof(strtokIndx);
-            Serial.printf("Y: %.2f ", y);
-            position[1] = y; // Set Y position
-            strtokIndx = strtok(NULL,":,=");
-            double z = atof(strtokIndx);
-            Serial.printf("Z: %.2f ", z);
-            strtokIndx = strtok(NULL,":,=");
-            double q = atof(strtokIndx);
-            Serial.printf("Q: %.2f\n", q);
-            strtokIndx = strtok(NULL,":,=");
+            if(strtokIndx != NULL) {
+              double y = atof(strtokIndx);
+              position[1] = y;
+              strtokIndx = strtok(NULL,":,=");
+            }
+            strtokIndx = strtok(NULL,":,=");  // Skip Z
+            strtokIndx = strtok(NULL,":,=");  // Skip Q
             prev = "";
         }
-        else if(prev == " RCV"){
-            // Serial.printf("Receiver ID: %llx\n", strtoull(strtokIndx, nullptr, 16));
-            // Get Receiver ID and set currReceiver accordingly
-            // unsigned long long temp_id = strtoull(strtokIndx, nullptr, 16);
-            // switch (temp_id){
-            //   case RECEIVER_0_ID:
-            //     currReceiver = 0;
-            //     break;
-            //   // case RECEIVER_1_ID:
-            //   //   currReceiver = 1;
-            //   //   break;
-            //   // case RECEIVER_2_ID:
-            //   //   currReceiver = 2;
-            //   //   break;
-            //   // case RECEIVER_3_ID:
-            //   //   currReceiver = 3;
-            //   //   break;
-            //   default:
-            //     currReceiver = 0;
-            //     break;
-            // }
-            // strtokIndx = strtok(NULL,":,=");
-            Serial.println("Receiver Position:");
+        else if(prev == "RCV"){
+            // Receiver position update
             if(strtokIndx != NULL){
               double x = atof(strtokIndx);
-              Serial.printf("X: %.2f ", x);
-              receivers[0].position[0] = x; // Set X position
+              receivers[currReceiver].position[0] = x;
             }
             strtokIndx = strtok(NULL,":,=");
             if(strtokIndx != NULL){
               double y = atof(strtokIndx);
-              Serial.printf("Y: %.2f ", y);
-              receivers[0].position[1] = y; // Set Y position
+              receivers[currReceiver].position[1] = y;
             }
-            strtokIndx = strtok(NULL,":,=");
-            if(strtokIndx != NULL){
-              double z = atof(strtokIndx);
-              Serial.printf("Z: %.2f ", z);
-            }
-            strtokIndx = strtok(NULL,":,=");
-            if(strtokIndx != NULL){
-              double q = atof(strtokIndx);
-              Serial.printf("Q: %.2f\n", q);
-            }
-            strtokIndx = strtok(NULL,":,=");
+            strtokIndx = strtok(NULL,":,=");  // Skip Z
+            strtokIndx = strtok(NULL,":,=");  // Skip Q
             prev = "";
         }
         else{
-            s = String(strtokIndx);
-            // Serial.println(s);
+            prev = String(strtokIndx);
             strtokIndx = strtok(NULL,":,=");
-            prev = s;
         }
     }
   }
@@ -836,12 +810,19 @@ void QuarterbackTurret::readTargetingInfo(){
  * @date 2025-07-21
 */
 int QuarterbackTurret::angleToTarget(Receiver receiver){
-  // Compute bearing from QB position to receiver in degrees.
-  // atan2(y,x) returns angle relative to +X axis; convert to degrees and make it relative to +Y (robot forward).
-  double ang = atan2(receiver.position[1] - position[1], receiver.position[0] - position[0]) * 180.0 / PI;
-  ang = ang - 90.0; // now angle is relative to +Y
-  int out = NormalizeAngle((int)round(ang));
-  return out;
+  double dx = receiver.position[0] - position[0];
+  double dy = receiver.position[1] - position[1];
+  
+  // Guard: if receiver and QB at same position, return 0
+  if (fabs(dx) < 0.01 && fabs(dy) < 0.01) {
+    return 0;  // Return forward if no offset
+  }
+  
+  // Compute bearing from QB position to receiver
+  // atan2(y,x) returns angle relative to +X axis; convert to +Y (robot forward)
+  double ang = atan2(dy, dx) * 180.0 / PI;
+  ang = ang - 90.0;  // now relative to +Y
+  return NormalizeAngle((int)round(ang));
 }
 
 float QuarterbackTurret::distanceToTarget(Receiver receiver){
