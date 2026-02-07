@@ -51,6 +51,7 @@ enum FlywheelSpeed {
 // Preset flywheel speed values.
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}; // without top prongs 
 const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35, 0.45};      // combine speed values
+const float QB_DECLINATION = -6.5;
 //                                                                , 6ft  , 12ft, 18ft  (Measured from center of QB to center of receiver)
 //================================//
 //  Debounce and Delay Constants  //
@@ -393,9 +394,9 @@ class QuarterbackTurret : public Robot {
     long previousTime = 0;
     float ePrevious = 0;
     float eIntegral = 0;
-    float kp = 0.005;
-    float ki = 0.0012;
-    float kd = 0.0;
+    float kp = 0.002;
+    float ki = 0.001;
+    float kd = 0.015;
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 
