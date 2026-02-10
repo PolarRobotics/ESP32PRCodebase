@@ -13,6 +13,12 @@ int32_t QuarterbackTurret::currentTurretEncoderCount;
 double rx;
 double ry;
 
+const int BUFFER_SIZE = 5;
+double qbxBuffer[BUFFER_SIZE] = {0,0,0,0,0}; // buffer for incoming position data, to be averaged for noise reduction
+double qbyBuffer[BUFFER_SIZE] = {0,0,0,0,0}; // buffer for incoming position data, to be averaged for noise reduction
+double rvxBuffer[BUFFER_SIZE] = {0,0,0,0,0}; // buffer for incoming targeting data, to be averaged for noise reduction
+double rvyBuffer[BUFFER_SIZE] = {0,0,0,0,0}; // buffer for incoming targeting data, to be averaged for noise reduction
+
 void QuarterbackTurret::turretEncoderISR() {
   turretEncoderStateB = digitalRead(turretEncoderPinB);
   if (turretEncoderStateB == 1) {
@@ -332,7 +338,7 @@ void QuarterbackTurret::action() {
   readTargetingInfo();
   // updateReadMotorValues();
   delay(5);
-  printDebug();
+  // printDebug();
 
   if (millis() - lastPrintTime >= 1000) {
     calculateHeadingMag();
@@ -741,6 +747,10 @@ void QuarterbackTurret::readTargetingInfo(){
   char startMarker = '<';
   char endMarker = '>';
   char rc;
+  int i = 0; 
+  if(i > 4){
+    i = 0; // Reset index every 5 loops for circular buffers
+  }
 
   while (Serial2.available() > 0 && newData == false) {
     rc = Serial2.read();
@@ -771,11 +781,13 @@ void QuarterbackTurret::readTargetingInfo(){
     while(strtokIndx != NULL){
       if(prev == "QB"){
         double x = atof(strtokIndx);
-        position[0] = x;
+        qbxBuffer[i%BUFFER_SIZE] = x; // Add data to circular buffers for moving average filter
+        position[0] = (qbxBuffer[0] + qbxBuffer[1] + qbxBuffer[2] + qbxBuffer[3] + qbxBuffer[4]) / (double)BUFFER_SIZE;
         strtokIndx = strtok(NULL,":,=");
         if(strtokIndx != NULL) {
           double y = atof(strtokIndx);
-          position[1] = y;
+          qbyBuffer[i%BUFFER_SIZE] = y; // Add data to circular buffers for moving average filter
+          position[1] = (qbyBuffer[0] + qbyBuffer[1] + qbyBuffer[2] + qbyBuffer[3] + qbyBuffer[4]) / (double)BUFFER_SIZE;
           strtokIndx = strtok(NULL,":,=");
         }
         strtokIndx = strtok(NULL,":,="); // Skip Z
@@ -785,12 +797,14 @@ void QuarterbackTurret::readTargetingInfo(){
         // Receiver position update
         if(strtokIndx != NULL){
           double x = atof(strtokIndx);
-          receivers[currReceiver].position[0] = x;
+          rvxBuffer[i%BUFFER_SIZE] = x; // Add data to circular buffers for moving average filter
+          receivers[currReceiver].position[0] = (rvxBuffer[0] + rvxBuffer[1] + rvxBuffer[2] + rvxBuffer[3] + rvxBuffer[4]) / (double)BUFFER_SIZE;
         }
         strtokIndx = strtok(NULL,":,=");
         if(strtokIndx != NULL){
           double y = atof(strtokIndx);
-          receivers[currReceiver].position[1] = y;
+          rvyBuffer[i%BUFFER_SIZE] = y; // Add data to circular buffers for moving average filter
+          receivers[currReceiver].position[1] = (rvyBuffer[0] + rvyBuffer[1] + rvyBuffer[2] + rvyBuffer[3] + rvyBuffer[4]) / (double)BUFFER_SIZE;
         }
         strtokIndx = strtok(NULL,":,="); // Skip Z
         strtokIndx = strtok(NULL,":,="); // Skip Q
@@ -827,8 +841,9 @@ int QuarterbackTurret::angleToTarget(Receiver receiver){
 }
 
 float QuarterbackTurret::distanceToTarget(Receiver receiver){
+  // Calculate distance between target receiver and QB, result is in meters
   float distance = sqrt(pow(receiver.position[0] - position[0], 2) + pow(receiver.position[1] - position[1], 2));
-  return distance;
+  return distance * 3.28084; // Convert to feet
 }
 
 void QuarterbackTurret::moveToTarget(int targetHeading){
@@ -862,7 +877,7 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
   }
 
   float speed = 0.0486 + (0.0307 * dist) - (0.000469 * pow(dist, 2)); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
-  setFlywheelSpeed(2.2*speed);
+  setFlywheelSpeed(speed);
 
   return speed; // Return the speed for debugging purposes (may not be needed)
 }
