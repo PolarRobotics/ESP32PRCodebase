@@ -1366,8 +1366,11 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     prevErrorIndex %= PID_ERROR_AVG_ARRAY_LENGTH;
 
     // For the first one populate the average so it does not freak out
-    for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
-      prevErrorVals[i] = e;
+    if(pidFirstRun) {
+      pidFirstRun = false;
+      for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
+        prevErrorVals[i] = e;
+      }
     }
 
     // Taking the avergage for error
@@ -1380,7 +1383,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
     // Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e * .01;
+    eIntegral = eIntegral + e * deltaT;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
@@ -1388,8 +1391,10 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     // Constrain output PWM values to -.2 to .2
     if (u > maxSpeed) {
       u = maxSpeed;
+      eIntegral = 0; // reset integral if we are maxed out to prevent windup
     } else if (u < -maxSpeed) {
       u = -maxSpeed;
+      eIntegral = 0; // reset integral if we are maxed out to prevent windup
     }
 
     // If PWM value is less than the minimum PWM value needed to move the robot,
@@ -1398,12 +1403,9 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     }
 
     // If the robot gets within an acceptable range then send error etc to 0
-    if (abs(e) < QB_TURRET_PID_THRESHOLD) {
-      e = 0;
-      eDerivative = 0;
-      eIntegral = 0;
-      ePrevious = 0;
-    }
+    // if (abs(e) < QB_TURRET_PID_THRESHOLD) {
+    //   e = 0;
+    // }
 
     Serial.print("DeltaT: "); Serial.print(deltaT);
     Serial.print("\tError: [deg]: "); Serial.print(e);

@@ -397,6 +397,7 @@ class QuarterbackTurret : public Robot {
     float kp = 0.002;
     float ki = 0.001;
     float kd = 0.015;
+    bool pidFirstRun = true; // used to fill the error average array on the first run
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 
