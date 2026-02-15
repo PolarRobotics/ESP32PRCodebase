@@ -153,6 +153,15 @@ class QuarterbackTurret : public Robot {
   //============================//
   private: 
   
+  // EMA variables for smoothing
+  float emaAlpha = 0.6;  // Weight for new readings (0.0-1.0; higher = more responsive, less smoothing)
+  double avgRx = 0;      // Smoothed receiver x position
+  double avgRy = 0;      // Smoothed receiver y position
+  int posBufferCount = 0;  // Initialization flag for position EMA
+  float headingDegSmoothed = 0;  // Smoothed heading
+  int headingBufferCount = 0;  // Initialization flag for heading EMA
+  unsigned long lastFlywheelUpdate = 0;   // Timer for 1s flywheel updates
+  
   //==============================//
   //    MotorControl Instances    //
   //==============================//
@@ -395,8 +404,8 @@ class QuarterbackTurret : public Robot {
     float ePrevious = 0;
     float eIntegral = 0;
     float kp = 0.002;
-    float ki = 0.001;
-    float kd = 0.015;
+    float ki = 0.0005;
+    float kd = 0.01;
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 

@@ -214,18 +214,41 @@ void QuarterbackTurret::action() {
         
         // Only run if magnetometer calibrated AND we have fresh receiver data
         if (magnetometerCalibrated && newData) {
-          // Validate receiver position (guard against zero/uninitialized data)
-          rx = receivers[currReceiver].position[0];
-          ry = receivers[currReceiver].position[1];
+          double newRx = receivers[currReceiver].position[0];
+          double newRy = receivers[currReceiver].position[1];
+
+          // EMA for rx/ry (initialize on first read)
+          if (posBufferCount == 0) {
+            avgRx = newRx;
+            avgRy = newRy;
+          } else {
+            avgRx = emaAlpha * newRx + (1 - emaAlpha) * avgRx;
+            avgRy = emaAlpha * newRy + (1 - emaAlpha) * avgRy;
+          }
+          posBufferCount = 1;  // EMA doesn't need full buffer; just track if initialized
+
           newData = false; // Consume the data packet
         }
-        if (fabs(rx) > 0.01 || fabs(ry) > 0.01) {
-          calculateHeadingMag();
+
+        // Use averaged values if non-zero (no buffer loop needed for EMA)
+        if (fabs(avgRx) > 0.01 || fabs(avgRy) > 0.01) {
+          calculateHeadingMag();  // This now uses EMA for heading too
           currentRelativeHeading = headingDeg;
+          // Temporarily override rx/ry with EMA averages for angle/distance calc
+          double tempRx = rx, tempRy = ry;
+          rx = avgRx; ry = avgRy;
           targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-          turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, ki, kd, .15);
+          turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, ki, kd, 0.1);  // Was .15; now 0.15 * 0.25 = 0.0375
           setTurretSpeed(turretPIDSpeed);
-          setAutoFlywheelSpeed(0);
+
+          // Flywheel: Update only every 1s using averaged distance
+          unsigned long now = millis();
+          if (now - lastFlywheelUpdate >= 1000) {
+            setAutoFlywheelSpeed(0);  // Uses current rx/ry (EMA-averaged)
+            lastFlywheelUpdate = now;
+          }
+
+          rx = tempRx; ry = tempRy;  // Restore if needed
         }
       }
 
@@ -260,7 +283,7 @@ void QuarterbackTurret::action() {
 
           // Run the PID loop if the turret is at least 3 degrees off from the target angle
           if(abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >= 2){
-            turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+            turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, 0.2);  // Was .3; now 0.3 * 0.25 = 0.075
             setTurretSpeed(turretPIDSpeed);
           }
 
@@ -464,12 +487,12 @@ void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power, bool rel
 void QuarterbackTurret::updateTurretMotionStatus() {
   // if (utmsCtr >= UTMS_CTR_MAX) {
   //   utmsCtr = 0;
-    Serial.print(F("update called with ctec = "));
-    Serial.print(currentTurretEncoderCount);
-    Serial.print(F("; ttec = "));
-    Serial.print(targetTurretEncoderCount);
-    Serial.print(F("; error (ct) = "));
-    Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
+    // Serial.print(F("update called with ctec = "));
+    // Serial.print(currentTurretEncoderCount);
+    // Serial.print(F("; ttec = "));
+    // Serial.print(targetTurretEncoderCount);
+    // Serial.print(F("; error (ct) = "));
+    // Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
   // } else {
   //   utmsCtr++;
   // }
@@ -738,6 +761,12 @@ void QuarterbackTurret::readTargetingInfo(){
   static boolean recvInProgress = false;
   newData = false;
   static int ndx = 0;
+  static bool qbInitialized = false;  // Per-QB flag
+  static bool receiverInitialized[NUM_RECEIVERS] = {false};  // Per-receiver flags
+  static double lastQBx = 0.0, lastQBy = 0.0;  // Last known good QB
+  static double lastReceiverX[NUM_RECEIVERS] = {0};  // Last known good receiver X
+  static double lastReceiverY[NUM_RECEIVERS] = {0};  // Last known good receiver Y
+
   char startMarker = '<';
   char endMarker = '>';
   char rc;
@@ -770,29 +799,62 @@ void QuarterbackTurret::readTargetingInfo(){
     strtokIndx = strtok(tempChars,":,=");
     while(strtokIndx != NULL){
       if(prev == "QB"){
-        double x = atof(strtokIndx);
-        position[0] = x;
+        double newX = atof(strtokIndx);
         strtokIndx = strtok(NULL,":,=");
         if(strtokIndx != NULL) {
-          double y = atof(strtokIndx);
-          position[1] = y;
-          strtokIndx = strtok(NULL,":,=");
+          double newY = atof(strtokIndx);
+          // Filter zeros first
+          if (fabs(newX) < 1e-6 || fabs(newY) < 1e-6) {
+            strtokIndx = strtok(NULL,":,="); // Skip Z
+          } else {
+            bool acceptUpdate = true;
+            if (qbInitialized) {
+              if (fabs(newX - lastQBx) > 1.0 || fabs(newY - lastQBy) > 1.0) {
+                acceptUpdate = false;  // Jump too large
+              }
+            }
+            // Accept first valid non-zero (bootstraps)
+            if (acceptUpdate || !qbInitialized) {
+              position[0] = newX;
+              position[1] = newY;
+              lastQBx = newX;
+              lastQBy = newY;
+              qbInitialized = true;
+            }
+          }
+          strtokIndx = strtok(NULL,":,="); // Skip Z
         }
-        strtokIndx = strtok(NULL,":,="); // Skip Z
         strtokIndx = strtok(NULL,":,="); // Skip Q
         prev = "";
       } else if(prev == "RCV"){
         // Receiver position update
         if(strtokIndx != NULL){
-          double x = atof(strtokIndx);
-          receivers[currReceiver].position[0] = x;
+          double newX = atof(strtokIndx);
+          strtokIndx = strtok(NULL,":,=");
+          if(strtokIndx != NULL){
+            double newY = atof(strtokIndx);
+            // Filter zeros first
+            if (fabs(newX) < 1e-6 || fabs(newY) < 1e-6) {
+              // Skip zeros
+            } else {
+              bool acceptUpdate = true;
+              if (receiverInitialized[currReceiver]) {
+                if (fabs(newX - lastReceiverX[currReceiver]) > 1.0 || fabs(newY - lastReceiverY[currReceiver]) > 1.0) {
+                  acceptUpdate = false;  // Jump too large
+                }
+              }
+              // Accept first valid non-zero (bootstraps per receiver)
+              if (acceptUpdate || !receiverInitialized[currReceiver]) {
+                receivers[currReceiver].position[0] = newX;
+                receivers[currReceiver].position[1] = newY;
+                lastReceiverX[currReceiver] = newX;
+                lastReceiverY[currReceiver] = newY;
+                receiverInitialized[currReceiver] = true;
+              }
+            }
+            strtokIndx = strtok(NULL,":,="); // Skip Z
+          }
         }
-        strtokIndx = strtok(NULL,":,=");
-        if(strtokIndx != NULL){
-          double y = atof(strtokIndx);
-          receivers[currReceiver].position[1] = y;
-        }
-        strtokIndx = strtok(NULL,":,="); // Skip Z
         strtokIndx = strtok(NULL,":,="); // Skip Q
         prev = "";
       } else{
@@ -820,7 +882,7 @@ int QuarterbackTurret::angleToTarget(Receiver receiver){
   double ang = atan2(dx, dy) * 180.0 / PI;
   if (ang < 0) ang += 360.0;
 
-  ang += 180.0;  // CHANGED: Add 180 to flip the direction
+  ang += 180.0;  // Add 180 to flip the direction
   if (ang >= 360.0) ang -= 360.0;
 
   return NormalizeAngle((int)round(ang));
@@ -862,7 +924,7 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
   }
 
   float speed = 0.0486 + (0.0307 * dist) - (0.000469 * pow(dist, 2)); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
-  setFlywheelSpeed(2.2*speed);
+  setFlywheelSpeed(speed);
 
   return speed; // Return the speed for debugging purposes (may not be needed)
 }
@@ -1086,63 +1148,63 @@ void QuarterbackTurret::printDebug() {
  * @date 2024-01-03
  */
 void QuarterbackTurret::magnetometerSetup() {
-  if (! lis3mdl.begin_I2C()) {      // hardware I2C mode, can pass in address & alt Wire
+    if (! lis3mdl.begin_I2C()) {          // hardware I2C mode, can pass in address & alt Wire
     //if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
     //if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
-    Serial.println("Failed to find LIS3MDL chip");
-  }
-  Serial.println("LIS3MDL Found!");
+        Serial.println("Failed to find LIS3MDL chip");
+    }
+    Serial.println("LIS3MDL Found!");
 
-  lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
-  Serial.print("Performance mode set to: ");
-  switch (lis3mdl.getPerformanceMode()) {
-    case LIS3MDL_LOWPOWERMODE: Serial.println("Low"); break;
-    case LIS3MDL_MEDIUMMODE: Serial.println("Medium"); break;
-    case LIS3MDL_HIGHMODE: Serial.println("High"); break;
-    case LIS3MDL_ULTRAHIGHMODE: Serial.println("Ultra-High"); break;
-  }
+    lis3mdl.setPerformanceMode(LIS3MDL_ULTRAHIGHMODE);
+    Serial.print("Performance mode set to: ");
+    switch (lis3mdl.getPerformanceMode()) {
+      case LIS3MDL_LOWPOWERMODE: Serial.println("Low"); break;
+      case LIS3MDL_MEDIUMMODE: Serial.println("Medium"); break;
+      case LIS3MDL_HIGHMODE: Serial.println("High"); break;
+      case LIS3MDL_ULTRAHIGHMODE: Serial.println("Ultra-High"); break;
+    }
 
-  lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
-  Serial.print("Operation mode set to: ");
-  // Single shot mode will complete conversion and go into power down
-  switch (lis3mdl.getOperationMode()) {
-    case LIS3MDL_CONTINUOUSMODE: Serial.println("Continuous"); break;
-    case LIS3MDL_SINGLEMODE: Serial.println("Single mode"); break;
-    case LIS3MDL_POWERDOWNMODE: Serial.println("Power-down"); break;
-  }
+    lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
+    Serial.print("Operation mode set to: ");
+    // Single shot mode will complete conversion and go into power down
+    switch (lis3mdl.getOperationMode()) {
+      case LIS3MDL_CONTINUOUSMODE: Serial.println("Continuous"); break;
+      case LIS3MDL_SINGLEMODE: Serial.println("Single mode"); break;
+      case LIS3MDL_POWERDOWNMODE: Serial.println("Power-down"); break;
+    }
 
-  lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
-  // You can check the datarate by looking at the frequency of the DRDY pin
-  Serial.print("Data rate set to: ");
-  switch (lis3mdl.getDataRate()) {
-    case LIS3MDL_DATARATE_0_625_HZ: Serial.println("0.625 Hz"); break;
-    case LIS3MDL_DATARATE_1_25_HZ: Serial.println("1.25 Hz"); break;
-    case LIS3MDL_DATARATE_2_5_HZ: Serial.println("2.5 Hz"); break;
-    case LIS3MDL_DATARATE_5_HZ: Serial.println("5 Hz"); break;
-    case LIS3MDL_DATARATE_10_HZ: Serial.println("10 Hz"); break;
-    case LIS3MDL_DATARATE_20_HZ: Serial.println("20 Hz"); break;
-    case LIS3MDL_DATARATE_40_HZ: Serial.println("40 Hz"); break;
-    case LIS3MDL_DATARATE_80_HZ: Serial.println("80 Hz"); break;
-    case LIS3MDL_DATARATE_155_HZ: Serial.println("155 Hz"); break;
-    case LIS3MDL_DATARATE_300_HZ: Serial.println("300 Hz"); break;
-    case LIS3MDL_DATARATE_560_HZ: Serial.println("560 Hz"); break;
-    case LIS3MDL_DATARATE_1000_HZ: Serial.println("1000 Hz"); break;
-  }
+    lis3mdl.setDataRate(LIS3MDL_DATARATE_1000_HZ);
+    // You can check the datarate by looking at the frequency of the DRDY pin
+    Serial.print("Data rate set to: ");
+    switch (lis3mdl.getDataRate()) {
+      case LIS3MDL_DATARATE_0_625_HZ: Serial.println("0.625 Hz"); break;
+      case LIS3MDL_DATARATE_1_25_HZ: Serial.println("1.25 Hz"); break;
+      case LIS3MDL_DATARATE_2_5_HZ: Serial.println("2.5 Hz"); break;
+      case LIS3MDL_DATARATE_5_HZ: Serial.println("5 Hz"); break;
+      case LIS3MDL_DATARATE_10_HZ: Serial.println("10 Hz"); break;
+      case LIS3MDL_DATARATE_20_HZ: Serial.println("20 Hz"); break;
+      case LIS3MDL_DATARATE_40_HZ: Serial.println("40 Hz"); break;
+      case LIS3MDL_DATARATE_80_HZ: Serial.println("80 Hz"); break;
+      case LIS3MDL_DATARATE_155_HZ: Serial.println("155 Hz"); break;
+      case LIS3MDL_DATARATE_300_HZ: Serial.println("300 Hz"); break;
+      case LIS3MDL_DATARATE_560_HZ: Serial.println("560 Hz"); break;
+      case LIS3MDL_DATARATE_1000_HZ: Serial.println("1000 Hz"); break;
+    }
 
-  lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
-  Serial.print("Range set to: ");
-  switch (lis3mdl.getRange()) {
-    case LIS3MDL_RANGE_4_GAUSS: Serial.println("+-4 gauss"); break;
-    case LIS3MDL_RANGE_8_GAUSS: Serial.println("+-8 gauss"); break;
-    case LIS3MDL_RANGE_12_GAUSS: Serial.println("+-12 gauss"); break;
-    case LIS3MDL_RANGE_16_GAUSS: Serial.println("+-16 gauss"); break;
-  }
+    lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
+    Serial.print("Range set to: ");
+    switch (lis3mdl.getRange()) {
+      case LIS3MDL_RANGE_4_GAUSS: Serial.println("+-4 gauss"); break;
+      case LIS3MDL_RANGE_8_GAUSS: Serial.println("+-8 gauss"); break;
+      case LIS3MDL_RANGE_12_GAUSS: Serial.println("+-12 gauss"); break;
+      case LIS3MDL_RANGE_16_GAUSS: Serial.println("+-16 gauss"); break;
+    }
 
-  lis3mdl.setIntThreshold(500);
-  lis3mdl.configInterrupt(false, false, true, // enable z axis
-                          true, // polarity
-                          false, // don't latch
-                          true); // enabled!
+    lis3mdl.setIntThreshold(500);
+    lis3mdl.configInterrupt(false, false, true, // enable z axis
+                            true, // polarity
+                            false, // don't latch
+                            true); // enabled!
 }
 
 /**
@@ -1166,7 +1228,7 @@ void QuarterbackTurret::calibMagnetometer() {
   long startTime = millis();
   setTurretSpeed(QB_HOME_MAG, true);
 
-  while (millis() - startTime < 10000 && !testForDisableOrStop()){
+  while (millis() - startTime < 15000 && !testForDisableOrStop()){
     // get X Y and Z data all at once
     lis3mdl.read();
 
@@ -1289,6 +1351,16 @@ void QuarterbackTurret::calculateHeadingMag() {
     headingDeg = ((int) headingDeg) /*+ 180 /*- QB_NORTH_OFFSET -*/ + northHeadingDegrees + QB_DECLINATION;
     if (headingDeg > 360) headingDeg = ((int) headingDeg) % 360;
 
+    // EMA for heading (initialize on first read)
+    if (headingBufferCount == 0) {
+      headingDegSmoothed = headingDeg;
+    } else {
+      headingDegSmoothed = emaAlpha * headingDeg + (1 - emaAlpha) * headingDegSmoothed;
+    }
+    headingBufferCount = 1;  // EMA doesn't need count
+
+    headingDeg = headingDegSmoothed;  // Overwrite raw with EMA-smoothed
+
     /*DEBUGGING PRINTOUTS*/
     // Serial.print("X: "); Serial.print(lis3mdl.x);
     // Serial.print("\tY: "); Serial.print(lis3mdl.y);
@@ -1302,33 +1374,20 @@ void QuarterbackTurret::calculateHeadingMag() {
     // Serial.println();
   }
 }
-#pragma endregion
 
-#pragma region PID
-/**
- * @brief Checks if the turret should be held still and runs the PID loop setting turret speed equal to PWM value calculated
- * @author George Rak
- * @date 4-9-2024
- */
 void QuarterbackTurret::holdTurretStill() {
   if (magnetometerCalibrated) {
-    int maxSpeed = .2;
+    float maxSpeed = 0.2f;
     if (motor1Value > 25 || motor2Value > 25) {
       //We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
-      maxSpeed = .125;
+      maxSpeed = 0.1f;
     }
-
     //Run the PID loop
-    turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, .2);
+    turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, maxSpeed);
     setTurretSpeed(turretPIDSpeed, true);
   }
 }
 
-/**
- * @brief PID controller to hold the turret still (gains tuned, not calculated)
- * @author George Rak
- * @date 4-9-2024
- */
 float QuarterbackTurret::turretPIDController(float current, float target, float kp, float kd, float ki, float maxSpeed) {
   if (maxSpeed > .5) {
     maxSpeed = .5;
@@ -1338,10 +1397,10 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
   // Measure the time elapsed since last iteration
   long currentTime = millis();
-  float deltaT = ((float)(currentTime - previousTime));
+  float deltaT = ((float)(currentTime - previousTime)) / 1000.0f;  // Convert to seconds for proper scaling
 
   // PID loops should update as fast as possible but if it waits too long this could be a problem
-  if (deltaT > QB_TURRET_PID_MIN_DELTA_T && deltaT < QB_TURRET_PID_MAX_DELTA_T) {
+  if (deltaT > QB_TURRET_PID_MIN_DELTA_T / 1000.0f && deltaT < QB_TURRET_PID_MAX_DELTA_T / 1000.0f) {
     // Find which direction will be closer to requested angle
     int e = CalculateRotation(current, target);
 
@@ -1350,12 +1409,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     prevErrorIndex++;
     prevErrorIndex %= PID_ERROR_AVG_ARRAY_LENGTH;
 
-    // For the first one populate the average so it does not freak out
-    for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
-      prevErrorVals[i] = e;
-    }
-
-    // Taking the avergage for error
+    // Taking the average for error (removed the initial fill loop to avoid resetting the array every time)
     int avgError = 0;
     for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) {
       avgError += prevErrorVals[i];
@@ -1363,14 +1417,28 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     avgError /= PID_ERROR_AVG_ARRAY_LENGTH;
     e = avgError;
 
-    // Calculate the derivative and integral values
-    float eDerivative = (e - ePrevious);
-    eIntegral = eIntegral + e * .01;
+    // Add deadband: If error < 2 degrees, stop motor and zero integral to prevent sway
+    if (abs(e) < 2) {
+      float u = 0.0f;  // Declare and set to zero here
+      eIntegral = 0;   // Prevent windup
+      // Optional: Log for debugging (comment out if too spammy)
+      // Serial.println("Deadband applied: error < 2 deg, u=0");
+      return u;
+    }
+
+    // Calculate the derivative and integral values (now scaled by deltaT in seconds)
+    float eDerivative = (e - ePrevious) / deltaT;
+    eIntegral += e * deltaT;
+
+    // Anti-windup: Clamp integral to prevent excessive buildup
+    const float integralLimit = 10.0f;  // Adjust based on testing; prevents windup
+    if (eIntegral > integralLimit) eIntegral = integralLimit;
+    if (eIntegral < -integralLimit) eIntegral = -integralLimit;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
 
-    // Constrain output PWM values to -.2 to .2
+    // Constrain output PWM values to maxSpeed
     if (u > maxSpeed) {
       u = maxSpeed;
     } else if (u < -maxSpeed) {
@@ -1379,7 +1447,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
     // If PWM value is less than the minimum PWM value needed to move the robot,
     if (abs(u) < QB_MIN_PWM_VALUE) {
-      u = 0.0;
+      u = 0.0f;
     }
 
     // If the robot gets within an acceptable range then send error etc to 0
@@ -1390,33 +1458,27 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       ePrevious = 0;
     }
 
-    Serial.print("DeltaT: "); Serial.print(deltaT);
-    Serial.print("\tError: [deg]: "); Serial.print(e);
-    Serial.print("\tP: "); Serial.print((kp * e), 4);
-    Serial.print("\tI: "); Serial.print((ki * eIntegral), 4);
-    Serial.print("\tD:\t"); Serial.print((kd * eDerivative) , 4);
-    Serial.print("\tPWM Value: "); Serial.print(-u , 4);
     Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
-    Serial.print("\tTarget [deg]: "); Serial.print(target - 180); //fixes target off by 180 degrees issue
+    Serial.print("\tTarget [deg]: "); Serial.print(target - 180);
+    Serial.print("\tQuarterback:"); Serial.print("x="); Serial.print(position[0]); Serial.print(", y="); Serial.print(position[1]);
+    Serial.print("\tReceiver:"); Serial.print("x="); Serial.print(receivers[0].position[0]); Serial.print(", y="); Serial.print(receivers[0].position[1]);
     Serial.println();
 
     // Update variables for next iteration
     previousTime = currentTime;
     ePrevious = e;
 
-    if(u > 0){
-      u *= 1.1;
-    }
+    // Removed asymmetric bias: if(u > 0){ u *= 1.1; } – this can cause directional preference
 
     // Constrain the values that are sent to the motor while keeping sign
     u = copysign(constrain(abs(u), 0, 1), u); // TODO: maybe not necessary?
 
     if (e == 0) {
-      u = 0.0;
+      u = 0.0f;
     }
 
     return -u;
-  } else if (deltaT > QB_TURRET_PID_BAD_DELTA_T) {
+  } else if (deltaT > QB_TURRET_PID_BAD_DELTA_T / 1000.0f) {
     // Drop the value if the time since last loop is too high so that errors don't spike
     previousTime = currentTime;
     return turretPIDSpeed;
@@ -1425,6 +1487,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     return turretPIDSpeed;
   }
 }
+
 #pragma endregion
 
 #pragma region Stabilization
@@ -1457,12 +1520,12 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 //     if (recievedMessage == "DISCONNECTED") {
 //       motor1Value = 100;
 //       motor2Value = 100;
-    // } else {
-      //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
-      // motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
-      // motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
-    // }
-  // }
+//     } else {
+//       //Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
+//       motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+//       motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+//     }
+//   }
 
 //   // Serial.print("Motor1: ");
 //   // Serial.print(motor1Value);
