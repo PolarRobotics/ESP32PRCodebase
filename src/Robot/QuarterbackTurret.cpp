@@ -922,7 +922,7 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     setFlywheelSpeed(0);
     return 0;
   }
-  dist = dist - 0.203 + 1; // From the front of the qb, adding 1 m
+  dist = dist - 0.203 + 0.5; // From the front of the qb, adding 1 m
   Serial.println("////////////////////// ");
   Serial.println(dist);
   Serial.println(" ft");
@@ -1419,14 +1419,17 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       avgError += prevErrorVals[i];
     }
     avgError /= PID_ERROR_AVG_ARRAY_LENGTH;
-    e = avgError;
+    Serial.println("e before:");
+    Serial.println(e);
 
     // Add deadband: If error < 2 degrees, stop motor and zero integral to prevent sway
-    if (abs(e) < 2) {
+    if (abs(e - 180) < 2) {
       float u = 0.0f;  // Declare and set to zero here
       eIntegral = 0;   // Prevent windup
       // Optional: Log for debugging (comment out if too spammy)
-      // Serial.println("Deadband applied: error < 2 deg, u=0");
+      Serial.println("Deadband applied: error < 2 deg, u=0");
+      Serial.println("e after:");
+      Serial.println(abs(e - 180));
       return u;
     }
 
@@ -1463,7 +1466,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     }
 
     Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
-    Serial.print("\tTarget [deg]: "); Serial.print(target - 180);
+    Serial.print("\tTarget [deg]: "); Serial.print((target - 180) + 360);
     Serial.print("\tQuarterback:"); Serial.print("x="); Serial.print(position[0]); Serial.print(", y="); Serial.print(position[1]);
     Serial.print("\tReceiver:"); Serial.print("x="); Serial.print(receivers[0].position[0]); Serial.print(", y="); Serial.print(receivers[0].position[1]);
     Serial.println();

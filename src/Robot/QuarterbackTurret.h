@@ -405,7 +405,7 @@ class QuarterbackTurret : public Robot {
     float eIntegral = 0;
     float kp = 0.002;
     float ki = 0.0005;
-    float kd = 0.01;
+    float kd = 0.1;
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 
