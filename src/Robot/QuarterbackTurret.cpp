@@ -922,12 +922,12 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     setFlywheelSpeed(0);
     return 0;
   }
-  dist = dist * 3.28084; // converts from meters to ft
+  dist = dist - 0.203 + 1; // From the front of the qb, adding 1 m
   Serial.println("////////////////////// ");
   Serial.println(dist);
   Serial.println(" ft");
   Serial.println("//////////////////////");
-  float speed = 0.0486 + (0.0307 * dist) - (0.000469 * pow(dist, 2)); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
+  float speed = 0.0486 + 0.101 * dist + -0.00505 * pow(dist, 2); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
   setFlywheelSpeed(speed);
 
   return speed; // Return the speed for debugging purposes (may not be needed)
