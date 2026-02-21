@@ -922,7 +922,8 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     setFlywheelSpeed(0);
     return 0;
   }
-
+  dist = dist * 3.28084; // converts from meters to ft
+  dist = dist - 1.5; // this equation is not good
   float speed = 0.0486 + (0.0307 * dist) - (0.000469 * pow(dist, 2)); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
   setFlywheelSpeed(speed);
 
