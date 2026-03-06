@@ -238,7 +238,7 @@ void QuarterbackTurret::action() {
           double tempRx = rx, tempRy = ry;
           rx = avgRx; ry = avgRy;
           targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-          turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, ki, kd, 0.1);  // Was .15; now 0.15 * 0.25 = 0.0375
+          turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, kd, ki, 0.1);  // Was .15; now 0.15 * 0.25 = 0.0375
           setTurretSpeed(turretPIDSpeed);
 
           // Flywheel: Update only every 1s using averaged distance
@@ -1422,8 +1422,8 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     Serial.println("e before:");
     Serial.println(e);
 
-    // Add deadband: If error < 2 degrees, stop motor and zero integral to prevent sway
-    if (abs(e - 180) < 2) {
+    // Add deadband: If error < 3 degrees, stop motor and zero integral to prevent sway
+    if (abs(e - 180) < 3) {
       float u = 0.0f;  // Declare and set to zero here
       eIntegral = 0;   // Prevent windup
       // Optional: Log for debugging (comment out if too spammy)

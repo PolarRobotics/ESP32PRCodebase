@@ -121,7 +121,7 @@ const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 // QB_TURRET_PID_BAD_DELTA_T    Maximum time before we need to zero things out
 // QB_NORTH_OFFSET              Added to deal with the problems of zeroing the turret but then holding a set angle afterwards
 //                                  TODO: maybe unnecessary now?
-#define QB_TURRET_PID_THRESHOLD 1
+#define QB_TURRET_PID_THRESHOLD 3
 #define QB_TURRET_PID_MIN_DELTA_T 5
 #define QB_TURRET_PID_MAX_DELTA_T 25
 #define QB_TURRET_PID_BAD_DELTA_T 250
