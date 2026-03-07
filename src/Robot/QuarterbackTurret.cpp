@@ -1427,7 +1427,7 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       float u = 0.0f;  // Declare and set to zero here
       eIntegral = 0;   // Prevent windup
       // Optional: Log for debugging (comment out if too spammy)
-      Serial.println("Deadband applied: error < 2 deg, u=0");
+      Serial.println("Deadband applied: error < 3 deg, u=0");
       Serial.println("e after:");
       Serial.println(abs(e - 180));
       return u;
@@ -1466,7 +1466,13 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     }
 
     Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
-    Serial.print("\tTarget [deg]: "); Serial.print((target - 180) + 360);
+    target = (target - 180) + 360;
+    if(target >= 360)
+    {
+      target = target - 360;
+    }
+
+    Serial.print("\tTarget [deg]: "); Serial.print(target);
     Serial.print("\tQuarterback:"); Serial.print("x="); Serial.print(position[0]); Serial.print(", y="); Serial.print(position[1]);
     Serial.print("\tReceiver:"); Serial.print("x="); Serial.print(receivers[0].position[0]); Serial.print(", y="); Serial.print(receivers[0].position[1]);
     Serial.println();
