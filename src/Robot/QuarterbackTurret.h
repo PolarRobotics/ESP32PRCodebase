@@ -51,7 +51,8 @@ enum FlywheelSpeed {
 // Preset flywheel speed values.
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}; // without top prongs 
 const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {-0.1, 0, 0.215, 0.35, 0.45};      // combine speed values
-const float QB_DECLINATION = -6.5;
+const float QB_DECLINATION = -6.5;                   
+
 //                                                                , 6ft  , 12ft, 18ft  (Measured from center of QB to center of receiver)
 //================================//
 //  Debounce and Delay Constants  //
@@ -341,6 +342,7 @@ class QuarterbackTurret : public Robot {
     //|                        |//
     //==========================//
     Adafruit_LIS3MDL lis3mdl;           // magnetometer object
+    
     bool useMagnetometer = true;        // set 'false' to disable the magnetometer and its functions
     bool holdTurretStillEnabled = false; // set 'false' if you only want to use the magnetometer for the handoff and not the hold steady
 
@@ -405,7 +407,7 @@ class QuarterbackTurret : public Robot {
     float eIntegral = 0;
     float kp = 0.005; //0.002
     float ki = 0.000; //0.0005
-    float kd = 0.000; //0.001
+    float kd = 0.005; //0.001
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 
