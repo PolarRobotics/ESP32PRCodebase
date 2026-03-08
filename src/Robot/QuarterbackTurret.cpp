@@ -1,8 +1,5 @@
 #include "QuarterbackTurret.h"
 
-const float PID_TUNING_TARGET_ANGLE = 270.0f;  
-bool pidTuningMode = true;  
-
 //This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
 // HardwareSerial Uart_Turret(2); // UART2
 
@@ -240,12 +237,7 @@ void QuarterbackTurret::action() {
           // Temporarily override rx/ry with EMA averages for angle/distance calc
           double tempRx = rx, tempRy = ry;
           rx = avgRx; ry = avgRy;
-          // NEW: Freeze target for PID tuning (super easy to toggle)
-          if (pidTuningMode) {
-            targetRelativeHeading = PID_TUNING_TARGET_ANGLE;
-          } else {
-            targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-          }
+          targetRelativeHeading = angleToTarget(receivers[currReceiver]);
           turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, kd, ki, 0.1);  // Was .15; now 0.15 * 0.25 = 0.0375
           setTurretSpeed(turretPIDSpeed);
 
@@ -1322,61 +1314,69 @@ void QuarterbackTurret::calibMagnetometer() {
  * @date 4-9-2024
  */
 void QuarterbackTurret::calculateHeadingMag() {
-  if (!magnetometerCalibrated) return;
+  //Only run the code in here if the calibration has been done to the magnetometer
+  if (magnetometerCalibrated) {
+    lis3mdl.read();
 
-  lis3mdl.read();
+    //Calculate the current angle of the turret based on the calibration data
+    if (mag_xSign) {
+      mag_xVal = lis3mdl.x + mag_xHalf;
+    } else {
+      mag_xVal = lis3mdl.x - mag_xHalf;
+    }
 
-  // === Your existing raw magnetometer heading calculation (unchanged) ===
-  if (mag_xSign) {
-    mag_xVal = lis3mdl.x + mag_xHalf;
-  } else {
-    mag_xVal = lis3mdl.x - mag_xHalf;
+    if (mag_ySign) {
+      mag_yVal = lis3mdl.y + mag_yHalf;
+    } else {
+      mag_yVal = lis3mdl.y - mag_yHalf;
+    }
+
+    //Evaluate both ranges of X and Y then scale the smaller value to be within the same range as the larger
+    if (mag_yHalf > mag_xHalf) {
+      mag_xVal = (double)((double)mag_xVal/((double)mag_xHalf))*(double)mag_yHalf;
+    } else if (mag_xHalf > mag_yHalf) {
+      mag_yVal = (double)((double)mag_yVal/((double)mag_yHalf))*(double)mag_xHalf;
+    }
+
+    //Calculate angle in radians
+    if (mag_xVal != -1 && mag_xVal !=0 && mag_yVal != 0 && mag_yVal != -1) {
+      headingRad = atan2(mag_yVal, mag_xVal);
+    }
+
+    //Convert to degrees
+    headingDeg = headingRad*180/M_PI;
+
+    //If the degrees are negative then they just need inversed plus 180
+    if (headingDeg < 0) {
+      headingDeg += 360;
+    }
+
+    // integrate offset into measurement
+    headingDeg = ((int) headingDeg) /*+ 180 /*- QB_NORTH_OFFSET -*/ + northHeadingDegrees + QB_DECLINATION;
+    if (headingDeg > 360) headingDeg = ((int) headingDeg) % 360;
+
+    // EMA for heading (initialize on first read)
+    if (headingBufferCount == 0) {
+      headingDegSmoothed = headingDeg;
+    } else {
+      headingDegSmoothed = emaAlpha * headingDeg + (1 - emaAlpha) * headingDegSmoothed;
+    }
+    headingBufferCount = 1;  // EMA doesn't need count
+
+    headingDeg = headingDegSmoothed;  // Overwrite raw with EMA-smoothed
+
+    /*DEBUGGING PRINTOUTS*/
+    // Serial.print("X: "); Serial.print(lis3mdl.x);
+    // Serial.print("\tY: "); Serial.print(lis3mdl.y);
+    // Serial.print("\tMinX: "); Serial.print(mag_xMin);
+    // Serial.print("\tMaxX: "); Serial.print(mag_xMax);
+    // Serial.print("\tMinY: "); Serial.print(mag_yMin);
+    // Serial.print("\tMaxY: "); Serial.print(mag_yMax);
+    // Serial.print("\txAdapt: "); Serial.print(mag_xVal);
+    // Serial.print("\tyAdapt: "); Serial.print(mag_yVal);
+    // Serial.print("\tHeading [deg]: "); Serial.print(headingDeg);
+    // Serial.println();
   }
-  if (mag_ySign) {
-    mag_yVal = lis3mdl.y + mag_yHalf;
-  } else {
-    mag_yVal = lis3mdl.y - mag_yHalf;
-  }
-
-  if (mag_yHalf > mag_xHalf) {
-    mag_xVal = (double)mag_xVal / mag_xHalf * mag_yHalf;
-  } else if (mag_xHalf > mag_yHalf) {
-    mag_yVal = (double)mag_yVal / mag_yHalf * mag_xHalf;
-  }
-
-  float magHeading = 0.0f;
-  if (mag_xVal != -1 && mag_xVal != 0 && mag_yVal != 0 && mag_yVal != -1) {
-    float headingRad = atan2(mag_yVal, mag_xVal);
-    magHeading = headingRad * 180.0f / PI;
-    if (magHeading < 0) magHeading += 360.0f;
-  }
-
-  magHeading = fmod(magHeading + northHeadingDegrees + QB_DECLINATION, 360.0f);
-
-  // ====================== STRONGER KALMAN + EMA ======================
-  static float x = 0.0f;        // Kalman estimate
-  static float P = 1.0f;
-
-  float dt = 0.01f;
-
-  // Kalman prediction + update
-  float x_pred = x;
-  float P_pred = P + Q;
-  float K = P_pred / (P_pred + R);
-  x = x_pred + K * (magHeading - x_pred);
-  P = (1.0f - K) * P_pred;
-
-  // Extra EMA layer on top of Kalman (double smoothing)
-  static float smoothedHeading = 0.0f;
-  if (headingBufferCount == 0) {
-    smoothedHeading = x;
-    headingBufferCount = 1;
-  } else {
-    smoothedHeading = emaAlpha * x + (1.0f - emaAlpha) * smoothedHeading;
-  }
-
-  headingDeg = fmod(smoothedHeading + 360.0f, 360.0f);
-  // =================================================================
 }
 
 void QuarterbackTurret::holdTurretStill() {
@@ -1422,12 +1422,12 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     Serial.println("e before:");
     Serial.println(e);
 
-    // Add deadband: If error < 4 degrees, stop motor and zero integral to prevent sway
-    if (abs(e - 180) < 4) {
+    // Add deadband: If error < 3 degrees, stop motor and zero integral to prevent sway
+    if (abs(e - 180) < 3) {
       float u = 0.0f;  // Declare and set to zero here
       eIntegral = 0;   // Prevent windup
       // Optional: Log for debugging (comment out if too spammy)
-      Serial.println("Deadband applied: error < 4 deg, u=0");
+      Serial.println("Deadband applied: error < 3 deg, u=0");
       Serial.println("e after:");
       Serial.println(abs(e - 180));
       return u;
