@@ -1,5 +1,8 @@
 #include "QuarterbackTurret.h"
 
+#define RECEIVER1_ID 0xDECAB667E510DD09ULL
+#define RECEIVER2_ID 0xDECA114583701E85ULL
+
 //This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
 // HardwareSerial Uart_Turret(2); // UART2
 
@@ -105,6 +108,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
   magnetometerSetup();
+  this->northHeadingDegrees = 7;
 
   // Initialize receiver positions to safe defaults to avoid garbage math
   for (int i = 0; i < NUM_RECEIVERS; i++) {
@@ -368,12 +372,16 @@ void QuarterbackTurret::action() {
     Serial.println(position[1]);
 
     for (int i = 0; i < NUM_RECEIVERS; i++) {
+      int targetAngle = angleToTarget(receivers[i]);   // ← NEW LINE
+
       Serial.print("Receiver ");
       Serial.print(i);
       Serial.print(": x=");
       Serial.print(receivers[i].position[0]);
       Serial.print(", y=");
-      Serial.println(receivers[i].position[1]);
+      Serial.print(receivers[i].position[1]);
+      Serial.print("  → Target angle: ");
+      Serial.println(targetAngle);                     // ← NEW LINE
     }
 
     lastPrintTime = millis();
@@ -757,109 +765,93 @@ void QuarterbackTurret::switchTarget(TargetReceiver target) {
   // todo: not sure if this needs more functionality?
 }
 
-void QuarterbackTurret::readTargetingInfo(){
+void QuarterbackTurret::readTargetingInfo() {
   static boolean recvInProgress = false;
   newData = false;
   static int ndx = 0;
-  static bool qbInitialized = false;  // Per-QB flag
-  static bool receiverInitialized[NUM_RECEIVERS] = {false};  // Per-receiver flags
-  static double lastQBx = 0.0, lastQBy = 0.0;  // Last known good QB
-  static double lastReceiverX[NUM_RECEIVERS] = {0};  // Last known good receiver X
-  static double lastReceiverY[NUM_RECEIVERS] = {0};  // Last known good receiver Y
 
   char startMarker = '<';
   char endMarker = '>';
   char rc;
 
-  while (Serial2.available() > 0 && newData == false) {
+  while (Serial2.available() > 0 && !newData) {
     rc = Serial2.read();
 
-    if (recvInProgress == true) {
+    if (recvInProgress) {
       if (rc != endMarker) {
         receivedChars[ndx] = rc;
         ndx++;
-        if (ndx >= NUM_CHARS - 1) {
-          ndx = NUM_CHARS - 1; // Prevent buffer overrun
-        }
+        if (ndx >= NUM_CHARS - 1) ndx = NUM_CHARS - 1;
       } else {
-        receivedChars[ndx] = '\0'; // Null-terminate
+        receivedChars[ndx] = '\0';
         recvInProgress = false;
         ndx = 0;
         newData = true;
       }
     } else if (rc == startMarker) {
       recvInProgress = true;
-      ndx = 0; // Reset index when new message starts
+      ndx = 0;
     }
   }
 
-  if(newData == true){
-    strcpy(tempChars, receivedChars);
-    char * strtokIndx;
-    strtokIndx = strtok(tempChars,":,=");
-    while(strtokIndx != NULL){
-      if(prev == "QB"){
-        double newX = atof(strtokIndx);
-        strtokIndx = strtok(NULL,":,=");
-        if(strtokIndx != NULL) {
-          double newY = atof(strtokIndx);
-          // Filter zeros first
-          if (fabs(newX) < 1e-6 || fabs(newY) < 1e-6) {
-            strtokIndx = strtok(NULL,":,="); // Skip Z
-          } else {
-            bool acceptUpdate = true;
-            if (qbInitialized) {
-              if (fabs(newX - lastQBx) > 1.0 || fabs(newY - lastQBy) > 1.0) {
-                acceptUpdate = false;  // Jump too large
-              }
-            }
-            // Accept first valid non-zero (bootstraps)
-            if (acceptUpdate || !qbInitialized) {
-              position[0] = newX;
-              position[1] = newY;
-              lastQBx = newX;
-              lastQBy = newY;
-              qbInitialized = true;
-            }
-          }
-          strtokIndx = strtok(NULL,":,="); // Skip Z
-        }
-        strtokIndx = strtok(NULL,":,="); // Skip Q
-        prev = "";
-      } else if(prev == "RCV"){
-        // Receiver position update
-        if(strtokIndx != NULL){
-          double newX = atof(strtokIndx);
-          strtokIndx = strtok(NULL,":,=");
-          if(strtokIndx != NULL){
-            double newY = atof(strtokIndx);
-            // Filter zeros first
-            if (fabs(newX) < 1e-6 || fabs(newY) < 1e-6) {
-              // Skip zeros
-            } else {
-              bool acceptUpdate = true;
-              if (receiverInitialized[currReceiver]) {
-                if (fabs(newX - lastReceiverX[currReceiver]) > 1.0 || fabs(newY - lastReceiverY[currReceiver]) > 1.0) {
-                  acceptUpdate = false;  // Jump too large
-                }
-              }
-              // Accept first valid non-zero (bootstraps per receiver)
-              if (acceptUpdate || !receiverInitialized[currReceiver]) {
-                receivers[currReceiver].position[0] = newX;
-                receivers[currReceiver].position[1] = newY;
-                lastReceiverX[currReceiver] = newX;
-                lastReceiverY[currReceiver] = newY;
-                receiverInitialized[currReceiver] = true;
-              }
-            }
-            strtokIndx = strtok(NULL,":,="); // Skip Z
-          }
-        }
-        strtokIndx = strtok(NULL,":,="); // Skip Q
-        prev = "";
-      } else{
-        prev = String(strtokIndx);
-        strtokIndx = strtok(NULL,":,=");
+  if (newData) {
+    String packet = String(receivedChars);
+    packet.trim();
+
+    // Debug: show raw incoming packet
+    // Serial.print("RAW PACKET: ");
+    // Serial.println(packet);
+
+    // Clean up < > if present
+    if (packet.startsWith("<")) packet = packet.substring(1);
+    if (packet.endsWith(">")) packet = packet.substring(0, packet.length() - 1);
+    packet.trim();
+
+    // Split into tokens by comma
+    int commaPos[5] = {-1, -1, -1, -1, -1};
+    int count = 0;
+    int pos = 0;
+    while ((pos = packet.indexOf(',', pos)) != -1 && count < 5) {
+      commaPos[count++] = pos;
+      pos++;
+    }
+
+    // Ensure we have at least type + x + y + z + q (5 commas = 6 parts)
+    if (count < 4) return;  // Not enough fields → skip
+
+    String type = packet.substring(0, commaPos[0]);
+
+    // Find x, y (we ignore z and q for now, but parse them correctly)
+    double newX = packet.substring(commaPos[0] + 1, commaPos[1]).toFloat();
+    double newY = packet.substring(commaPos[1] + 1, commaPos[2]).toFloat();
+    // double newZ = packet.substring(commaPos[2] + 1, commaPos[3]).toFloat(); // optional
+    // double newQ = packet.substring(commaPos[3] + 1).toFloat();             // optional
+
+    if (type == "QB") {
+      if (fabs(newX) > 0.1 && fabs(newY) > 0.1) {
+        position[0] = newX;   // X coordinate
+        position[1] = newY;   // Y coordinate
+        // Serial.print("Updated QB: X=");
+        // Serial.print(newX, 2);
+        // Serial.print(", Y=");
+        // Serial.println(newY, 2);
+      }
+    } 
+    else if (type == "RCV") {
+      // Round-robin assignment (or switch to ID-based later)
+      static int nextRcvIndex = 0;
+      int index = nextRcvIndex % NUM_RECEIVERS;
+      nextRcvIndex++;
+
+      if (fabs(newX) > 0.1 && fabs(newY) > 0.1) {
+        receivers[index].position[0] = newX;
+        receivers[index].position[1] = newY;
+        // Serial.print("Updated Receiver ");
+        // Serial.print(index);
+        // Serial.print(": X=");
+        // Serial.print(newX, 2);
+        // Serial.print(", Y=");
+        // Serial.println(newY, 2);
       }
     }
   }
@@ -1227,7 +1219,7 @@ void QuarterbackTurret::calibMagnetometer() {
   mag_yHalf = 0;
   mag_xSign = false;
   mag_ySign = false;
-  northHeadingDegrees = 0;
+  northHeadingDegrees = 7.0f;
 
   long startTime = millis();
   setTurretSpeed(QB_HOME_MAG, true);
@@ -1299,7 +1291,7 @@ void QuarterbackTurret::calibMagnetometer() {
 
   // from here on out, headingDeg and targetAbsoluteHeading are offset by northHeadingDegrees
   // headingDeg = 0;
-  targetAbsoluteHeading = 0;
+  // targetAbsoluteHeading = 0;
 
   Serial.println("Magnetometer has been calibrated!");
   eIntegral = 0;
@@ -1352,7 +1344,7 @@ void QuarterbackTurret::calculateHeadingMag() {
     }
 
     // integrate offset into measurement
-    headingDeg = ((int) headingDeg) /*+ 180 /*- QB_NORTH_OFFSET -*/ + northHeadingDegrees + QB_DECLINATION;
+        headingDeg = fmod(headingDeg + 7.0 + QB_DECLINATION + 360.0, 360.0);   // +7° for Ada, OH
     if (headingDeg > 360) headingDeg = ((int) headingDeg) % 360;
 
     // EMA for heading (initialize on first read)
