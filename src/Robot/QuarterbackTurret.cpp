@@ -381,7 +381,14 @@ void QuarterbackTurret::action() {
       Serial.print(", y=");
       Serial.print(receivers[i].position[1]);
       Serial.print("  → Target angle: ");
-      Serial.println(targetAngle);                     // ← NEW LINE
+      if(targetAngle < 180)
+      {
+        Serial.println(targetAngle + 180);
+      }
+      else
+      {
+        Serial.println(targetAngle - 180);
+      }
     }
 
     lastPrintTime = millis();
