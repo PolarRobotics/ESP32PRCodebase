@@ -405,9 +405,9 @@ class QuarterbackTurret : public Robot {
     long previousTime = 0;
     float ePrevious = 0;
     float eIntegral = 0;
-    float kp = 0.005; //0.005
-    float ki = 0.000; //0.000
-    float kd = 0.008; //0.005
+    float kp = 0.005; //0.003 we had 0.005
+    float ki = 0.000; //0.0008 we had 0.000
+    float kd = 0.000; //0.004 was last value
     float turretPIDSpeed = 0;
     float minMagSpeed = .075;
 

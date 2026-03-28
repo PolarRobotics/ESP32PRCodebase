@@ -128,15 +128,13 @@ QuarterbackTurret::QuarterbackTurret(
 #pragma region action()
 void QuarterbackTurret::action() {
   static unsigned long lastPrintTime = 0;
+  static unsigned long lastStickActivity = 0;   // ← NEW: tracks right-stick activity for 1-second timeout
 
   //! Control Schema
   //* Touchpad: Emergency Stop
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  // above two inputs are registered in `testForDisableOrStop()` since this is re-used in blocking routines
-
-  //! Ignore non-emergency inputs if running a macro
   if (!testForDisableOrStop() && !runningMacro) {
-    //* Circle: Startup and Home (Reset or Zero Turret)
+    //* Circle: Startup and Home
     if (dbCircle->debounceAndPressed(ps5.Circle())) {
       if (!initialized) {
         reset();
@@ -144,21 +142,22 @@ void QuarterbackTurret::action() {
         zeroTurret();
       }
     }
-    //* Triangle: Macro 1 - load from center
+    //* Triangle: load from center
     else if (dbTriangle->debounceAndPressed(ps5.Triangle())) {
       loadFromCenter();
     }
-    //* Cross: Macro 2 - handoff to runningback
+    //* Cross: handoff to runningback
     else if (dbCross->debounceAndPressed(ps5.Cross())) {
       handoff();
     }
-    // else if (ps5.Left()) {
-    //   testRoutine();
-    // }
-    //* Manual and Automatic Controls
     else {
-      //* Right Trigger (R2): Fire (cradle/grabber forward)
-      // Do not fire unless moving forward (do not fire when intaking or stopped)
+      // ─────────────────────────────────────────────────────────────
+      // Always read both sticks (needed for auto-mode override)
+      // ─────────────────────────────────────────────────────────────
+      stickFlywheel = (ps5.LStickY() / 127.5f);
+      stickTurret   = (ps5.RStickX() / 127.5f);
+
+      //* Right Trigger (R2): Fire cradle
       if (currentFlywheelSpeed > STICK_DEADZONE && ps5.R2()) {
         moveCradle(forward);
       } else {
@@ -168,7 +167,6 @@ void QuarterbackTurret::action() {
       //* Left Trigger (L2): Toggle Assembly Angle
       if (ps5.L2() && !assemblyTriggerToggled) {
         assemblyTriggerToggled = true;
-        // if angled or unknown, move to straight angle. else, move to firing angle.
         if (currentAssemblyAngle == unknownAngle || currentAssemblyAngle == angled) {
           aimAssembly(straight);
         } else if (currentAssemblyAngle == straight) {
@@ -192,36 +190,27 @@ void QuarterbackTurret::action() {
           switchMode(manual);
         }
       }
-      //* Options (Button): Switch Mode (toggle between auto/manual targeting)
+      //* Options Button: Toggle Auto / Manual
       else if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options())) {
         switchMode();
       }
-      //* Left Button (L1): Switch Target to Next Receiver
+      //* L1 / R1: Switch receiver
       else if (QB_AUTO_ENABLED && ps5.L1()) {
-        // switchTarget(receiver_1);
         currReceiver--;
-        if (currReceiver < 0) {
-          currReceiver = 0;
-        }
+        if (currReceiver < 0) currReceiver = 0;
       }
-      //* Right Button (R1): Switch Target to Previous Receiver
       else if (QB_AUTO_ENABLED && ps5.R1()) {
-        // switchTarget(receiver_2);
         currReceiver++;
-        if(currReceiver > NUM_RECEIVERS - 1){
-          currReceiver = NUM_RECEIVERS - 1;
-        }
+        if (currReceiver > NUM_RECEIVERS - 1) currReceiver = NUM_RECEIVERS - 1;
       }
 
-      //* Auto Mode
+      //* AUTO MODE with right-stick manual override
       else if (QB_AUTO_ENABLED && mode == automatic) {
-        
-        // Only run if magnetometer calibrated AND we have fresh receiver data
+        // Update receiver data (EMA)
         if (magnetometerCalibrated && newData) {
           double newRx = receivers[currReceiver].position[0];
           double newRy = receivers[currReceiver].position[1];
 
-          // EMA for rx/ry (initialize on first read)
           if (posBufferCount == 0) {
             avgRx = newRx;
             avgRy = newRy;
@@ -229,84 +218,73 @@ void QuarterbackTurret::action() {
             avgRx = emaAlpha * newRx + (1 - emaAlpha) * avgRx;
             avgRy = emaAlpha * newRy + (1 - emaAlpha) * avgRy;
           }
-          posBufferCount = 1;  // EMA doesn't need full buffer; just track if initialized
-
-          newData = false; // Consume the data packet
+          posBufferCount = 1;
+          newData = false;
         }
 
-        // Use averaged values if non-zero (no buffer loop needed for EMA)
-        if (fabs(avgRx) > 0.01 || fabs(avgRy) > 0.01) {
-          calculateHeadingMag();  // This now uses EMA for heading too
-          currentRelativeHeading = headingDeg;
-          // Temporarily override rx/ry with EMA averages for angle/distance calc
-          double tempRx = rx, tempRy = ry;
-          rx = avgRx; ry = avgRy;
-          targetRelativeHeading = angleToTarget(receivers[currReceiver]);
-          turretPIDSpeed = turretPIDController((float)currentRelativeHeading, (float)targetRelativeHeading, kp, kd, ki, 0.1);  // Was .15; now 0.15 * 0.25 = 0.0375
-          setTurretSpeed(turretPIDSpeed);
+        // ─────────────────────────────────────────────────────────────
+        // RIGHT STICK MANUAL OVERRIDE (only in Auto mode)
+        // ─────────────────────────────────────────────────────────────
+        if (fabs(stickTurret) > STICK_DEADZONE) {
+          // User is moving the stick → fine manual adjustment
+          float overrideSpeed = stickTurret * 0.12;
+          setTurretSpeed(overrideSpeed);
+          lastStickActivity = millis();
+        }
+        else if (millis() - lastStickActivity < 2000) {
+          // Stick just returned to center → stop turret for 1 second
+          setTurretSpeed(0);
+        }
+        else {
+          // No stick input for 1+ second → resume normal auto tracking
+          if (fabs(avgRx) > 0.01 || fabs(avgRy) > 0.01) {
+            calculateHeadingMag();
+            currentRelativeHeading = headingDeg;
+            double tempRx = rx, tempRy = ry;
+            rx = avgRx; ry = avgRy;
+            targetRelativeHeading = angleToTarget(receivers[currReceiver]);
+            turretPIDSpeed = turretPIDController((float)currentRelativeHeading,
+                                                 (float)targetRelativeHeading,
+                                                 kp, kd, ki, 0.1);
+            setTurretSpeed(turretPIDSpeed);
 
-          // Flywheel: Update only every 1s using averaged distance
-          unsigned long now = millis();
-          if (now - lastFlywheelUpdate >= 1000) {
-            setAutoFlywheelSpeed(0);  // Uses current rx/ry (EMA-averaged)
-            lastFlywheelUpdate = now;
+            // Flywheel update every 1 s
+            unsigned long now = millis();
+            if (now - lastFlywheelUpdate >= 1000) {
+              setAutoFlywheelSpeed(0);
+              lastFlywheelUpdate = now;
+            }
+            rx = tempRx; ry = tempRy;
           }
-
-          rx = tempRx; ry = tempRy;  // Restore if needed
         }
       }
 
-      //* Manual Controls
+      //* MANUAL / COMBINE MODE (unchanged)
       else {
-        stickFlywheel = (ps5.LStickY() / 127.5f);
-        stickTurret = (ps5.RStickX() / 127.5f);
-        // Serial.print(F("stickTurret: "));
-        // Serial.println(stickTurret);
-
         if (mode == combine) {
-          //* Combine "Macro" Mode
-          // Overrides turret control
-          // Allows switching between 3 different angles (left, straight, right)
-          // Flywheel control is available (set powers with override via stick)
-          // Flywheel set speeds are specific for combine.
-          // Set turret to start position (right) and angle the assembly, ready to be loaded.
-          if(firstCombine){
+          if (firstCombine) {
             firstCombine = false;
             combineMoveRight();
             aimAssembly(angled);
           }
 
-          //* D-Pad Left: Move left one position
           if (dbDpadLeft->debounceAndPressed(ps5.Left())) {
             combineMoveLeft();
           }
-          //* D-Pad Right: Move right one position
           else if (dbDpadRight->debounceAndPressed(ps5.Right())) {
             combineMoveRight();
           }
 
-          // Run the PID loop if the turret is at least 3 degrees off from the target angle
-          if(abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >= 2){
-            turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, 0.2);  // Was .3; now 0.3 * 0.25 = 0.075
+          if (abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >= 2) {
+            turretPIDSpeed = turretPIDController((float)getCurrentHeading(),
+                                                 (float)targetRelativeHeading,
+                                                 kp, kd, ki, 0.2);
             setTurretSpeed(turretPIDSpeed);
           }
-
-          // if (utmsCtr <= UTMS_CTR_MAX) {
-          //   utmsCtr = 0;
-            Serial.print(F("combine mode -- ctec = "));
-            Serial.print(currentTurretEncoderCount);
-            Serial.print(F("; ttec = "));
-            Serial.println(targetTurretEncoderCount);
-          // } else {
-          //   utmsCtr++;
-          // }
-        } else
-          //* Right Stick X: Turret Control
-          // Left = CCW, Right = CW
+        } else {
+          // Right stick turret control (manual mode)
           if (fabs(stickTurret) > STICK_DEADZONE) {
-            //* Use absolute positioning and position-based control iff. magnetometer functionality is enabled
             if (useMagnetometer && holdTurretStillEnabled) {
-              // only change position every 4 loops
               if (manualHeadingIncrementCount == 0) {
                 targetAbsoluteHeading += (1 * copysign(1, stickTurret));
                 targetAbsoluteHeading %= 360;
@@ -314,36 +292,28 @@ void QuarterbackTurret::action() {
                 manualHeadingIncrementCount++;
                 manualHeadingIncrementCount %= 4;
               }
-              //Serial.print(F("--target abs heading: "));
-              //Serial.println(targetAbsoluteHeading);
               calculateHeadingMag();
               holdTurretStill();
-            }
-            //* Use relative positioning and speed-based control
-            else {
+            } else {
               setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
             }
           } else {
-            //Check if magnetometer functionality is enabled
             if (useMagnetometer && holdTurretStillEnabled) {
               calculateHeadingMag();
               holdTurretStill();
             } else {
               setTurretSpeed(0);
             }
-            // updateTurretMotionStatus();
           }
+        }
 
         updateTurretMotionStatus();
 
-        //* Left Stick Y: Flywheel Override
-                //* Left Stick Y: Flywheel Override
-        if(mode != automatic){
+        //* Left Stick Y + D-Pad: Flywheel control
+        if (mode != automatic) {
           if (fabs(stickFlywheel) > STICK_DEADZONE) {
             setFlywheelSpeed(stickFlywheel);
           } else {
-            //* D-Pad Up   → increase speed by 0.05
-            //* D-Pad Down → decrease speed by 0.05
             if (dbDpadUp->debounceAndPressed(ps5.Up())) {
               float newSpeed = currentFlywheelSpeed + 0.025;
               setFlywheelSpeed(newSpeed);
@@ -352,20 +322,17 @@ void QuarterbackTurret::action() {
               float newSpeed = currentFlywheelSpeed - 0.025;
               setFlywheelSpeed(newSpeed);
             }
-            // no else needed – when neither D-Pad is pressed we simply keep the current speed
           }
-
-          // ==================== ONLY PRINT STATEMENT ====================
-          Serial.println(currentFlywheelSpeed);
         }
       }
     }
   }
+
   readTargetingInfo();
-  // updateReadMotorValues();
   delay(5);
   printDebug();
 
+  // Periodic debug print (you can remove this if you want total silence)
   if (millis() - lastPrintTime >= 1000) {
     calculateHeadingMag();
     Serial.print("Magnetometer angle: ");
@@ -375,26 +342,6 @@ void QuarterbackTurret::action() {
     Serial.print(position[0]);
     Serial.print(", y=");
     Serial.println(position[1]);
-
-    for (int i = 0; i < NUM_RECEIVERS; i++) {
-      int targetAngle = angleToTarget(receivers[i]);   // ← NEW LINE
-
-      Serial.print("Receiver ");
-      Serial.print(i);
-      Serial.print(": x=");
-      Serial.print(receivers[i].position[0]);
-      Serial.print(", y=");
-      Serial.print(receivers[i].position[1]);
-      Serial.print("  → Target angle: ");
-      if(targetAngle < 180)
-      {
-        Serial.println(targetAngle + 180);
-      }
-      else
-      {
-        Serial.println(targetAngle - 180);
-      }
-    }
 
     lastPrintTime = millis();
   }
@@ -927,7 +874,9 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     return 0;
   }
 
-  //Equation that could work: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3);
+  dist = dist + 0.15;
+
+  //Equation that could work: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3); old 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3);
   float speed = 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
   setFlywheelSpeed(speed);
 
