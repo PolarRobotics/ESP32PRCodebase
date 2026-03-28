@@ -337,21 +337,26 @@ void QuarterbackTurret::action() {
         updateTurretMotionStatus();
 
         //* Left Stick Y: Flywheel Override
+                //* Left Stick Y: Flywheel Override
         if(mode != automatic){
           if (fabs(stickFlywheel) > STICK_DEADZONE) {
             setFlywheelSpeed(stickFlywheel);
           } else {
-            //* D-Pad Up: Increase flywheel speed by one stage
+            //* D-Pad Up   → increase speed by 0.05
+            //* D-Pad Down → decrease speed by 0.05
             if (dbDpadUp->debounceAndPressed(ps5.Up())) {
-              adjustFlywheelSpeedStage(INCREASE);
+              float newSpeed = currentFlywheelSpeed + 0.025;
+              setFlywheelSpeed(newSpeed);
             }
-            //* D-Pad Down: Decrease flywheel speed by one stage
             else if (dbDpadDown->debounceAndPressed(ps5.Down())) {
-              adjustFlywheelSpeedStage(DECREASE);
-            } else {
-              setFlywheelSpeedStage(currentFlywheelStage);
+              float newSpeed = currentFlywheelSpeed - 0.025;
+              setFlywheelSpeed(newSpeed);
             }
+            // no else needed – when neither D-Pad is pressed we simply keep the current speed
           }
+
+          // ==================== ONLY PRINT STATEMENT ====================
+          Serial.println(currentFlywheelSpeed);
         }
       }
     }
@@ -921,12 +926,9 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     setFlywheelSpeed(0);
     return 0;
   }
-  dist = dist - 0.203 + 0.5; // From the front of the qb, adding 1 m
-  Serial.println("////////////////////// ");
-  Serial.println(dist);
-  Serial.println(" ft");
-  Serial.println("//////////////////////");
-  float speed = 0.0486 + 0.101 * dist + -0.00505 * pow(dist, 2); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
+
+  //Equation that could work: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3);
+  float speed = 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
   setFlywheelSpeed(speed);
 
   return speed; // Return the speed for debugging purposes (may not be needed)
