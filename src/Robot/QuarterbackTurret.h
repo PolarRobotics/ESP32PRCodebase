@@ -60,7 +60,7 @@ const float QB_DECLINATION = -6.5;
 // 50 ms for default delay (50L)
 // 750 ms to fully extend or retract the linear actuator
 #define QB_BASE_DEBOUNCE_DELAY 50L
-#define QB_ASSEMBLY_TILT_DELAY 200L
+#define QB_ASSEMBLY_TILT_DELAY 700L
 #define QB_CRADLE_TRAVEL_DELAY 750L
 #define QB_CIRCLE_HOLD_DELAY 750L
 #define QB_TRIANGLE_HOLD_DELAY 200L
@@ -68,6 +68,7 @@ const float QB_DECLINATION = -6.5;
 #define QB_TURRET_INTERPOLATION_DELAY 5L
 #define QB_TURRET_THRESHOLD 35
 #define QB_TURRET_STICK_SCALE_FACTOR 0.15 // was 0.25, turned down for combine
+#define QB_CCW_SPEED_BOOST 0.05f     // ← start with 0.18f, increase to 0.22f if still too slow, decrease to 0.14f if too fast
 
 //================================//
 //        Speed Constants         //

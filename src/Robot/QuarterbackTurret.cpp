@@ -351,19 +351,28 @@ void QuarterbackTurret::action() {
 // note that because the direction is flipped to be more intuitive for the driver,
 // the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
 // positive direction is also positive encoder direction, and vice versa
+// note that because the direction is flipped to be more intuitive for the driver,
+// the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
+// positive direction is also positive encoder direction, and vice versa
+// note that because the direction is flipped to be more intuitive for the driver,
+// the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
+// positive direction is also positive encoder direction, and vice versa
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare) {
-  // Serial.print(F("setTurretSpeed called with speed = "));
-  // Serial.println(absoluteSpeed);
   if (enabled) {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
-    turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
 
-    // handle mechanical slop when changing directions
-    // if (!overrideEncoderTare) {
-    //   turretDirectionChanged();
-    // }
+    // This is the actual value sent to the motor after the built-in flip
+    float pwm = -targetTurretSpeed;
 
-    currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
+    // Boost ONLY counterclockwise (which becomes positive PWM after the flip)
+    if (pwm > 0) {                          // ← counterclockwise command
+      pwm += QB_CCW_SPEED_BOOST;            // increase power for CCW
+      pwm = constrain(pwm, 0.0f, 1.0f);
+    }
+
+    turretMotor.write(pwm);
+
+    currentTurretSpeed = targetTurretSpeed;   // keep original value for logic
   } else {
     turretMotor.write(0);
   }
@@ -874,8 +883,9 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     return 0;
   }
 
-  dist = dist + 0.15;
+  dist = dist + 0.30;
 
+  //working okay: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3);
   //Equation that could work: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3); old 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3);
   float speed = 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3); // https://docs.google.com/spreadsheets/d/1Bzx51mkd1ly9TguSG5dGD3yGMdKhlyRx6Mq69FKj0ZQ/edit?usp=sharing
   setFlywheelSpeed(speed);
