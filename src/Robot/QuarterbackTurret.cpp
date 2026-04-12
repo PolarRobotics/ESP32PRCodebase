@@ -248,9 +248,9 @@ void QuarterbackTurret::action() {
                                                  kp, kd, ki, 0.1);
             setTurretSpeed(turretPIDSpeed);
 
-            // Flywheel update every 1 s
+            // Flywheel update every 0.5 s
             unsigned long now = millis();
-            if (now - lastFlywheelUpdate >= 1000) {
+            if (now - lastFlywheelUpdate >= 500) {
               setAutoFlywheelSpeed(0);
               lastFlywheelUpdate = now;
             }
@@ -883,7 +883,7 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance){
     return 0;
   }
 
-  dist = dist + 0.30;
+  dist = dist + 0.30; // was +0.30
 
   //working okay: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3);
   //Equation that could work: 0.0413 + 0.105*dist - 0.0167*pow(dist, 2) + 0.0016*pow(dist, 3); old 0.0207 + 0.1368*dist - 0.0281*pow(dist, 2) + 0.0027*pow(dist, 3);
@@ -1049,14 +1049,9 @@ void QuarterbackTurret::reset() {
 
 #pragma region Safety
 bool QuarterbackTurret::testForDisableOrStop() {
-  //* Touchpad: Emergency Stop
-  if (ps5.Touchpad()) {
-    emergencyStop();
-    Serial.println(F("emergency stopping"));
-    return true;
-  }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  else if (dbSquare->debounceAndPressed(ps5.Square())) {
+  //   (Touchpad emergency stop has been disabled)
+  if (dbSquare->debounceAndPressed(ps5.Square())) {
     if (!enabled) {
       setEnabled(true);
       Serial.println(F("setting enabled"));
@@ -1077,7 +1072,7 @@ void QuarterbackTurret::setEnabled(bool enabled) {
 
 void QuarterbackTurret::emergencyStop() {
   this->enabled = false;
-  setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
+  setFlywheelSpeed(0);
   setTurretSpeed(0);
   cradleActuator.write(0);
   // TODO: stop assembly stepper motor
@@ -1192,7 +1187,7 @@ void QuarterbackTurret::calibMagnetometer() {
   long startTime = millis();
   setTurretSpeed(QB_HOME_MAG, true);
 
-  while (millis() - startTime < 15000 && !testForDisableOrStop()){
+  while (millis() - startTime < 5000 && !testForDisableOrStop()){
     // get X Y and Z data all at once
     lis3mdl.read();
 
